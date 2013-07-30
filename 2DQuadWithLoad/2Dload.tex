@@ -1,0 +1,965 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+
+\usepackage{graphicx}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{latexsym}
+\usepackage{graphicx}
+\usepackage{algorithm} 
+\usepackage{algorithmic} 
+\usepackage{setspace}
+\usepackage{subfig}
+
+\begin{document}
+
+\centering
+Quadrotor with a Cable-Suspended Load \\
+July 18, 2013
+
+\raggedright
+
+\begin{table} [h!]
+\footnotesize
+\begin{tabular}{ c c }
+	$m_Q, m_L \in \mathbb{R}$ & Mass of quadrotor, load \\
+	$J_Q \in \mathbb{R}$ & Inertia of quadrotor \\
+	$f \in \mathbb{R}$ & Magnitude of thrust for quadrotor \\
+	$M \in \mathbb{R}$ & Magnitude of moment for quadrotor in body frame \\
+	$l \in \mathbb{R}$ & Length of suspension cable \\
+	$T \in \mathbb{R}$ & Magnitude of tension in cable \\
+	$\mathbf{x}_Q, \mathbf{x}_L \in \mathbb{R}^2$ & Position vector of center of mass of quadrotor, load in inertial frame \\
+	$\mathbf{v}_Q, \mathbf{v}_L \in \mathbb{R}^2$ & Velocity vector of center of mass of quadrotor, load in inertial frame \\
+	$\mathbf{p} \in S^1$ & Unit vector from quadrotor to load, $\mathbf{p} = [ \sin(\phi_L) \ \ -\cos(\phi_L)]^T$ \\
+	$\mathbf{R} \in SO(2)$ & Rotation matrix of quadrotor from body to inertial frame, $\mathbf{R} = [\cos(\phi_Q) \ \ -\sin(\phi_Q); \sin(\phi_Q) \ \ \cos(\phi_Q)]$ \\
+	$\mathbf{e}_2, \mathbf{e}_3$ & Axes of the inertial frame, $\mathbf{e}_2 = [1 \ \ 0]^T$, $\mathbf{e}_3 = [0 \ \ 1]^T$ \\
+	$\mathbf{b}_2, \mathbf{b}_3$ & Axes of quadrotor body frame,$\mathbf{b}_2 = \mathbf{R} \mathbf{e}_2$, $\mathbf{b}_3 = \mathbf{R} \mathbf{e}_3$ \\
+	$\phi_Q \in (-\pi, \pi] $ & Angle of quadrotor counter-clockwise from horizontal\\
+	$\phi_L \in (-\pi, \pi]$ & Angle of load counter-clockwise from vertical \\
+	$\dot{\phi_Q}, \dot{\phi_L} \in \mathbb{R}$ & Angular velocity of the quadrotor, load \\
+	%g is a positive constant
+\end{tabular}
+%\caption{Variables used}
+\label{tab: vars}
+\end{table}
+
+
+
+
+%%%%%%%
+\newpage
+\small
+
+\section{Equations of Motion} 
+% Define the hybrid system
+%%%%%
+\[
+    \Sigma : 
+\begin{cases}
+    \mathbf{\dot{x}}_1 = f_1(\mathbf{x}_1) + g_1(\mathbf{x}_1) \mathbf{u}_1, & \mathbf{x}_1 \not\in \mathcal{S}_1 \\
+    \mathbf{x}_2^+ = \Delta_1(\mathbf{x}_1^-), & \mathbf{x}_1^- \in \mathcal{S}_1 \\
+    \mathbf{\dot{x}}_2 = f_2(\mathbf{x}_2) + g_2(\mathbf{x}_2) \mathbf{u}_2, & \mathbf{x}_2 \not\in \mathcal{S}_2 \\
+    \mathbf{x}_1^+ = \Delta_2(\mathbf{x}_2^-), & \mathbf{x}_2^- \in \mathcal{S}_2 
+\end{cases}
+\]
+
+\[
+ \Sigma :
+\begin{cases}
+%\mathbf{x}_1 &= [\mathbf{x}_L \ \ \mathbf{v}_L \ \ \phi_L \ \ \dot{\phi}_L \ \  \phi_Q \ \ \dot{\phi}_Q]^T \\
+\dot{\mathbf{x}}_1 = 
+\begin{bmatrix}
+       \dot{\mathbf{x}}_L \\ \dot{\mathbf{v}}_L \\ \dot{\phi}_L \\ \ddot{\phi}_L \\ \dot{\phi}_Q \\ \ddot{\phi}_Q
+\end{bmatrix}
+= 
+\begin{bmatrix}
+       \mathbf{v}_L \\
+       \frac{ - m_Q l \dot{\phi}_L^2 } { (m_Q+m_L) } \mathbf{p} - g \mathbf{e}_3 \\
+       \dot{\phi_L} \\
+       0 \\
+       \dot{\phi_Q} \\
+       0 \\
+\end{bmatrix}
++ 
+\begin{bmatrix}
+       0 & 0 \\
+       \frac{ \cos(\phi_Q - \phi_L) }{ (m_Q + m_L) } \mathbf{p} & 0 \\
+       0 & 0 \\
+       \frac{ \sin(\phi_Q - \phi_L) } {m_Q l} & 0 \\
+       0 & 0 \\
+       0 & \frac{1}{J_Q} \\
+\end{bmatrix}
+\begin{bmatrix}
+       f \\
+       M \\
+\end{bmatrix}, 
+& 
+\mathbf{x}_1 \not\in \{ \mathbf{x}_1 \ | \  T \equiv \| m_L(\mathbf{\dot{v}}_L + g \mathbf{e}_3) \| = 0 \} \\
+%%
+\mathbf{x}_2^+ = 
+\begin{bmatrix}
+       \mathbf{x}_L^+ \\ \mathbf{v}_L^+ \\ \mathbf{x}_Q^+ \\ \mathbf{v}_Q^+ \\ \phi_Q^+ \\ \dot{\phi}_Q^+ \\
+\end{bmatrix}
+= 
+\begin{bmatrix}
+       \mathbf{x}_L^- \\ \mathbf{v}_L^- \\ \mathbf{x}_L^- - l \mathbf{p}^- \\ \mathbf{v}_L^- - l \mathbf{\dot{p}}^- \\ \phi_Q^- \\ \dot{\phi}_Q^- \\
+\end{bmatrix} , 
+&  
+\mathbf{x}_1^- \in \{ \mathbf{x}_1 \ | \  T = 0 \} \\
+%%
+\dot{\mathbf{x}}_2 = 
+\begin{bmatrix}
+       \dot{\mathbf{x}}_L \\ \dot{\mathbf{v}}_L \\ \dot{\mathbf{x}}_Q \\ \dot{\mathbf{v}}_Q \\ \dot{\phi}_Q \\ \ddot{\phi}_Q
+\end{bmatrix}
+= 
+\begin{bmatrix}
+       \mathbf{v}_L \\
+       -g \mathbf{e}_3 \\
+       \mathbf{v}_Q \\
+       -g \mathbf{e}_3 \\
+       \dot{\phi_Q} \\
+       0 \\
+\end{bmatrix}
++ 
+\begin{bmatrix}
+       0 & 0 \\
+       0 & 0 \\
+       0 & 0 \\
+       \frac{1}{m_Q} \mathbf{b}_3 & 0 \\
+       0 & 0 \\
+       0 & \frac{1}{J_Q} \\
+\end{bmatrix}
+\begin{bmatrix}
+ 	f \\
+	M \\
+\end{bmatrix},
+& 
+\mathbf{x}_2 \not\in \{ \mathbf{x}_2 \ | \  \| \mathbf{x}_Q - \mathbf{x}_L \| = L \} \\
+%%
+\mathbf{x}_1^+ = 
+\begin{bmatrix}
+       \mathbf{x}_L^+ \\ \mathbf{v}_L^+ \\ \phi_L^+ \\ \dot{\phi}_L^+ \\ \phi_Q^+ \\ \dot{\phi}_Q^+ \\
+\end{bmatrix}
+= 
+\begin{bmatrix}
+       \mathbf{x}_L^- \\ 
+       \frac{ m_L \mathbf{v}_L^- + m_Q \mathbf{v}_Q ^-} { (m_L+m_Q) } \\ 
+       \cos^{-1} ( - \frac{ \mathbf{x}_L^- - \mathbf{x}_Q^- } {l} \cdot \mathbf{e}_3 ) \\ 
+       0 \\
+       \phi_Q^- \\ 
+       \dot{\phi}_Q^- \\
+\end{bmatrix} , 
+&  
+\mathbf{x}_2^- \in \{ \mathbf{x}_2 \ | \  \| \mathbf{x}_Q - \mathbf{x}_L \| = L \}
+\end{cases}
+\]
+
+
+
+
+
+%%%%%%
+\newpage
+%%%
+\subsection{When cable is taut}
+
+Let $\mathbf{e}_2 = [1 \ \ 0]^T$ and $\mathbf{e}_3 = [0 \ \ 1]^T$ be unit vectors in the plane; let $\mathbf{e}_1$ be a unit vector out of the plane \\
+Constraint: $\mathbf{x}_Q = \mathbf{x}_L - l \mathbf{p}$ \\
+Applied forces: $\mathbf{f}_1 = f \mathbf{b}_3$ at $\mathbf{r}_1 = \mathbf{x}_Q = \mathbf{x}_L - l \mathbf{p}$, $\mathbf{f}_2 = M \mathbf{e}_1$ at $\mathbf{r}_2 = \phi_Q \mathbf{e}_1$ \\ 
+
+% Calculate generalized coordinates and forces
+%%%%%
+\mbox{} \newline
+\begin{align*}
+\text{Coordinates: } & \mathbf{q} = [\mathbf{x}_L \ \ \phi_L\ \ \phi_Q]^T \\
+\text{Forces: } & Q_j = \displaystyle\sum\limits_{i=0}^n \mathbf{f}_i \cdot \frac{ \partial \mathbf{r}_i} { \partial q_j} \\
+%%
+Q_{\mathbf{x}_L} &= f \mathbf{b}_3 \cdot \frac{ \partial (\mathbf{x}_L - l \mathbf{p})} { \partial \mathbf{x}_L} +  M \mathbf{e}_1 \cdot \frac{ \partial \phi_Q \mathbf{e}_1} { \partial \mathbf{x}_L} \\
+&= f \mathbf{b}_3 \\
+%%
+Q_{\phi_L} &= f \mathbf{b}_3 \cdot \frac{ \partial (\mathbf{x}_L - l \mathbf{p})} { \partial \phi_L} +  M \mathbf{e}_1 \cdot \frac{ \partial \phi_Q \mathbf{e}_1} { \partial \phi_L} \\
+&= - f \mathbf{b}_3 \cdot L 
+\bigl [ \begin{smallmatrix}
+\cos(\phi_L) \\ \sin(\phi_L)
+\end{smallmatrix} \bigr ] \\
+&= Lf \sin(\phi_Q - \phi_L) \\
+%%
+Q_{\phi_Q} &= f \mathbf{b}_3 \cdot \frac{ \partial (\mathbf{x}_L - l \mathbf{p})} { \partial \phi_Q} +  M \mathbf{e}_1 \cdot \frac{ \partial \phi_Q \mathbf{e}_1} { \partial \phi_Q} \\
+&= M
+\end{align*}
+
+% Calculate Lagrangian 
+%%%%%
+\mbox{} \newline
+\begin{align*}
+\mathcal{L} &= \mathcal{T} - \mathcal{U} \\
+%%
+\mathcal{T} &= \frac{1}{2}m_Q \mathbf{v}_Q \cdot \mathbf{v}_Q + \frac{1}{2} m_L \mathbf{v}_L \cdot \mathbf{v}_L + \frac{1}{2} J_Q \dot{\phi}_Q^2 \\
+&= \frac{1}{2} m_Q (\mathbf{v}_L - l \dot{\mathbf{p}}) \cdot (\mathbf{v}_L - l \dot{\mathbf{p}}) + \frac{1}{2} m_L \mathbf{v}_L \cdot \mathbf{v}_L + \frac{1}{2} J_Q \dot{\phi}_Q^2 \\
+&= \frac{1}{2} (m_Q+m_L) (\mathbf{v}_L \cdot \mathbf{v}_L) - m_Q (\mathbf{v}_L \cdot l \dot{\mathbf{p}}) + \frac{1}{2} m_Q l^2 (\dot{\mathbf{p}} \cdot \dot{\mathbf{p}}) + \frac{1}{2} J_Q \dot{\phi}_Q^2 \\
+&= \frac{1}{2} (m_Q+m_L) (\mathbf{v}_L \cdot \mathbf{v}_L) - m_Q (\mathbf{v}_L \cdot l \dot{\phi_L} 
+\bigl [ \begin{smallmatrix}
+\cos(\phi_L) \\ \sin(\phi_L)
+\end{smallmatrix} \bigr ] 
+) + \frac{1}{2} m_Q l^2 \dot{\phi}_L^2 + \frac{1}{2} J_Q \dot{\phi}_Q^2 \\
+%%
+\mathcal{U} &= m_Q g \mathbf{e}_3 \cdot \mathbf{x}_Q + m_L g \mathbf{e}_3 \cdot \mathbf{x}_L \\
+ &= m_Q g \mathbf{e}_3 \cdot (\mathbf{x}_L - l \mathbf{p}) + m_L g \mathbf{e}_3 \cdot \mathbf{x}_L \\
+&= (m_Q + m_L) g \mathbf{e}_3 \cdot \mathbf{x}_L + m_Q l g \mathbf{e}_3 \cdot \mathbf{p} \\
+&= (m_Q + m_L) g \mathbf{e}_3 \cdot \mathbf{x}_L - m_Q l g \cos(\phi_L) \\
+%%
+\mathcal{L} &= \frac{1}{2} (m_Q+m_L) (\mathbf{v}_L \cdot \mathbf{v}_L) - m_Q (\mathbf{v}_L \cdot l \dot{\phi_L} 
+\bigl [ \begin{smallmatrix}
+\cos(\phi_L) \\ \sin(\phi_L)
+\end{smallmatrix} \bigr ] 
+) + \frac{1}{2} m_Q l^2 \dot{\phi}_L^2 + \frac{1}{2} J_Q \dot{\phi}_Q^2 \\  
+& \ \ - (m_Q + m_L) g \mathbf{e}_3 \cdot \mathbf{x}_L + m_Q l g \cos(\phi_L)
+\end{align*}
+
+% Apply Lagrange's Equations
+%%%%%
+\begin{align*}
+\frac{d}{dt} \frac{\partial \mathcal{L}}{\partial \mathbf{v}_L} - \frac{\partial \mathcal{L}}{\partial \mathbf{x}_L} &= f \mathbf{b}_3 \\
+\frac{d}{dt} \left( (m_Q+m_L) \mathbf{v}_L -m_Q l \dot{\phi_L} 
+\bigl [ \begin{smallmatrix}
+\cos(\phi_L) \\ \sin(\phi_L)
+\end{smallmatrix} \bigr ] 
+ \right) - (m_Q + m_L) g \mathbf{e}_3 &= f \mathbf{b}_3 \\
+(m_Q+m_L) \dot{\mathbf{v}_L} - m_Q l \ddot{\phi_L} 
+\bigl [ \begin{smallmatrix}
+\cos(\phi_L) \\ \sin(\phi_L)
+\end{smallmatrix} \bigr ] 
++ m_Q l \dot{\phi_L}^2 
+\bigl [ \begin{smallmatrix}
+\sin\phi_L) \\ -\cos(\phi_L)
+\end{smallmatrix} \bigr ] 
+ - (m_Q + m_L) g \mathbf{e}_3 &= f \mathbf{b}_3 
+\end{align*}
+%%
+\begin{align*}
+\frac{d}{dt} \frac{\partial \mathcal{L}}{\partial \dot{\phi}_L} - \frac{\partial \mathcal{L}}{\partial \phi_L} &= Lf \sin(\phi_Q - \phi_L) \\
+\frac{d}{dt} \left( -m_Q l \mathbf{v}_L \cdot 
+\bigl [ \begin{smallmatrix}
+\cos(\phi_L) \\ \sin(\phi_L)
+\end{smallmatrix} \bigr ] 
++ m_Q l^2 \dot{\phi}_L \right) - \left( m_Q l \dot{\phi_L} \mathbf{v}_L \cdot 
+\bigl [ \begin{smallmatrix}
+\sin\phi_L) \\ -\cos(\phi_L)
+\end{smallmatrix} \bigr ] 
++ m_Q l g \sin(\phi_L) \right) &=  Lf \sin(\phi_Q - \phi_L) \\
+-m_Q l \dot{\mathbf{v}}_L \cdot 
+\bigl [ \begin{smallmatrix}
+\cos(\phi_L) \\ \sin(\phi_L)
+\end{smallmatrix} \bigr ] 
++ m_Q l \dot{\phi_L} \mathbf{v}_L \cdot 
+\bigl [ \begin{smallmatrix}
+\sin\phi_L) \\ -\cos(\phi_L)
+\end{smallmatrix} \bigr ] 
++ m_Q l^2 \ddot{\phi_L} \\
+- m_Q l \dot{\phi_L} \mathbf{v}_L \cdot 
+\bigl [ \begin{smallmatrix}
+\sin\phi_L) \\ -\cos(\phi_L)
+\end{smallmatrix} \bigr ] 
+- m_Q l g \sin(\phi_L) &=  Lf \sin(\phi_Q - \phi_L) \\
+-m_Q l \dot{\mathbf{v}}_L \cdot 
+\bigl [ \begin{smallmatrix}
+\cos(\phi_L) \\ \sin(\phi_L)
+\end{smallmatrix} \bigr ] 
++ m_Q l^2 \ddot{\phi_L} - m_Q l g \sin(\phi_L) &=  Lf \sin(\phi_Q - \phi_L) 
+\end{align*}
+%%
+\begin{align*}
+\frac{d}{dt} \frac{\partial \mathcal{L}}{\partial \dot{\phi}_Q} - \frac{\partial \mathcal{L}}{\partial \phi_Q} &= M \\
+\frac{d}{dt} \left( J_Q \dot{\phi_Q} \right) &= M \\
+J_Q \ddot{\phi}_Q = M 
+\end{align*}
+
+% Decouple equations
+%%%%%
+Decoupling equations:
+%%
+\begin{align*}
+(m_Q+m_L) (\dot{\mathbf{v}}_L + g \mathbf{e}_3) &= (-f \cos(\phi_Q - \phi_L) - m_Q l \dot{\phi}_L^2) \mathbf{p} \\
+m_Q l \ddot{\phi_L} &= f \sin(\phi_Q - \phi_L) \\
+J_Q \ddot{\phi}_Q &= M 
+\end{align*}
+
+% Write equations
+%%%%%
+\begin{align*}
+\mathbf{x}_1 &= [\mathbf{x}_L \ \ \mathbf{v}_L \ \ \phi_L \ \ \dot{\phi}_L \ \  \phi_Q \ \ \dot{\phi}_Q]^T \\
+\dot{\mathbf{x}}_1 = 
+\begin{bmatrix}
+       \dot{\mathbf{x}}_L \\ \dot{\mathbf{v}}_L \\ \dot{\phi}_L \\ \ddot{\phi}_L \\ \dot{\phi}_Q \\ \ddot{\phi}_Q
+\end{bmatrix}
+&= 
+\begin{bmatrix}
+       \mathbf{v}_L \\
+       \frac{ (f \cos(\phi_Q - \phi_L) - m_Q l \dot{\phi}_L^2) } { (m_Q+m_L) } \mathbf{p} - g \mathbf{e}_3 \\
+       \dot{\phi_L} \\
+       \frac{ f \sin(\phi_Q - \phi_L) } {m_Q l} \\
+       \dot{\phi_Q} \\
+       \frac{M}{J_Q} \\
+\end{bmatrix}
+\end{align*}
+
+% Find Tension
+%%%%%
+Note the tension force in the cable can be explicitly calculated by taking Newton's Law on the body of the load:
+\begin{align*}
+\mathbf{F} &= m_L \mathbf{\dot{v}}_L \\
+- T \mathbf{p} - m_L g \mathbf{e}_3 &= m_L \mathbf{\dot{v}}_L \\
+- T \mathbf{p} &= m_L \mathbf{\dot{v}}_L + m_L g \mathbf{e}_3 \\
+\| T \| &= \| m_L \mathbf{\dot{v}}_L + m_L g \mathbf{e}_3 \|
+\end{align*}
+
+
+
+
+
+%%%%%
+\newpage
+\subsection{When cable is slack}
+
+Let $\mathbf{e}_2 = [1 \ \ 0]^T$ and $\mathbf{e}_3 = [0 \ \ 1]^T$ be unit vectors in the plane; let $\mathbf{e}_1$ be a unit vector out of the plane \\
+Applied forces: $\mathbf{f}_1 = f \mathbf{b}_3$ at $\mathbf{r}_1 = \mathbf{x}_Q$, $\mathbf{f}_2 = M \mathbf{e}_1$ at $\mathbf{r}_2 = \phi_Q \mathbf{e}_1$ \\ 
+
+% Calculate generalized coordinates and forces
+%%%%%
+\mbox{} \newline
+\begin{align*}
+\text{Coordinates: } & \mathbf{q} = [\mathbf{x}_L \ \ \mathbf{x}_Q \ \ \phi_Q]^T \\
+\text{Forces: } & Q_j = \displaystyle\sum\limits_{i=0}^n \mathbf{f}_i \cdot \frac{ \partial \mathbf{r}_i} { \partial q_j} \\
+%%
+Q_{\mathbf{x}_L} &= f \mathbf{b}_3 \cdot \frac{ \partial \mathbf{x}_Q} { \partial \mathbf{x}_L} +  M \mathbf{e}_1 \cdot \frac{ \partial \phi_Q \mathbf{e}_1} { \partial \mathbf{x}_L} \\
+&= 0 \\
+%%
+Q_{\mathbf{x}_Q} &= f \mathbf{b}_3 \cdot \frac{ \partial \mathbf{x}_Q} { \partial \mathbf{x}_Q} +  M \mathbf{e}_1 \cdot \frac{ \partial \phi_Q \mathbf{e}_1} { \partial \mathbf{x}_Q} \\
+&= f \mathbf{b}_3 \\
+%%
+Q_{\phi_Q} &= f \mathbf{b}_3 \cdot \frac{ \partial (\mathbf{x}_L - l \mathbf{p})} { \partial \phi_Q} +  M \mathbf{e}_1 \cdot \frac{ \partial \phi_Q \mathbf{e}_1} { \partial \phi_Q} \\
+&= M
+\end{align*}
+
+% Calculate Lagrangian 
+%%%%%
+\mbox{} \newline
+\begin{align*}
+\mathcal{L} &= \mathcal{T} - \mathcal{U} \\
+%%
+\mathcal{T} &= \frac{1}{2}m_Q \mathbf{v}_Q \cdot \mathbf{v}_Q + \frac{1}{2} m_L \mathbf{v}_L \cdot \mathbf{v}_L + \frac{1}{2} J_Q \dot{\phi}_Q^2 \\
+%%
+\mathcal{U} &= m_Q g \mathbf{e}_3 \cdot \mathbf{x}_Q + m_L g \mathbf{e}_3 \cdot \mathbf{x}_L \\
+%%
+\mathcal{L} &= \frac{1}{2}m_Q \mathbf{v}_Q \cdot \mathbf{v}_Q + \frac{1}{2} m_L \mathbf{v}_L \cdot \mathbf{v}_L + \frac{1}{2} J_Q \dot{\phi}_Q^2 - m_Q g \mathbf{e}_3 \cdot \mathbf{x}_Q - m_L g \mathbf{e}_3 \cdot \mathbf{x}_L \\
+\end{align*}
+
+% Apply Lagrange's Equations
+%%%%%
+\begin{align*}
+\frac{d}{dt} \frac{\partial \mathcal{L}}{\partial \mathbf{v}_L} - \frac{\partial \mathcal{L}}{\partial \mathbf{x}_L} &= 0 \\
+\frac{d}{dt} \left( m_L \mathbf{v}_L \right) + m_L g \mathbf{e}_3 &= 0 \\
+m_L \mathbf{\dot{v}}_L + m_L g \mathbf{e}_3 &= 0
+\end{align*}
+%%
+\begin{align*}
+\frac{d}{dt} \frac{\partial \mathcal{L}}{\partial \mathbf{v}_Q} - \frac{\partial \mathcal{L}}{\partial \mathbf{x}_Q} &= f \mathbf{b}_3 \\
+\frac{d}{dt} \left( m_Q \mathbf{v}_Q \right) + m_Q g \mathbf{e}_3 &= f \mathbf{b}_3 \\
+m_Q \mathbf{\dot{v}}_Q + m_Q g \mathbf{e}_3 &= f \mathbf{b}_3
+\end{align*}
+%%
+\begin{align*}
+\frac{d}{dt} \frac{\partial \mathcal{L}}{\partial \dot{\phi}_Q} - \frac{\partial \mathcal{L}}{\partial \phi_Q} &= M \\
+\frac{d}{dt} \left( J_Q \dot{\phi_Q} \right) &= M \\
+J_Q \ddot{\phi}_Q = M 
+\end{align*}
+
+% Write equations
+%%%%%
+\begin{align*}
+\mathbf{x}_2 &= [\mathbf{x}_L \ \ \mathbf{v}_L \ \ \mathbf{x}_Q \ \ \mathbf{v}_Q \ \  \phi_Q \ \ \dot{\phi}_Q]^T \\
+\dot{\mathbf{x}}_2 = 
+\begin{bmatrix}
+       \dot{\mathbf{x}}_L \\ \dot{\mathbf{v}}_L \\ \dot{\mathbf{x}}_Q \\ \dot{\mathbf{v}}_Q \\ \dot{\phi}_Q \\ \ddot{\phi}_Q
+\end{bmatrix}
+&= 
+\begin{bmatrix}
+       \mathbf{v}_L \\
+       -g \mathbf{e}_3 \\
+       \mathbf{v}_Q \\
+       \frac{f}{m_Q} \mathbf{b}_3 - g \mathbf{e}_3  \\
+       \dot{\phi_Q} \\
+       \frac{M}{J_Q} \\
+\end{bmatrix}
+\end{align*}
+
+
+
+
+
+
+
+
+
+%%%%%%%
+\newpage
+\section{Differential Flatness} 
+% Decouple equations
+%%%%%
+\subsection{$\mathbf{x}_1$ system:} 
+
+\subsubsection{Differential Flatness}
+
+Recall the equations of motion: 
+%%
+\begin{align*}
+(m_Q+m_L) (\dot{\mathbf{v}}_L + g \mathbf{e}_3) &= (-f \cos(\phi_Q - \phi_L) - m_Q l \dot{\phi}_L^2) \mathbf{p} \\
+m_Q l \ddot{\phi_L} &= f \sin(\phi_Q - \phi_L) \\
+J_Q \ddot{\phi}_Q &= M 
+\end{align*}
+
+% Find Tension
+%%%%%
+Note the tension force in the cable can be explicitly calculated by taking Newton's Law on the body of the load:
+\begin{align*}
+\mathbf{F} &= m_L \mathbf{\dot{v}}_L \\
+- T \mathbf{p} - m_L g \mathbf{e}_3 &= m_L \mathbf{\dot{v}}_L \\
+- T \mathbf{p} &= m_L \mathbf{\dot{v}}_L + m_L g \mathbf{e}_3 \\
+\| T \| &= \| m_L \mathbf{\dot{v}}_L + m_L g \mathbf{e}_3 \|
+\end{align*}
+
+
+
+Choose flat outputs $\mathbf{y} = [\mathbf{x}_L]^T = [ y_L \ \ z_L]^T$  \\
+
+\mbox{} \newline
+Derive $\dot{y}_L = v_{yL}$, $\dot{z}_L = v_{zL}$, and all higher derivatives from differentiation of $y_L$, $z_L$ \\
+
+\mbox{} \newline
+From equation of motion:
+
+\begin{align*}
+T \mathbf{p} &= - (m_L \mathbf{\ddot{x}}_L + m_L g \mathbf{e}_3) \\
+T &= \| m_L \mathbf{\ddot{x}}_L + m_L g \mathbf{e}_3 \| \\
+&= m_L ( \ddot{y}_L^2 + ( \ddot{z}_L + g)^2 ) ^{\frac{1}{2}} \\
+\mathbf{p} &=  \frac{ - (m_L \mathbf{\ddot{x}}_L + m_L g \mathbf{e}_3) } { T } \\ 
+&= - \frac{m_L}{T} 
+\begin{bmatrix}
+      \ddot{y}_L \\
+      \ddot{z}_L + g \\
+\end{bmatrix} 
+= 
+\begin{bmatrix}
+       \sin(\phi_L) \\
+       - \cos(\phi_L) \\
+\end{bmatrix} \\
+\phi_L &= \tan^{-1} \left( \frac{ \mathbf{p} \cdot \mathbf{e}_2 } { - \mathbf{p} \cdot \mathbf{e}_3 } \right)
+\end{align*}
+
+Differentiating this equation of motion: 
+
+\begin{align*}
+T \mathbf{\dot{p}} + \dot{T} \mathbf{p} &= -m_L \mathbf{\dddot{x}_L} \\
+\mathbf{\dot{p}} &= - \frac{1}{T} (m_L \mathbf{\dddot{x}_L} + \dot{T} \mathbf{p} ) \\
+\text{Where:} & \\
+\dot{T} &= m_L \frac{ \ddot{y}_L \dddot{y}_L + (\ddot{z}_L + g) \dddot{z}_L } { ( \ddot{y}_L^2 + (\ddot{z}_L + g)^2 ) ^{\frac{1}{2}} } \\
+%%%
+\text{From $\mathbf{\dot{p}}$, we can find the state $\dot{\phi}_L$: } & \\
+\mathbf{\dot{p}} &=  \dot{\phi}_L 
+\begin{bmatrix}
+       \cos(\phi_L) \\
+       \sin(\phi_L) \\
+\end{bmatrix} \\
+\dot{\phi}_L &= - \frac{1}{T} (m_L \mathbf{\dddot{x}_L} + \dot{T} \mathbf{p} ) \cdot
+\begin{bmatrix}
+       \cos(\phi_L) \\
+       \sin(\phi_L) \\
+\end{bmatrix} \\ 
+&= - \frac{m_L} {T} ( \dddot{y}_L \cos(\phi_L) + \dddot{z}_L \sin(\phi_L) ) \\
+&= - \frac{m_L}{T} ( \frac{ m_L \dddot{y}_L (\ddot{z}_L + g) } {T} - \frac{ m_L \dddot{z}_L \ddot{y}_L }{T} ) \\
+&= - \frac{ m_L^2 }{T^2} ( \dddot{y}_L (\ddot{z}_L + g) - \dddot{z}_L \ddot{y}_L ) \\
+&= \frac{ \ddot{z}_L \ddot{y}_L - \ddot{y}_L (\ddot{z}_L + g) } { \ddot{y}_L^2 + (\ddot{z}_L+g)^2 }
+\end{align*}
+
+Differentiating again to find higher derivatives of $\mathbf{p}$ and $\phi_L$: 
+
+\begin{align*}
+2 \dot{T} \mathbf{\dot{p}} + T \mathbf{\ddot{p}} + \ddot{T} \mathbf{p} &= -m_L \mathbf{x}_L^{(4)} \\
+\mathbf{\ddot{p}} &= - \frac{1}{T} ( m_L \mathbf{x^{(4)}}_L + \ddot{T} \mathbf{p} + 2 \dot{T} \mathbf{\dot{p}} ) \\
+\text{Where:} & \\
+\ddot{T} &= m_L \left( \frac{ ( \dddot{y}_L^2 + \ddot{y}_L y_L^{(4)} + {z}_L^{(4)} (\ddot{z}_L+g)  + \dddot{z}_L^2 ) } { (\ddot{y}_L^2 + ( \ddot{z}_L+g)^2)^{\frac{1}{2}} } - \frac{ (\ddot{y}_L \dddot{y}_L + (\ddot{z}_L+g) \dddot{z}_L)^2 } { ( \ddot{y}_L^2 + (\ddot{z}_L+g)^2 )^\frac{3}{2} } \right) \\
+&= m_L ( ( \dddot{y}_L^2 + \ddot{y}_L y_L^{(4)} + {z}_L^{(4)} (\ddot{z}_L+g)  + \dddot{z}_L^2 ) (\ddot{y}_L^2 + ( \ddot{z}_L+g)^2)^{-\frac{1}{2}} \\
+&- (\ddot{y}_L \dddot{y}_L + (\ddot{z}_L+g) \dddot{z}_L)^2 (\ddot{y}_L^2 + ( \ddot{z}_L+g)^2)^{-\frac{3}{2}} ) \\
+%%%
+\text{From $\mathbf{\ddot{p}}$, we can find the state $\ddot{\phi}_L$: } & \\
+\mathbf{\ddot{p}} &= \ddot{\phi_L} 
+\begin{bmatrix}
+       \cos(\phi_L) \\
+       \sin(\phi_L) \\
+\end{bmatrix} 
++ \dot{\phi}_L^2 
+\begin{bmatrix}
+       -\sin(\phi_L) \\
+       \cos(\phi_L) \\
+\end{bmatrix} \\ 
+\ddot{\phi}_L &= \mathbf{\ddot{p}} \cdot 
+\begin{bmatrix}
+       \cos(\phi_L) \\
+       \sin(\phi_L) \\
+\end{bmatrix} 
+\end{align*}
+
+\begin{align*}
+3 \ddot{T} \mathbf{\dot{p}} + 3 \dot{T} \mathbf{\ddot{p}} + T \mathbf{\dddot{p}} + \dddot{T} \mathbf{p} &= -m_L \mathbf{x}_L^{(5)} \\
+\mathbf{\dddot{p}} &= - \frac{1}{T} \left( m_L \mathbf{x}_L^{(5)} + 3 \ddot{T} \mathbf{\dot{p}} + 3 \dot{T} \mathbf{\ddot{p}} + \dddot{T} \mathbf{p} \right) \\
+\text{Where:} & \\
+\dddot{T} &= m_L ( \\
+& (3 \dddot{y}_L y_L^{(4)} + \ddot{y}_L y_L^{(5)} + (\ddot{z}_L + g) z_L^{(5)} + 3 \dddot{z}_L z_L^{(4)} ) ( \ddot{y}_L^2 + (\ddot{z}_L+g)^2)^{ -\frac{1}{2} } \\
+& + 3 ( \ddot{y}_L^2 + (\ddot{z}_L+g)^2) ^{-\frac{1}{2}} (\ddot{y}_L \dddot{y}_L + (\ddot{z}_L+g) \dddot{z}_L) ( \dddot{y}_L^2 + \ddot{y}_L y_L^{(4)} + (\ddot{z}_L+g) z_L^{(4)} + \dddot{z}_L^2) \\
+& + 3 ( \ddot{y}_L \dddot{y}_L + (\ddot{z}_L+g) \dddot{z}_L)^3 (\ddot{y}_L^2 + (\ddot{z}_L+g)^2 ) ^ {-\frac{5}{2}} ) \\
+%%%
+\text{From $\mathbf{\dddot{p}}$, we can find the state $\dddot{\phi}_L$: } & \\
+\mathbf{\dddot{p}} &= (\dddot{\phi}_L - \dot{\phi}_L^3 )
+\begin{bmatrix}
+       \cos(\phi_L) \\
+       \sin(\phi_L) \\
+\end{bmatrix} 
+ + 3 \dot{\phi}_L \ddot{\phi}_L
+ \begin{bmatrix}
+       -\sin(\phi_L) \\
+       \cos(\phi_L) \\
+\end{bmatrix} \\
+\dddot{\phi}_L &= \mathbf{\dddot{p}} \cdot
+\begin{bmatrix}
+       \cos(\phi_L) \\
+       \sin(\phi_L) \\
+\end{bmatrix} 
++ \dot{\phi}_L^3
+\end{align*}
+
+\begin{align*}
+4 \dddot{T} \mathbf{\dot{p}} + 6 \ddot{T} \mathbf{\ddot{p}} + 4 \dot{T} \mathbf{\dddot{p}} + T \mathbf{p}^{(4)} + T^{(4)} \mathbf{p} &= - m_L \mathbf{x}_L^{(6)} \\
+\mathbf{{p}}^{(4)} &= - \frac{1}{T} ( m_L \mathbf{x}_L^{(6)} + 4 \dddot{T} \mathbf{\dot{p}} + 6 \ddot{T} \mathbf{\ddot{p}} + 4 \dot{T} \mathbf{\dddot{p}} + T^{(4)} \mathbf{p} ) 
+\end{align*}
+%%%
+\begin{align*}
+T^{(4)} &= m_L ( \\
+& -\frac{15}{8} ( (\ddot{z}_L+g) \dddot{z}_L + \ddot{y}_L \dddot{y}_L) ^4 ( \ddot{y}_L^2 + (\ddot{z}_L+g)^2) ^ {-\frac{7}{2}} \\
+& + 9 ( \ddot{y}_L \dddot{y}_L + (\ddot{z}_L+g) \dddot{z}_L) ^2 ( (\ddot{z}_L+g) z_L^{(4)} + \ddot{y}_L y_L^{(4)} + \dddot{y}_L^2 + \dddot{z}_L^2) ( \ddot{y}_L^2 + (\ddot{z}_L+g)^2)^{-\frac{5}{2}} \\
+& - 3 ( (\ddot{z}_L+g) z_L^{(4)} + \ddot{y}_L y_L^{(4)} + \dddot{y}_L^2 + \dddot{z}_L^2) ^2 (\ddot{y}_L^2 + (\ddot{z}_L+g)^2)^{-\frac{3}{2}} \\
+& - 4 ( (\ddot{z}_L+g) \dddot{z}_L + \ddot{y}_L \dddot{y}_L)( z_L^{(5)}(\ddot{z}+g) + \ddot{y}_L y_L^{(5)} + 3 y_L^{(4)} \dddot{y}_L + 3 \dddot{z}_L z_L^{(4)} ) ( \ddot{y}_L^2 + (\ddot{z}_L+g)^2)^{-\frac{3}{2}} \\
+& + ( z_L^{(6)}(\ddot{z}_L+g)+ \ddot{y}_L y_L^{(6)} + 3 {y_L^{(4)}}^2 + 4 y_L^{(5)}\dddot{y}_L + 3 {z_L^{(4)}}^2 + 4 z_L^{(5)}\dddot{z}_L) (\ddot{y}_L^2 + (\ddot{z}_L+g)^2)^{-\frac{1}{2}} ) 
+\end{align*}
+%%%
+\begin{align*}
+\text{From $\mathbf{p}^{(4)}$, we can find $\phi_L^{(4)}$: } & \\
+\mathbf{p}^{(4)}&= (\phi_L^{(4)} - 6 \dot{\phi}_L^2 \ddot{\phi}_L)
+\begin{bmatrix}
+       \cos(\phi_L) \\
+       \sin(\phi_L) \\
+\end{bmatrix} 
++ (3 \ddot{\phi}_L^2 - \dot{\phi}_L^4) 
+\begin{bmatrix}
+       -\sin(\phi_L) \\
+       \cos(\phi_L) \\
+\end{bmatrix} \\
+\phi_L^{(4)} &= \mathbf{p}^{(4)} \cdot 
+\begin{bmatrix}
+       \cos(\phi_L) \\
+       \sin(\phi_L) \\
+\end{bmatrix} 
++ 6 \dot{\phi}_L^2 \ddot{\phi}_L 
+\end{align*}
+
+
+
+
+%%%%%
+\newpage
+
+Using Newton's Equations on the quadrotor and the load to eliminate $T \mathbf{p}$ and solve for $f \mathbf{b}_3$:
+
+\begin{align*}
+m_Q \mathbf{\ddot{x}}_Q &= f \mathbf{b}_3 - m_Q g \mathbf{e}_3 + T \mathbf{p} \\
+m_L \mathbf{\ddot{x}}_L &= - T \mathbf{p} - m_L g \mathbf{e}_3 \\ 
+f \mathbf{b}_3 &= m_Q \mathbf{\ddot{x}}_Q + m_L \mathbf{\ddot{x}}_L + m_Q g \mathbf{e}_3 + m_L g \mathbf{e}_3 \\
+\text{Using the constraint $ \mathbf{\ddot{x}}_Q = \mathbf{\ddot{x}}_L - l \mathbf{\ddot{p}}$: } & \\
+f \mathbf{b}_3 &= m_Q (\mathbf{\ddot{x}}_L - l \mathbf{\ddot{p}}) + m_L \mathbf{\ddot{x}}_L + m_Q g \mathbf{e}_3 + m_L g \mathbf{e}_3 \\
+&= (m_Q + m_L) (\mathbf{\ddot{x}}_L + g \mathbf{e}_3) - m_Q l \mathbf{\ddot{p}}
+\end{align*}
+
+\begin{align*}
+\mathbf{b}_3 &= \frac{ (m_Q + m_L) (\mathbf{\ddot{x}}_L + g \mathbf{e}_3) -  m_Q l \mathbf{\ddot{p}} }{ \| (m_Q + m_L) (\mathbf{\ddot{x}}_L + g \mathbf{e}_3) -  m_Q l \mathbf{\ddot{p}} \| } =
+\begin{bmatrix}
+       -\sin(\phi_Q) \\
+       \cos(\phi_Q) \\
+\end{bmatrix} \\
+f &= \left( (m_Q + m_L) (\mathbf{\ddot{x}}_L + g \mathbf{e}_3) - m_Q l \mathbf{\ddot{p}} \right) \cdot \mathbf{b}_3 \\
+\phi_Q &= \tan^{-1} \left( \frac { f \mathbf{b}_3 \cdot \mathbf{e}_2 } { f \mathbf{b}_3 \cdot \mathbf{e}_3 } \right) \\
+&=  \tan^{-1} \left( \frac { -(m_Q+m_L) \ddot{y}_L + m_Q l \mathbf{\ddot{p}} \cdot \mathbf{e}_2 } { (m_Q+m_L) (\ddot{z}_L+g) - m_Q l \mathbf{\ddot{p}} \cdot \mathbf{e}_3 } \right) \\
+%%
+\dot{\phi}_Q &= \left( (l m_Q \dddot{p}_1 - (m_Q+m_L) \dddot{y}_L)((m_Q+m_L)(\ddot{z}+g)-l m_Q \ddot{p}_2) + (l m_Q \dddot{p}_2 - (m_Q+m_L) \dddot{z}_L) (l m_Q \ddot{p}_1 - (m_Q+m_L) \ddot{y}_L) \right) \\
+& \left( (l m_Q \ddot{p}_2 - (m_Q+m_L) (\ddot{z}_L+g))^2 ( \frac{ (l m_Q \ddot{p}_1 - (m_Q+m_L) \ddot{y}_L)^2 } { (l m_Q \ddot{p}_2 + (m_Q+m_L)(\ddot{z}_L + g))^{2} } + 1) \right) ^{-1},\text{ where } \mathbf{p}^{(k)} = 
+\begin{bmatrix}
+       p_1^{(k)} \\
+       p_2^{(k)}  \\
+\end{bmatrix} \\
+%%
+\ddot{\phi} &= [ ( \frac{ l m_Q p^{(4)}_1 - (m_Q+m_L) y^{(4)}_L }{(m_Q+m_L)(\ddot{z}_L+g) - l m_Q \ddot{p}_2 } - \frac{ 2 ( l m_Q \dddot{p}_1 - (m_Q+m_L) \dddot{y}_3 ) ( (m_Q+m_L) \dddot{z}_L - l m_Q \dddot{p}_2 ) } { ( (m_Q+m_L) ( \ddot{z}_L+g) - l m_Q \ddot{p}_2)^2} \\
+& - \frac{ ((m_Q+m_L) z^{(4)}_L - l m_Q p^{(4)}_2 ) ( l m_Q \ddot{p}_1 - (m_Q+m_L) \ddot{y}_L) }{ ((m_Q+m_L) (\ddot{z}_L+g) - l m_Q \ddot{p}_2)^2} + \frac{ 2 ((m_Q+m_L) \dddot{z}_L - l m_Q \dddot{p}_1)^2 ( l m_Q \ddot{p}_1 - (m_Q+m_L) \ddot{y}_L) } { ((m_Q+m_L) (\ddot{z}_L + g) - l m_Q \ddot{p}_2)^3 } ) \\
+& ( \frac{ (l m_Q \ddot{p}_1 - (m_Q+m_L) \ddot{y}_L)^2 }{ ((m_Q+m_L) ( \ddot{z}_L+g) - l m_Q \ddot{p}_2)^2 } + 1 )^{-1} ] \\
+& - [ ( \frac{ 2(l m_Q \dddot{p}_1 - (m_Q+m_L) \dddot{y}_L)(l m_Q \ddot{p}_1 - (m_Q+m_L) \ddot{y}_L) } { ((m_Q+m_L) ( \ddot{z}_L + g) - l m_Q \ddot{p}_2)^2} - \frac{ 2((m_Q+m_L) \dddot{z}_L - l m_Q \dddot{p}_2)(l m_Q \ddot{p}_1 - (m_Q+m_L) \ddot{y}_L)^2 }{ ((m_Q+m_L) (\ddot{z}_L+g) - l m_Q \ddot{p}_2)^3 } ) \\
+& ( \frac{ l m_Q \dddot{p}_1 - (m_Q+m_L) \dddot{y}_L } { ((m_Q+m_L) (\ddot{z}_L+g) - l m_Q \ddot{p}_2)^2 } - \frac{ ( (m_Q+m_L) \dddot{z}_L - l m_Q \dddot{p}_2)(l m_Q \ddot{p}_1 - (m_Q+m_L) \ddot{y}_L)} { ((m_Q+m_L) (\ddot{z}_L+g) - l m_Q \ddot{p}_2)^2} ) \\
+& ( \frac{ (l m_Q \ddot{p}_1 - (m_Q+m_L) \ddot{y}_L)^2 }{ ((m_Q+m_L) ( \ddot{z}_L+g) - l m_Q \ddot{p}_2)^2 } + 1 )^{-2} ]
+\end{align*}
+
+
+
+
+%%alternatively, use T and p in the equations to solve for f
+%Using Newton's Equations on the quadrotor:
+%
+%\begin{align*}
+%m_Q \mathbf{\ddot{x}}_Q &= f \mathbf{b}_3 - m_Q g \mathbf{e}_3 + T \mathbf{p} \\
+%m_Q (\mathbf{\ddot{x}}_L - L \mathbf{\ddot{p}}) &= f \mathbf{b}_3 - m_Q g \mathbf{e}_3 + T \mathbf{p} \\
+%f \mathbf{b}_3 &= m_Q (\mathbf{\ddot{x}}_L - l \mathbf{\ddot{p}} + g \mathbf{e}_3 ) - T \mathbf{p} \\
+%f &= \| m_Q (\mathbf{\ddot{x}}_L - l \mathbf{\ddot{p}} + g \mathbf{e}_3 ) - T \mathbf{p} \| \\
+%&= \| 
+%\begin{bmatrix}
+%       m_Q ( \ddot{y}_L - l \ddot{\phi}_L \cos(\phi_L) + l \dot{\phi}_L^2 \sin(\phi_L)) - T \sin(\phi_L) \\
+%       m_Q ( \ddot{z}_L - l \ddot{\phi}_L \sin(\phi_L) - l \dot{\phi}_L^2 \cos(\phi_L)) + T \cos(\phi_L) \\
+%\end{bmatrix}  
+%\| \\
+%%%
+%\mathbf{b}_3 &=
+%\frac{ (m_Q (\mathbf{\ddot{x}}_L - l \mathbf{\ddot{p}} + g \mathbf{e}_3 ) - T \mathbf{p}) } { \| m_Q (\mathbf{\ddot{x}}_L - l \mathbf{\ddot{p}} + g \mathbf{e}_3 ) - T \mathbf{p} \| } 
+%= 
+%\begin{bmatrix}
+%       -\sin(\phi_Q) \\
+%       \cos(\phi_Q) \\
+%\end{bmatrix}  \\
+%\phi_Q &= \tan^{-1} \left( \frac{- \mathbf{b}_3 \cdot \mathbf{e}_2}{\mathbf{b}_3 \cdot \mathbf{e}_3} \right) 
+%\end{align*}
+%
+%
+%Further differentiating $f$:
+%
+%\begin{align*}
+%f &= ( m_Q (\mathbf{\ddot{x}}_L - l \mathbf{\ddot{p}} + g \mathbf{e}_3 ) - T \mathbf{p} ) \cdot ( m_Q (\mathbf{\ddot{x}}_L - l \mathbf{\ddot{p}} + g \mathbf{e}_3 ) - T \mathbf{p} ) \\
+%\dot{f} &= 2 \left( \frac{d}{dt} ( m_Q (\mathbf{\ddot{x}}_L - l \mathbf{\ddot{p}} + g \mathbf{e}_3 ) - T \mathbf{p} ) \cdot (m_Q (\mathbf{\ddot{x}}_L - l \mathbf{\ddot{p}} + g \mathbf{e}_3 ) - T \mathbf{p}) \right) \\
+%&= 2 \left( (m_Q (\mathbf{\dddot{x}}_L - l \mathbf{\dddot{p}}) - \dot{T} \mathbf{p} - T \mathbf{\dot{p}}) \cdot (m_Q (\mathbf{\ddot{x}}_L - l \mathbf{\ddot{p}} + g \mathbf{e}_3 ) - T \mathbf{p}) \right) \\
+%\ddot{f} &= 2 ( 
+%( m_Q (\mathbf{x}_L^{(4)} - l \mathbf{p}^{(4)}) - \ddot{T} \mathbf{p} - 2 \dot{T} \mathbf{\dot{p}} - T \mathbf{\ddot{p}} ) \cdot (m_Q (\mathbf{\ddot{x}}_L - l \mathbf{\ddot{p}} + g \mathbf{e}_3 ) - T \mathbf{p}) + 
+% \| m_Q ( \mathbf{\dddot{x}}_L - l \mathbf{\dddot{p}}) - \dot{T}\mathbf{p} - T \mathbf{\dot{p}} \|
+%)
+%\end{align*}
+
+
+%alternatively, using the equation of motion to solve for f
+%use the equation of motion for f?
+%\begin{align*}
+%(m_Q+m_L) (\dot{\mathbf{v}}_L + g \mathbf{e}_3) &= (-f \cos(\phi_Q - \phi_L) - m_Q l \dot{\phi}_L^2) \mathbf{p} \\
+%f &= - \frac{ (m_Q+m_Q)( \mathbf{\ddot{x}}_L+g\mathbf{e}_3) \cdot \mathbf{p} + m_Q l \dot{\phi}_L^2 } { \cos(\phi_Q-\phi_L)} 
+%\end{align*}
+%
+%\begin{align*}
+%m_Q l \ddot{\phi_L} &= f \sin(\phi_Q - \phi_L) \\
+%f &= \frac{ m_Q l \ddot{\phi}_L }{ \sin(\phi_Q - \phi_L) }
+%\end{align*}
+
+
+
+%%%%
+%alternatively, solving for phiQ and derivatives from equations of motion
+
+%\begin{align*}
+%&= \| (m_Q + m_L) (\mathbf{\ddot{x}}_L + g \mathbf{e}_3) - m_Q l \mathbf{\ddot{p}} \| \\
+%%finding phiQ
+%\phi_Q &= \tan^{-1} \left( \frac{ \mathbf{b}_3 \cdot \mathbf{e}_2 } { \mathbf{b}_3 \cdot \mathbf{e}_3} \right) \\
+%%%%
+%\dot{f} &= ( (m_Q+m_L) \mathbf{\dddot{x}}_L - m_Q l \mathbf{\dddot{p}} ) \cdot \mathbf{b}_3 + \dot{\phi}_L ( (m_Q+m_L) ( \mathbf{\ddot{x}}_L+g \mathbf{e}_3) - m_Q l \mathbf{\ddot{p}} ) \cdot \mathbf{b}_2 \\
+%\ddot{f} &= ( (m_Q+m_L) \mathbf{x}_L^{(4)} - m_Q l \mathbf{{p}^{(4)}} + \dot{\phi}_L^2 ( (m_Q+m_L) (\mathbf{\ddot{x}}_L + g \mathbf{b}_3) - m_Q l \mathbf{\ddot{p}} ) ) \cdot \mathbf{b}_3 \\
+%& + \ddot{\phi}_L ( (m_Q+m_L)(\mathbf{\ddot{x}}_L + g \mathbf{e}_3 ) - m_Q l \mathbf{\ddot{p}}) \cdot \mathbf{b}_2
+%\end{align*}
+%
+%From the system's equation of motion:
+%
+%\begin{align*}
+%m_Q l \ddot{\phi_L} &= f \sin(\phi_Q - \phi_L) \\
+%\phi_Q &= \sin^{-1} ( \frac{ m_Q l \ddot{\phi}_L }{f} ) + \phi_L
+%\end{align*}
+%
+%Differentiating the equation of motion:
+%
+%\begin{align*}
+%m_Q l \dddot{\phi_L} &= \dot{f} \sin(\phi_Q - \phi_L) + f \cos(\phi_Q - \phi_L) \dot{\phi}_Q - f \cos(\phi_Q - \phi_L) \dot{\phi_L} \\
+%\dot{\phi}_Q &= \frac{ m_Q l \dddot{\phi}_L - \dot{f} \sin(\phi_Q - \phi_L) } { f \cos(\phi_Q - \phi_L)} + \dot{\phi}_L \\
+%%%
+%m_Q l {\phi_L^{(4)}} &= \ddot{f} \sin(\phi_Q - \phi_L) + 2 \dot{f} \cos(\phi_Q - \phi_L) ( \dot{\phi}_Q - \dot{\phi}_L ) - \dot{f} \sin(\phi_Q - \phi_L)(\dot{\phi}_Q - \dot{\phi}_L)^2 \\ 
+%& + f \cos(\phi_Q - \phi_L) \ddot{\phi}_Q - f \cos(\phi_Q - \phi_L) \ddot{\phi}_L \\
+%\ddot{\phi}_Q &= \frac{ m_Q l \phi_L^{(4)} - \ddot{f} \sin(\phi_Q - \phi_L) - 2 \dot{f} \cos(\phi_Q - \phi_L) ( \dot{\phi}_Q - \dot{\phi}_L ) + \dot{f} \sin(\phi_Q - \phi_L)(\dot{\phi}_Q - \dot{\phi}_L)^2 }{ \cos(\phi_Q - \phi_L) } + \ddot{\phi}_L
+%\end{align*}
+%
+%Using $\ddot{\phi}_Q$, we can find:
+%
+%\begin{align*} 
+%M = J_Q \ddot{\phi}_Q
+%\end{align*}
+
+
+
+
+
+%%%%%%%
+\newpage
+\subsubsection{Control Laws} 
+
+%Recall:
+%
+%\begin{align*}
+%f &= \left( (m_Q + m_L) (\mathbf{\ddot{x}}_L + g \mathbf{e}_3) - m_Q l \mathbf{\ddot{p}} \right) \cdot \mathbf{b}_3 \\
+%\mathbf{p} &=  \frac{ - (m_L \mathbf{\ddot{x}}_L + m_L g \mathbf{e}_3) } { \| m_L \mathbf{\ddot{x}}_L + m_L g \mathbf{e}_3 \| } \\ 
+%\phi_L &= \tan^{-1} \left( \frac{ \mathbf{p} \cdot \mathbf{e}_2 } { - \mathbf{p} \cdot \mathbf{e}_3 } \right) \\
+%\phi_Q &= \sin^{-1} ( \frac{ m_Q l \ddot{\phi}_L }{f} ) + \phi_L \\
+%M &= J_Q \ddot{\phi}_Q
+%\end{align*}
+
+Using the control law from the paper: 
+
+\emph{Load Position Control}
+\begin{align*}
+f &= -k_p (e_{\mathbf{x}}) - k_d ( \dot{e}_{\mathbf{x}} ) + m_L \mathbf{\ddot{x}}_L^d + m_L g \mathbf{e}_3 + m_Q \mathbf{\ddot{x}}_Q^d + m_Q g \mathbf{e}_3 \\
+&=  -k_p (\mathbf{x}_L - \mathbf{x}_T) - k_d (\mathbf{\dot{x}}_L - \mathbf{\dot{x}}_T) + m_L \mathbf{\ddot{x}}_T + m_L g \mathbf{e}_3 + m_Q \mathbf{\ddot{x}}_Q^d + m_Q g \mathbf{e}_3 \\
+&= -k_p (\mathbf{x}_L - \mathbf{x}_T) - k_d (\mathbf{\dot{x}}_L - \mathbf{\dot{x}}_T) + m_L \mathbf{\ddot{x}}_T + m_L g \mathbf{e}_3 + m_Q (\mathbf{\ddot{x}}_T - l \mathbf{\ddot{p}}) + m_Q g \mathbf{e}_3 \\
+\mathbf{p}^d &= - \frac{ (-k_p (\mathbf{x}_L - \mathbf{x}_T) - k_d (\mathbf{\dot{x}}_L - \mathbf{\dot{x}}_T) + m_L \mathbf{\ddot{x}}_T + m_L g \mathbf{e}_3)  } { \| -k_p (\mathbf{x}_L - \mathbf{x}_T) - k_d (\mathbf{\dot{x}}_L - \mathbf{\dot{x}}_T) + m_L \mathbf{\ddot{x}}_T + m_L g \mathbf{e}_3 \| } \\
+\phi_L^d &= \tan^{-1} \left( -\frac{ \mathbf{p}^d \cdot \mathbf{e}_2 } { \mathbf{p}^d \cdot \mathbf{e}_3 } \right) \\
+\end{align*}
+
+\emph{Load Attitude Control}
+\begin{align*}
+T_{nom} \mathbf{p}_{nom} &= - (m_L \mathbf{\ddot{x}}_T + m_L g \mathbf{e}_3) \\
+\mathbf{p}_{nom} &= \frac{- (m_L \mathbf{\ddot{x}}_T + m_L g \mathbf{e}_3) } { \| - (m_L \mathbf{\ddot{x}}_T + m_L g \mathbf{e}_3) \| } \\
+T_{nom} &= T_{nom} \cdot \mathbf{p}_{nom} \\
+\phi_{L_{nom}} &= \tan^{-1} \left( \frac{ T_{nom} \mathbf{p}_{nom} \cdot \mathbf{e}_2 } { - T_{nom} \mathbf{p}_{nom} \cdot \mathbf{e}_3 } \right) \\
+\mathbf{\dot{p}}_{nom} &= - \frac{1}{T_{nom}} (m_L \mathbf{\dddot{x}_T} + \dot{T}_{nom} \mathbf{p}_{nom} ), \dot{T}_{nom} = m_L \frac{ \ddot{y}_T \dddot{y}_T + (\ddot{z}_T + g) \dddot{z}_T } { ( \ddot{y}_T^2 + (\ddot{z}_T + g)^2 ) ^{\frac{1}{2}} } \\
+\dot{\phi}_L^d &= \mathbf{\dot{p}}_{nom} \cdot
+\begin{bmatrix}
+       \cos(\phi_{L_{nom}}) \\
+       \sin(\phi_{L_{nom}}) \\
+\end{bmatrix} 
+\end{align*}
+%%%%
+\begin{align*}
+\mathbf{\ddot{p}}_{nom} &= - \frac{1}{T_{nom}} ( m_L \mathbf{x^{(4)}}_T + \ddot{T}_{nom} \mathbf{p}_{nom} + 2 \dot{T}_{nom} \mathbf{\dot{p}}_{nom} ), \\
+& \ddot{T}_{nom} = m_L \left( \frac{ ( \dddot{y}_T^2 + \ddot{y}_T y_T^{(4)} + {z}_T^{(4)} (\ddot{z}_T+g)  + \dddot{z}_T^2 ) } { (\ddot{y}_T^2 + ( \ddot{z}_T+g)^2)^{\frac{1}{2}} } - \frac{ (\ddot{y}_T \dddot{y}_T + (\ddot{z}_T+g) \dddot{z}_T)^2 } { ( \ddot{y}_T^2 + (\ddot{z}_T+g)^2 )^\frac{3}{2} } \right) \\
+\ddot{\phi}_{L}^d &= \mathbf{\ddot{p}}_{nom} \cdot 
+\begin{bmatrix}
+       \cos(\phi_{L_{nom}}) \\
+       \sin(\phi_{L_{nom}}) \\
+\end{bmatrix}  \\
+f_{nom} \mathbf{b}_{3_{nom}} &=  (m_Q + m_L) (\mathbf{\ddot{x}}_T + g \mathbf{e}_3) - m_Q l \mathbf{\ddot{p}}_{nom} \\
+\mathbf{b}_{3_{nom}} &= \frac{ (m_Q + m_L) (\mathbf{\ddot{x}}_T + g \mathbf{e}_3) - m_Q l \mathbf{\ddot{p}}_{nom} }{ \| m_Q + m_L) (\mathbf{\ddot{x}}_T + g \mathbf{e}_3) - m_Q l \mathbf{\ddot{p}}_{nom} \| } \\
+\phi_{Q_{nom}} &= \tan^{-1} \left( \frac{ - f_{nom} \mathbf{b}_{3_{nom}} \cdot \mathbf{e}_2} { f_{nom} \mathbf{b}_{3_{nom}} \cdot \mathbf{e}_3} \right) \\
+f_{nom} &= f_{nom} \mathbf{b}_{3_{nom}} \cdot \mathbf{b}_{3_{nom}} \\
+\phi_Q^d &= \phi_{L_{nom}} + \sin^{-1} \left( -k_p^L e_L - k_d^L \dot{e}_L + \frac{ \ddot{\phi}_L^d m_Q l }{f_{nom}}  \right) \\
+&= \phi_{L_{nom}} + \sin^{-1} \left( -k_p^L (\phi_L - \phi_L^d) - k_d^L (\dot{\phi}_L - \dot{\phi}_L^d) + \frac{ \ddot{\phi}_L^d m_Q l }{f_{nom}}  \right) 
+\end{align*}
+
+\emph{Quadrotor Attitude Control}
+\begin{align*}
+\mathbf{\dddot{p}}_{nom} &= - \frac{1}{T_{nom}} \left( m_L \mathbf{x}_T^{(5)} + 3 \ddot{T_{nom}} \mathbf{\dot{p}}_{nom} + 3 \dot{T}_{nom} \mathbf{\ddot{p}}_{nom} + \dddot{T}_{nom} \mathbf{p}_{nom} \right), \\
+& \dddot{T}_{nom} = m_L ( \\
+& (3 \dddot{y}_T y_T^{(4)} + \ddot{y}_T y_T^{(5)} + (\ddot{z}_T + g) z_T^{(5)} + 3 \dddot{z}_T z_T^{(4)} ) ( \ddot{y}_T^2 + (\ddot{z}_T+g)^2)^{ -\frac{1}{2} } \\
+& + 3 ( \ddot{y}_T^2 + (\ddot{z}_T+g)^2) ^{-\frac{1}{2}} (\ddot{y}_T \dddot{y}_T + (\ddot{z}_T+g) \dddot{z}_T) ( \dddot{y}_T^2 + \ddot{y}_T y_T^{(4)} + (\ddot{z}_T+g) z_T^{(4)} + \dddot{z}_T^2) \\
+& + 3 ( \ddot{y}_T \dddot{y}_T + (\ddot{z}_T+g) \dddot{z}_T)^3 (\ddot{y}_T^2 + (\ddot{z}_T+g)^2 ) ^ {-\frac{5}{2}} ) \\
+\dddot{\phi}_{L_{nom}} &= \mathbf{\dddot{p}}_{nom} \cdot
+\begin{bmatrix}
+       \cos(\phi_{L_{nom}}) \\
+       \sin(\phi_{L_{nom}}) \\
+\end{bmatrix} 
++ \dot{\phi}_{L_{nom}}^3 \\
+%%%
+\mathbf{{p}}^{(4)}_{nom} &= - \frac{1}{T_{nom}} ( m_L \mathbf{x}_T^{(6)} + 4 \dddot{T}_{nom} \mathbf{\dot{p}}_{nom} + 6 \ddot{T}_{nom} \mathbf{\ddot{p}}_{nom} + 4 \dot{T}_{nom} \mathbf{\dddot{p}}_{nom} + T^{(4)} \mathbf{p}_{nom} ) \\
+T^{(4)}_{nom} &= m_L ( \\
+& -\frac{15}{8} ( (\ddot{z}_T+g) \dddot{z}_T + \ddot{y}_T \dddot{y}_T) ^4 ( \ddot{y}_T^2 + (\ddot{z}_T+g)^2) ^ {-\frac{7}{2}} \\
+& + 9 ( \ddot{y}_T \dddot{y}_T + (\ddot{z}_T+g) \dddot{z}_T) ^2 ( (\ddot{z}_T+g) z_T^{(4)} + \ddot{y}_T y_T^{(4)} + \dddot{y}_T^2 + \dddot{z}_T^2) ( \ddot{y}_T^2 + (\ddot{z}_T+g)^2)^{-\frac{5}{2}} \\
+& - 3 ( (\ddot{z}_T+g) z_T^{(4)} + \ddot{y}_T y_T^{(4)} + \dddot{y}_T^2 + \dddot{z}_T^2) ^2 (\ddot{y}_T^2 + (\ddot{z}_T+g)^2)^{-\frac{3}{2}} \\
+& - 4 ( (\ddot{z}_T+g) \dddot{z}_T + \ddot{y}_T \dddot{y}_T)( z_T^{(5)}(\ddot{z}_T+g) + \ddot{y}_T y_T^{(5)} + 3 y_T^{(4)} \dddot{y}_T + 3 \dddot{z}_T z_T^{(4)} ) ( \ddot{y}_T^2 + (\ddot{z}_T+g)^2)^{-\frac{3}{2}} \\
+& + ( z_T^{(6)}(\ddot{z}_T+g)+ \ddot{y}_T y_T^{(6)} + 3 {y_T^{(4)}}^2 + 4 y_T^{(5)}\dddot{y}_T + 3 {z_T^{(4)}}^2 + 4 z_T^{(5)}\dddot{z}_T) (\ddot{y}_T^2 + (\ddot{z}_T+g)^2)^{-\frac{1}{2}} )  \\
+\phi_{L_{nom}}^{(4)} &= \mathbf{p}_{nom}^{(4)} \cdot 
+\begin{bmatrix}
+       \cos(\phi_{L_{nom}}) \\
+       \sin(\phi_{L_{nom}}) \\
+\end{bmatrix} 
++ 3 \dot{\phi}_{L_{nom}}^2 \ddot{\phi}_{L_{nom}} + \ddot{\phi}_{L_{nom}} \dot{\phi}_{L_{nom}}^2 + 2 \dot{\phi}_{L_{nom}}^2 \\
+%%%
+\dot{f}_{nom} &= ( (m_Q+m_L) \mathbf{\dddot{x}}_T - m_Q l \mathbf{\dddot{p}}_{nom} ) \cdot \mathbf{b}_{3_{nom}} + \dot{\phi}_{L_{nom}} ( (m_Q+m_L) ( \mathbf{\ddot{x}}_T+g \mathbf{e}_3) - m_Q l \mathbf{\ddot{p}}_{nom} ) \cdot \mathbf{b}_{2_{nom}} \\
+\ddot{f}_{nom} &= ( (m_Q+m_L) \mathbf{x}_T^{(4)} - m_Q l \mathbf{{p}_{nom}^{(4)}} + \dot{\phi}_{L_{nom}}^2 ( (m_Q+m_L) (\mathbf{\ddot{x}}_T + g \mathbf{b}_{3_{nom}}) - m_Q l \mathbf{\ddot{p}}_{nom} ) ) \cdot \mathbf{b}_{3_{nom}} \\
+& + \ddot{\phi}_{L_{nom}} ( (m_Q+m_L)(\mathbf{\ddot{x}}_T + g \mathbf{e}_3 ) - m_Q l \mathbf{\ddot{p}}_{nom}) \cdot \mathbf{b}_{2_{nom}} \\
+%%%
+\dot{\phi}_{Q}^d &= \frac{ m_Q l \dddot{\phi}_{L_{nom}} - \dot{f}_{nom} \sin(\phi_{Q_{nom}} - \phi_{L_{nom}}) } { f_{nom} \cos(\phi_{Q_{nom}} - \phi_{L_{nom}})} + \dot{\phi}_{L_{nom}} \\
+\ddot{\phi}_{Q}^d &= \frac{ m_Q l \phi_{L_{nom}}^{(4)} - \ddot{f}_{nom} \sin(\phi_{Q_{nom}} - \phi_{L_{nom}}) - 2 \dot{f}_{nom} \cos(\phi_{Q_{nom}} - \phi_{L_{nom}}) ( \dot{\phi}_{Q_{nom}} - \dot{\phi}_{L_{nom}} ) }{ \cos(\phi_{Q_{nom}} - \phi_{L_{nom}}) }  \\
+& +  \frac{ \dot{f}_{nom} \sin(\phi_{Q_{nom}} - \phi_{L_{nom}})(\dot{\phi}_{Q_{nom}} - \dot{\phi}_{L_{nom}})^2 } {\cos(\phi_{Q_{nom}} - \phi_{L_{nom}}) } \\
+& + \ddot{\phi}_{L_{nom}} \\
+%%%
+%\phi_{Q_{nom}} &= \sin^{-1} ( \frac{ m_Q l \ddot{\phi}_{L_{nom}} }{f_{nom}} ) + \phi_{L_{nom}} \\
+M &= J_Q ( -k_p^Q e_Q - k_d^Q \dot{e}_Q + \ddot{\phi}_Q^d) \\
+&= J_Q ( -k_p^Q (\phi_Q-\phi_Q^d) - k_d^Q (\dot{\phi}_Q-\dot{\phi}_Q^d)  + \ddot{\phi}_Q^d)
+\end{align*}
+
+
+
+
+
+
+
+%%%%%%%
+\newpage
+% Decouple equations
+%%%%%
+\subsection{$\mathbf{x}_2$ system:}
+
+% Apply Lagrange's Equations
+%%%%%
+\begin{align*}
+m_L \mathbf{\dot{v}}_L + m_L g \mathbf{e}_3 &= 0 \\
+m_Q \mathbf{\dot{v}}_Q + m_Q g \mathbf{e}_3 &= f \mathbf{b}_3 \\
+J_Q \ddot{\phi}_Q &= M 
+\end{align*}
+
+
+
+%%%%
+%Differential flatness
+%%%%%
+\subsubsection{Differential Flatness}
+
+Flat outputs $\mathbf{y} = [\mathbf{x}_Q]^T = [ y_Q \ \ z_Q]^T$  \\
+
+\mbox{} \newline
+$\mathbf{x}_L$ and $\mathbf{v}_L$ are known from initial conditions because load is in free fall:
+
+\begin{align*}
+\mathbf{\dot{x}}_L &= \mathbf{v}_L \\
+\mathbf{\dot{v}}_L &= -g \mathbf{e}_3
+\end{align*}
+
+Derive $\dot{y}_Q = v_{yQ}$, $\dot{z}_Q = v_{zQ}$, and all higher derivatives from differentiation of $y_Q$, $z_Q$ \\
+
+\mbox{} \newline
+From equation of motion:
+
+\begin{align*}
+f \mathbf{b}_3 &= m_Q \mathbf{\ddot{x}}_Q +  m_Q g \mathbf{e}_3 \\
+f &= \| m_Q \mathbf{\ddot{x}}_Q +  m_Q g \mathbf{e}_3 \| \\
+&= m_Q \left( \ddot{y}_Q^2 + (\ddot{z}_Q + g)^2 \right) ^{\frac{1}{2}} 
+\end{align*}
+
+\begin{align*}
+\mathbf{b}_3 = 
+\begin{bmatrix}
+       -\sin(\phi_Q) \\
+        \cos(\phi_Q) \\
+\end{bmatrix} 
+&= \frac{ m_Q \mathbf{\ddot{x}}_Q +  m_Q g \mathbf{e}_3 } { \| m_Q \mathbf{\ddot{x}}_Q +  m_Q g \mathbf{e}_3 \|} \\
+\sin(\phi_Q) &= - \frac{m_Q}{f} \ddot{y}_Q \\
+\cos(\phi_Q) &= \frac{m_Q}{f} (\ddot{z}_Q + g) \\
+\phi_Q &= 
+\tan^{-1} \left(  
+\frac{ - f \mathbf{b}_3 \cdot \mathbf{e}_2 } { f \mathbf{b}_3 \cdot \mathbf{e}_3 } 
+\right) \\
+&= \tan^{-1} \left(  
+\frac{ - \ddot{y}_Q} { \ddot{z}_Q + g } 
+\right) 
+\end{align*} 
+
+Differentiating the equation of motion:
+
+\begin{align*}
+m_Q \mathbf{\dddot{x}}_Q &= \dot{f} \mathbf{b}_3 + f \left( {}^\mathcal{I} \mathbf{\omega}^\mathcal{B} \times \mathbf{b}_3 \right) \\
+&= \dot{f} \mathbf{b}_3 + f \left( \dot{\phi}_Q \mathbf{b}_1 \times \mathbf{b}_3 \right) \\
+&= \dot{f} \mathbf{b}_3 - f \dot{\phi_Q} \mathbf{b}_2 \\
+\dot{\phi_Q} &= - \frac{m_Q}{f} \left( \mathbf{\dddot{x}}_Q \cdot \mathbf{b}_2 \right) \\
+&= - \frac{m_Q}{f} \left( \dddot{y}_Q \cos(\phi_Q) + \dddot{z}_Q \sin(\phi_Q) \right) \\
+&= - \frac{m_Q^2}{f^2} \left( \dddot{y}_Q (\ddot{z}_Q + g) - \dddot{z}_Q \ddot{y}_Q \right) \\
+&= \frac{ \left( \dddot{z}_Q \ddot{y}_Q - \dddot{y}_Q (\ddot{z}_Q + g) \right) } { \left( \ddot{y}_Q^2 + (\ddot{z}_Q + g)^2 \right) }
+\end{align*}
+
+Differentiating the equation of motion again: 
+
+\begin{align*}
+m_Q \mathbf{\ddddot{x}}_Q &= \ddot{f} \mathbf{b}_3 + \dot{f} \left( {}^{\mathcal{I}} \omega^{\mathcal{B}} \times \mathbf{b}_3 \right) - \left( (\dot{f} \dot{\phi}_Q  + f \ddot{\phi}_Q) \mathbf{b}_2 + f \dot{\phi}_Q ( {}^{\mathcal{I}} \omega^{\mathcal{B}} \times \mathbf{b}_2) \right) \\
+&= \ddot{f} \mathbf{b}_3 + \dot{f} \left( \dot{\phi}_Q \mathbf{b}_1 \times \mathbf{b}_3 \right) - \left( (\dot{f} \dot{\phi}_Q  + f \ddot{\phi}_Q) \mathbf{b}_2 + f \dot{\phi}_Q ( \dot{\phi}_Q \mathbf{b}_1 \times \mathbf{b}_2) \right) \\
+&= \ddot{f} \mathbf{b}_3 - \dot{f} \dot{\phi}_Q \mathbf{b}_2 - \left( (\dot{f} \dot{\phi}_Q  + f \ddot{\phi}_Q) \mathbf{b}_2 + f \dot{\phi}_Q^2 \mathbf{b}_3 \right) \\
+&= - ( 2 \dot{f} \dot{\phi}_Q + f \ddot{\phi}_Q) \mathbf{b}_2 + ( \ddot{f} - f \dot{\phi}_Q^2 ) \mathbf{b}_3 \\
+\ddot{\phi}_Q &= - \frac{m_Q}{f} (\mathbf{\ddddot{x}}_Q \cdot \mathbf{b}_2) - 2 \frac{ \dot{f} \dot{\phi}_Q } { f }  \\
+%%%
+\text{Where:} & \\
+\dot{f} &= m_Q^2 \frac{ ( \ddot{y}_Q \dddot{y}_Q + (\ddot{z}_Q + g) \dddot{z}_Q ) } { f }  \\
+%%%
+\ddot{\phi}_Q &= - \frac{m_Q}{f} ( \ddddot{y}_Q \cos(\phi_Q) + \ddddot{z}_Q \sin(\phi_Q) ) \\ 
+& - \frac{ 2 m_Q^2 ( \ddot{y}_Q \dddot{y}_Q + (\ddot{z}_Q + g) \dddot{z}_Q )  } { f^2 } \dot{\phi}_Q \\
+&= - \frac{ m_Q^2 } {f^2} \left( \ddddot{y}_Q (\ddot{z}_Q + g) - \ddddot{z}_Q \ddot{y}_Q \right) \\
+& + \frac{ 2 m_Q^4 } {f^4} ( \ddot{y}_Q \dddot{y}_Q + (\ddot{z}_Q + g) \dddot{z}_Q ) ( \dddot{y}_Q (\ddot{z}_Q + g) - \dddot{z}_Q \ddot{y}_Q ) \\
+&= \frac{ \left(  \ddddot{z}_Q \ddot{y}_Q - \ddddot{y}_Q (\ddot{z}_Q + g) \right) }{ \left( \ddot{y}_Q^2 + (\ddot{z}_Q + g)^2 \right) } \\
+& + \frac{ 2 ( \ddot{y}_Q \dddot{y}_Q + (\ddot{z}_Q + g) \dddot{z}_Q ) ( \dddot{y}_Q (\ddot{z}_Q + g) - \dddot{z}_Q \ddot{y}_Q ) } { \left( \ddot{y}_Q^2 + (\ddot{z}_Q + g)^2 \right)^2 }
+\end{align*}
+
+The moment input be found from:
+
+\begin{align*}
+M = J_Q \ddot{\phi}_Q
+\end{align*}
+
+%%%%
+\newpage
+\subsubsection{Control Laws}
+
+Use control laws from paper with desired trajectory: $\sigma_T(t) = [\mathbf{x}_T(t)] = [y_T(t) \ \ z_T(t)]^T$: 
+
+\begin{align*}
+\mathbf{F1} &= m_Q g \mathbf{e}_3 + m_Q \mathbf{\ddot{x}}_T \\
+\mathbf{F} &= -K_p \left( \mathbf{x} - \mathbf{x}_T \right) - K_d \left(\dot{\mathbf{x}} - \mathbf{\dot{x}}_T \right) + \mathbf{F1} \\
+f &= \mathbf{F} \cdot \mathbf{b}_3 \\
+\phi_Q^d &= 
+\tan^{-1} \left(  
+\frac{ - \mathbf{F} \cdot \mathbf{e}_2 } {  \mathbf{F} \cdot \mathbf{e}_3 }
+\right) \\
+\end{align*} 
+
+\begin{align*}
+f_{nom} \mathbf{b}_{3_{nom}} &= m_Q \mathbf{\ddot{x}}_T+  m_Q g \mathbf{e}_3 \\
+\mathbf{b}_{3_{nom}} &= \frac{ m_Q \mathbf{\ddot{x}}_T+  m_Q g \mathbf{e}_3 } { \| m_Q \mathbf{\ddot{x}}_T+  m_Q g \mathbf{e}_3 \| } \\
+\phi_{Q_{nom}} &= \tan^{-1} \left( \frac{ f_{nom} \mathbf{b}_{3_{nom}} \cdot \mathbf{e}_2 } { f_{nom} \mathbf{b}_{3_{nom}} \cdot \mathbf{e}_3} \right) \\
+f_{nom} &= f_{nom} \mathbf{b}_{3_{nom}} \cdot \mathbf{b}_{3_{nom}} \\
+\dot{\phi}_Q^d &= - \frac{ m_Q } {f_{nom}} \left( \mathbf{\dddot{x}}_T \cdot \mathbf{b}_{2_{nom}} \right)\text{, where } \mathbf{b}_{2_{nom}} = 
+\begin{bmatrix}
+       \cos(\phi_{Q_{nom}}) \\
+        \sin(\phi_{Q_{nom}}) \\
+\end{bmatrix} \\
+\ddot{\phi}_Q^d &= - \frac{m_Q}{f_{nom}} (\mathbf{\ddddot{x}}_T \cdot \mathbf{b}_{2_{nom}}) - 2 \frac{ \dot{f} \dot{\phi}_{Q}^d } { f_{nom} }, \dot{f} = \frac{ ( \ddot{y}_T \dddot{y}_T + (\ddot{z}_T + g) \dddot{z}_T ) } { f_{nom} }
+\end{align*}
+
+\begin{align*}
+\mathbf{M}^d &= J_Q  \ddot{\phi}_Q^d \\ 
+\mathbf{M} &= J_Q ( -K_{p_{\phi}} (\phi_Q - \phi_Q^d) - K_{d_{\phi}} (\dot{\phi}_Q - \dot{\phi}_Q^d) ) + \mathbf{M}^d \\
+\end{align*}
+
+
+
+
+
+
+%%%%
+\newpage
+\subsection{Differential Flatness of Hybrid System}
+
+``A Differentially-Flat Hybrid System is a hybrid system where each subsystem is differentially-flat, the switching surfaces are functions of the flat outputs and their derivatives, and moreover the flat outputs map from one subsystem to a subsequent subsystem through the sufficiently smooth transition maps.''
+
+\mbox{} \newline
+The switching surfaces are $\mathcal{S}_1 = \{ \mathbf{x}_1 \ | \ T \equiv \| m_L (\mathbf{\dot{v}}_L+g\mathbf{e}_3) \| = 0 \}$, which is in terms of the flat outputs $\mathbf{x}_L$. The second switching surface is $\mathcal{S}_2 = \{ \mathbf{x}_2 \ | \ \| \mathbf{x}_Q - \mathbf{x}_L \| = l \}$, which is in terms of the flat output $\mathbf{x}_Q$ and $\mathbf{x}_L$ which can be determined from initial conditions. 
+
+
+\end{document}
