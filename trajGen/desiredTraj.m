@@ -46,9 +46,6 @@ ineqConst.nc = 20; %sx1 matrix of numbers of intermediate points
 ineqConst.delta = 0.05; %sx1 matrix of maximum distnaces
 ineqConst.dim = [1 2]; %sxd matrix of dimensions that each constraint applies to
 
-ineqConstTest.start = ineqConst.start;
-ineqConstTest.nc = ineqConst.nc;
-ineqConstTest.delta = ineqConst.delta;
 
 %%%
 % verify that the problem is well-formed
@@ -89,13 +86,20 @@ for i = 1:d,
 end
 
 xT2 = findTrajCorr(r, n, m, d, tDes, posDes, ineqConst);
-%optTrajCorr(tDes, posDes(:, :, 1), posDes(:, :, 2), ineqConstTest)
+
 
 
 %%% 
 % plot the trajectory
-plotTraj(xT, n, m, d, tDes, posDes, 0.01);
-plotTraj(xT2, n, m, d, tDes, posDes, 0.01);
+
+% create legend labels for dimensions, must correspond to order of m
+dimLabels{1} = 'y (m)';
+dimLabels{2} = 'z (m)'; 
+plotDim = [1 2]; %if you want to plot two dimensions against each other, specify here 
+    % nxm matrix, creates n plots of column 1 vs. column 2
+    
+plotTraj(xT, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim);
+plotTraj(xT2, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim);
 
 
 

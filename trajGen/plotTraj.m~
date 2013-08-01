@@ -69,7 +69,8 @@ hold on;
 plot(t, pos(:, i));
 plot(tDes, posDes(1, :, i), 'k^');
 xlabel('time (s)');
-ylabel(dimLabels{i});
+ylabel(dimLabels(i));
+title('trajectory position over time');
 end
 
 [extraPlots, ~] = size(plotDim);
@@ -78,8 +79,8 @@ figure()
 hold on;
 plot(pos(:, plotDim(i, 1)), pos(:, plotDim(i, 2)));
 plot(posDes(1, :, 1), posDes(1, :, 2), 'k^');
-xlabel(dimLabels{plotDim(i, 1)});
-ylabel(dimLabels{plotDim(i, 2)});
+xlabel(dimLabels{);
+ylabel('x position (m)');
 end
 
 
