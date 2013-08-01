@@ -13,16 +13,20 @@
 %       jth trajectory in dimension k, nondimensionalized in time 
 %   tDes: (m+1)x1 vector, desired time of arrival at each keyframe
 %   r: integer, derivative number to evaluate up to (and including)
+%   derivativesX: optional, r+1 cell of (n)xmxd matrices containing
+%       coefficients of derivatives of the trajectory, calculated if input
+%       is []
 % outputs:
-%   dxT: (r+1) x d vector, row i contains value of (r-1)th derivative in dimension k of xT at t
+%   dxT: (r+1) x d vector, row i contains value of (i-1)th derivative in dimension j of xT at t
 
 
 %%%%%
 % Specify the position and derivatives of the desired trajectory
-function [dxT] = evaluateTraj(t, n, m, d, xT, tDes, r)
+function [dxT, derivativesX] = evaluateTraj(t, n, m, d, xT, tDes, r, derivativesX)
 
 dxT = zeros(r+1, d);
 
+if (isempty(derivativesX)) ,
 derivativesX = cell(r+1, 1);
 derivativesX{1} = xT;
 
@@ -37,6 +41,7 @@ for l = 1:r,
     
     derivativesX{l+1} = thisDer;
 end
+end
 
 
 % nondimensionalized time
@@ -48,7 +53,7 @@ if (t < tDes(1, 1)),
     % evaluate in each dimension
     for k = 1:d
         for l = 0:r %evaluate each derivative at the first trajectory's inital time
-            dxT(l+1, k) = polyval(derivativesX{l+1}(:, 1, k), t0);
+            dxT(l+1, k) = 1/((tDes(2, 1)-tDes(1, 1))^(l)) * polyval(derivativesX{l+1}(:, 1, k), t0);
         end
     end
     
@@ -77,12 +82,10 @@ else
     % evaluate in each dimension
     for k = 1:d
         for l = 0:r, %evaluate each derivative 
-        	dxT(l+1, k) = polyval(derivativesX{l+1}(:, m, k), t1);
+        	dxT(l+1, k) = 1/((tDes(m+1, 1)-tDes(m, 1))^(l)) * polyval(derivativesX{l+1}(:, m, k), t1);
         end
     end
 end
-
-
 
 
 

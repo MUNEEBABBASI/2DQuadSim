@@ -29,7 +29,7 @@ pos = zeros(length(t), d); %holds position at time i for dimension d
 
 % evaluate the piece-wise polynominal at each point in time
 for i = 1:length(t),  
-    pos(i, :) = evaluateTraj(t(i, 1), n, m, d, xT, tDes, 0);
+    pos(i, :) = evaluateTraj(t(i, 1), n, m, d, xT, tDes, 0, []);
 end
 
 

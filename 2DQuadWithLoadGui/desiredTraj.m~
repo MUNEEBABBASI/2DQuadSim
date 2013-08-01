@@ -47,6 +47,15 @@ ineqConst.nc = 20; %sx1 matrix of numbers of intermediate points
 ineqConst.delta = 0.05; %sx1 matrix of maximum distnaces
 ineqConst.dim = [1 2]; %sxd matrix of dimensions that each constraint applies to
 
+% save important properties
+traj.posDes = posDes;
+traj.tDes = tDes;
+traj.ineqConst = ineqConst;
+traj.r = r;
+traj.n = n;
+traj.m = m;
+traj.d = d;
+
 
 
 
@@ -85,28 +94,20 @@ if(isempty(traj))
     
     % xT holds all coefficents for all trajectories
     % row i is the ith coefficient for the column jth trajectory in dimension k
-    traj.xT = zeros(n+1, m, d);
+    xT = zeros(n+1, m, d);
     for i = 1:d,
-        traj.xT(:, :, i) = findTraj(r, n, m, i, tDes, posDes);
+        xT(:, :, i) = findTraj(r, n, m, i, tDes, posDes);
         %xT(:, :, i) = findTrajJoint(r, n, m, i, tDes, posDes);
     end
     
     %xT2 = findTrajCorr(r, n, m, d, tDes, posDes, ineqConst);
-    dimLabels{1} = 'y (m)';
-    dimLabels{2} = 'z (m)';
-    plotDim = [1 2]; %if you want to plot two dimensions against each other, specify here
-    % nxm matrix, creates n plots of column 1 vs. column 2
     
-    plotTraj(traj.xT, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim);
-    
-    [~, traj.derivativesX] = evaluateTraj(t, n, m, d, traj.xT, tDes, r, []);
 end
 
 
 % evaluate trajectory at the desired time
-[xEval, ~] = evaluateTraj(t, n, m, d, traj.xT, tDes, 6, traj.derivativesX);
+[xEval] = evaluateTraj(t, n, m, d, xT, tDes, 6);
 
-% construct return values
 xT = xEval(1, :)';
 dxT = xEval(2, :)';
 d2xT = xEval(3, :)';
@@ -114,15 +115,6 @@ d3xT = xEval(4, :)';
 d4xT = xEval(5, :)';
 d5xT = xEval(6, :)';
 d6xT = xEval(7, :)';
-
-% save important properties
-traj.posDes = posDes;
-traj.tDes = tDes;
-traj.ineqConst = ineqConst;
-traj.r = r;
-traj.n = n;
-traj.m = m;
-traj.d = d;
 
 
 
@@ -133,8 +125,8 @@ traj.d = d;
 
 %%%
 % alternatively, manually specify trajectory
-% traj.posDes = [];
-% traj.tDes = [];
+traj.posDes = [];
+traj.tDes = [];
 
 %     T=5;
 %     th_max = 2*pi/180 ;

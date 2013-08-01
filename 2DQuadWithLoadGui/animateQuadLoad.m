@@ -1,4 +1,4 @@
-% 7/26/13
+% 7/29/13
 % animateQuadLoad.m
 % animates quadrotor motion in a gui
 
@@ -203,17 +203,26 @@ linkaxes([handles.axes2, handles.axes3, handles.axes4, handles.axes5, handles.ax
 %%%% 
 % plot in 2D
 % draw the quad rotor and load
+
+global traj
+
+    
 axes(handles.axes1)
 t = s.currentTimeIndex;
 plot(s.xL(t, 1), s.xL(t, 2), 'ro', 'Markersize', 10, 'MarkerFaceColor', 'r');
 hold on
 grid on
 box on
-plot(s.xTraj(t, 1),s.xTraj(t, 2),'r--');
 plot(s.xQ(t, 1), s.xQ(t, 2), 'k+', 'Markersize', 12);
+plot(s.xTraj(:, 1), s.xTraj(:, 2), 'r--');
+line([s.xQ(t, 1) s.xL(t, 1)], [s.xQ(t, 2) s.xL(t, 2)], 'Color', 'k', 'LineStyle', '--');
 s.limits = [min([s.xQ(:, 1); s.xQ(:, 2); s.xL(:, 1); s.xL(:, 2)])-0.5 ...
     max([s.xQ(:, 1); s.xQ(:, 2); s.xL(:, 1); s.xL(:, 2)])+0.5];
-%line([s.xQ(t, 1) s.xL(t, 1)], [s.xQ(t, 2) s.xL(t, 2)], 'Color', 'k', 'LineStyle', '--');
+
+if (length(traj.tDes) > 0),
+plot(traj.posDes(1, :, 1), traj.posDes(1, :, 2), '^');
+end
+    
 %legend('load pos', 'desired load pos', 'desired y', 'desired z', 'Location', 'SouthEastOutside');
 zlabel('z (m)');
 ylabel('y (m)');
@@ -666,6 +675,7 @@ function pushbutton1_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+global traj
 global s
 stop = 0;
 
@@ -680,7 +690,8 @@ while (get(hObject,'Value') && stop==0)
         
       % draw the quad rotor and load
       t = s.currentTimeIndex+1;
-      
+      %numWaypoints = length(traj.posT);
+
       axes(handles.axes1)
       
       %%%
@@ -690,16 +701,19 @@ while (get(hObject,'Value') && stop==0)
       hold on
       grid on
       box on
-      plot(s.xTraj(t, 1),s.xTraj(t, 2),'r--');
       plot(s.xQ(t, 1), s.xQ(t, 2), 'k+', 'Markersize', 12);
       line([s.xQ(t, 1) s.xL(t, 1)], [s.xQ(t, 2) s.xL(t, 2)], 'Color', 'k', 'LineStyle', '--');
+      plot(s.xTraj(:, 1), s.xTraj(:, 2), 'r--');
       
+      if (length(traj.tDes) > 0),
+      plot(traj.posDes(1, :, 1), traj.posDes(1, :, 2), '^');
+      end
+
       %plot past positions
       plot(s.xL(1:t, 1), s.xL(1:t, 2), 'r');
-      plot(s.xTraj(:, 1), s.xTraj(:, 2), 'r--');
       plot(s.xQ(1:t, 1), s.xQ(1:t, 2), 'k');      
-      %set(gca, 'XLim', s.limits, 'YLim', s.limits);
-      set(gca, 'XLim', [-0.5 3.5], 'YLim', [-0.5 3.5]);
+      set(gca, 'XLim', s.limits, 'YLim', s.limits);
+      %set(gca, 'XLim', [-0.5 3.5], 'YLim', [-0.5 3.5]);
       zlabel('z (m)');
       ylabel('y (m)');
       xlabel('x (m)');

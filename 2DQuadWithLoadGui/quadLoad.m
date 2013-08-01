@@ -9,7 +9,7 @@
 
 function quadLoad
 
-clear all
+%clear all
 close all
 clc
 
@@ -173,8 +173,9 @@ putvar(tout, modeout, xout, teout, yeout, ieout, uout, desout)
 
 
 
+
 %%%
-% plot results
+% construct output vectors
 
 % construct quad position vector
 totalTimeSteps = length(tout);
@@ -252,6 +253,9 @@ putvar(xTraj, dxTraj, d2xTraj, d3xTraj, d4xTraj, d5xTraj, d6xTraj)
 animateQuadLoad
 
 
+
+%%%
+% plot results
 
 
 % % plot position
