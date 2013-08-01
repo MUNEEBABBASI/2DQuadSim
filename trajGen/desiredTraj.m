@@ -12,6 +12,7 @@
 %   ... m-1 and m is xm
 %
 % Dependencies: findTraj.m, plotTraj.m, findTrajCorr.m
+%   findContConstraints.m, findFixedConstraints.m, findDerivativeCoeff.m, findCostMatrix.m
 
 
 
@@ -99,7 +100,7 @@ plotDim = [1 2]; %if you want to plot two dimensions against each other, specify
     % nxm matrix, creates n plots of column 1 vs. column 2
     
 plotTraj(xT, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim);
-plotTraj(xT2, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim);
+%plotTraj(xT2, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim);
 
 
 

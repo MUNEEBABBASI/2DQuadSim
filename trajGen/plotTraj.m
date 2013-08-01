@@ -21,45 +21,17 @@
 
 function [] = plotTraj(xT, n, m, d, tDes, posDes, dt, dimLabels, plotDim)
 
+
 t = 0:0.01:tDes(m+1); %construct t vector 
 t = t';
 pos = zeros(length(t), d); %holds position at time i for dimension d
 
-% evaluate the piece-wise polynominal at each point in time
-for i = 1:length(t),
-    % if before first keyframe time, assume at initial position
-    if (t(i, 1) < tDes(1, 1)),
-        % evaluate in each dimensions
-        for k = 1:d
-            pos(i, k) = polyval(xT(:, 1, k), 0); 
-        end
 
-    % find which piece of the trajectory we're on based on time and
-    %   evaluate there
-    elseif (t(i, 1) < tDes(m+1, 1));
-        
-        for j = 1:m,
-            if (t(i, 1) < tDes(j+1, 1));
-                scaledt = (t(i, 1)-tDes(j, 1))/(tDes(j+1, 1)-tDes(j, 1)); % find the nondimensionalized time
-                
-                % evaluate in each dimension
-                for k = 1:d,
-                    pos(i, k) = polyval(xT(:, j, k), scaledt); 
-                end
-                
-                break;
-            end
-        end
-        
-    % if after the final keyframe time, assume hover at final keyframe position
-    else
-        
-        % evaluate in each dimension
-        for k = 1:d
-            pos(i, k) = polyval(xT(:, m, k), 1); 
-        end
-    end
+% evaluate the piece-wise polynominal at each point in time
+for i = 1:length(t),  
+    pos(i, :) = evaluateTraj(t(i, 1), n, m, d, xT, tDes, 0);
 end
+
 
 
 
@@ -81,6 +53,7 @@ plot(posDes(1, :, 1), posDes(1, :, 2), 'k^');
 xlabel(dimLabels{plotDim(i, 1)});
 ylabel(dimLabels{plotDim(i, 2)});
 end
+
 
 
 

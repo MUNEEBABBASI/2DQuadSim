@@ -1,5 +1,5 @@
 % 7/30/13
-% optTrajJoint.m
+% findTrajJoint.m
 % generate optimal trajectory for through a set of keyframes by optimizing
 %   derivatives at endpoints 
 % 	uses technique from"Polynominal Trajectory Planning for Quadrotor Flight", Richter et al.  
@@ -16,7 +16,7 @@
 
 %%%%%
 % Specify the position and derivatives of the desired trajectory
-function [xT] = optTrajJoint(t, xConst)
+function [xT] = findTrajJoint(t, xConst)
 
 %nondimensionalized time and distance, from 0 to 1 for both
 [r, m] = size(xConst);
