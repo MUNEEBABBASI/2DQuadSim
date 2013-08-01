@@ -11,7 +11,7 @@
 % the polynominal segment between keyframe 0 and 1 is x1, 1 and 2 is x2,
 %   ... m-1 and m is xm
 %
-% Dependencies: findTraj.m, plotTraj.m
+% Dependencies: findTraj.m, plotTraj.m, findTrajCorr.m
 
 
 
@@ -39,6 +39,16 @@ posDes(:, :, 2) = [0 0 2 2; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0];
 [i, j, k] = size(posDes);
 l = length(tDes);
 
+% specify s corridor constraints
+ineqConst.numConst = 1; %integer, number of constraints 
+ineqConst.start = 2; %sx1 matrix of keyframes where constraints begin
+ineqConst.nc = 20; %sx1 matrix of numbers of intermediate points
+ineqConst.delta = 0.05; %sx1 matrix of maximum distnaces
+ineqConst.dim = [1 2]; %sxd matrix of dimensions that each constraint applies to
+
+ineqConstTest.start = ineqConst.start;
+ineqConstTest.nc = ineqConst.nc;
+ineqConstTest.delta = ineqConst.delta;
 
 %%%
 % verify that the problem is well-formed
@@ -75,14 +85,17 @@ end
 % row i is the ith coefficient for the column jth trajectory in dimension k
 xT = zeros(n+1, m, d); 
 for i = 1:d,
-    xT(:, :, i) = findTraj(r, n, m, tDes, posDes(:, :, i));
+    xT(:, :, i) = findTraj(r, n, m, i, tDes, posDes);
 end
+
+xT2 = findTrajCorr(r, n, m, d, tDes, posDes, ineqConst);
+%optTrajCorr(tDes, posDes(:, :, 1), posDes(:, :, 2), ineqConstTest)
 
 
 %%% 
 % plot the trajectory
 plotTraj(xT, n, m, d, tDes, posDes, 0.01);
-
+plotTraj(xT2, n, m, d, tDes, posDes, 0.01);
 
 
 
