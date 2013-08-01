@@ -3,7 +3,7 @@
 % finds coefficients for up to the kth derivative of polynominals of order n
 % inputs:
 %   n: integer, order of desired polynominal trajectory
-%   r: integer, derivative to minimize in cost function
+%   r: integer, derivative to find up to (and including)
 % outputs:
 %   derCoeff: (r+1) x (n+1) matrix, row i contains coefficients for the
 %       (i-1)th derivative of a polynominal of order n, assuming all

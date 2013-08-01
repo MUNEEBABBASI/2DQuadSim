@@ -2,7 +2,7 @@
 % evaluateTraj.m
 % evaluates position and higher derivatives of a given polynominal
 %   trajectory at a given time
-% Dependencies: 
+% Dependencies: -
 %
 % inputs: 
 %   t: real value, time to evaluate trajectory at
@@ -20,23 +20,22 @@
 %%%%%
 % Specify the position and derivatives of the desired trajectory
 function [dxT] = evaluateTraj(t, n, m, d, xT, tDes, r)
-global derrivativesX
 
 dxT = zeros(r+1, d);
 
-derrivativesX = cell(r+1, 1);
-derrivativesX{1} = xT;
+derivativesX = cell(r+1, 1);
+derivativesX{1} = xT;
 
 for l = 1:r,
     thisDer = zeros(n-l+1, m, d);
     for j = 1:m
         for k = 1:d,
-            thisDer(:, j, k) = polyder(derrivativesX{l}(:, j, k));
+            thisDer(:, j, k) = polyder(derivativesX{l}(:, j, k));
 
         end
     end
     
-    derrivativesX{l+1} = thisDer;
+    derivativesX{l+1} = thisDer;
 end
 
 
@@ -49,7 +48,7 @@ if (t < tDes(1, 1)),
     % evaluate in each dimension
     for k = 1:d
         for l = 0:r %evaluate each derivative at the first trajectory's inital time
-            dxT(l+1, k) = polyval(derrivativesX{l+1}(:, 1, k), t0);
+            dxT(l+1, k) = polyval(derivativesX{l+1}(:, 1, k), t0);
         end
     end
     
@@ -64,7 +63,7 @@ elseif (t < tDes(m+1, 1));
             % evaluate in each dimension
             for k = 1:d,
                 for l = 0:r,
-                    dxT(l+1, k) = 1/((tDes(j+1, 1)-tDes(j, 1))^(l)) * polyval(derrivativesX{l+1}(:, j, k), scaledt);
+                    dxT(l+1, k) = 1/((tDes(j+1, 1)-tDes(j, 1))^(l)) * polyval(derivativesX{l+1}(:, j, k), scaledt);
                 end
             end
             
@@ -78,7 +77,7 @@ else
     % evaluate in each dimension
     for k = 1:d
         for l = 0:r, %evaluate each derivative 
-        	dxT(l+1, k) = polyval(derrivativesX{l+1}(:, m, k), t1);
+        	dxT(l+1, k) = polyval(derivativesX{l+1}(:, m, k), t1);
         end
     end
 end

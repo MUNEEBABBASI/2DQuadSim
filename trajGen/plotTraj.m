@@ -1,7 +1,7 @@
 % 7/30/13
 % plotTraj.m
 % plots a given trajectory
-% Dependencies: -
+% Dependencies: evaluateTraj.m
 %
 % inputs: 
 %   xT: (n+1) x m x d matrix, where row i contains the ith coefficient for the
@@ -22,7 +22,7 @@
 function [] = plotTraj(xT, n, m, d, tDes, posDes, dt, dimLabels, plotDim)
 
 
-t = 0:0.01:tDes(m+1); %construct t vector 
+t = 0:dt:tDes(m+1); %construct t vector 
 t = t';
 pos = zeros(length(t), d); %holds position at time i for dimension d
 
