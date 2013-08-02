@@ -98,7 +98,7 @@ uout = []; %record outputs, [f M]
 desout = []; %record desired states [xQ vQ phiQdes phiLdes]
 
 % integrate
-%while tstart < tend,
+while tstart < tend,
 
     if currentMode == 1,
         
@@ -165,7 +165,7 @@ desout = []; %record desired states [xQ vQ phiQdes phiLdes]
         tstart = t(nt);
         
     end
-%end
+end
 
 % save output matrices
 putvar(tout, modeout, xout, teout, yeout, ieout, uout, desout)

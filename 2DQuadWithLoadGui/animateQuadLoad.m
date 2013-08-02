@@ -723,7 +723,7 @@ while (get(hObject,'Value') && stop==0)
       zlabel('z (m)');
       ylabel('y (m)');
       xlabel('x (m)');
-      pause(1/(10^s.simSpeed*3))      
+      pause(1/(10^(s.simSpeed*5)))      
       
       
       

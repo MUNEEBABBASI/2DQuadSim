@@ -92,7 +92,7 @@ if(isempty(traj))
     end
     
     traj.xT = findTrajCorr(r, n, m, d, tDes, posDes, ineqConst);
-    
+    %traj.xT = findTrajLoad(r, n, m, d, tDes, posDes, ineqConst);
     
     
     % plot trajectory

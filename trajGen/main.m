@@ -27,7 +27,7 @@ clc
 r = 4; %derivative to minimize in cost function
 n = 7; %order of desired trajectory
 m = 3; %number of pieces in trajectory
-d = 3; %dimensions
+d = 2; %dimensions
 
 % specify the m+1 keyframes
 tDes = [0; 2; 4; 6]; %specify desired arrival times at keyframes
@@ -102,7 +102,7 @@ xT3 = findTrajCorr(r, n, m, d, tDes, posDes, ineqConst);
 dimLabels{1} = 'x (m)';
 dimLabels{2} = 'y (m)'; 
 dimLabels{3} = 'z (m)'; 
-plotDim = [1 2 3]; %if you want to plot two dimensions against each other, specify here 
+plotDim = [1 2]; %if you want to plot two dimensions against each other, specify here 
     % nxm matrix, creates n plots of column 1 vs. column 2
     
 plotTraj(xT, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim);

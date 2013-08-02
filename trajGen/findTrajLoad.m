@@ -64,6 +64,8 @@ if (isempty(options))
     options.posDes = posDes;
     options.t0 = t0;
     options.t1 = t1;
+    
+    options.gamma = 1e-5;
 end
 
 
@@ -99,7 +101,7 @@ end
 %%%
 % find optimal trajectory through quadratic programming
 %xT_all = quadprog(Q_opt,[],A_ineq, b_ineq,A_opt,b_opt);
-[xT_all,fval] = fmincon(@costfunction,zeros((n+1)*m*d, 1),A_ineq, b_ineq, A_opt,b_opt, [], [], @tensionConst);
+xT_all = fmincon(@costfunction,zeros((n+1)*m*d, 1),A_ineq, b_ineq, A_opt,b_opt, [], [], 'tensionConst');
 
 
 
@@ -167,16 +169,6 @@ end
 
 
 
-function T = tensionConst(x)
-
-global options
-d = options.d;
-
-for i = 1:d,
-    
-end
-
-end
 
 
 
