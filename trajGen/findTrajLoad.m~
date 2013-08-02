@@ -60,8 +60,6 @@ if (isempty(options))
     options.d = d;
     options.tDes = tDes;
     options.posDes = posDes;
-    options.t0 = t0;
-    options.t1 = t1;
 end
 
 
@@ -97,7 +95,7 @@ end
 %%%
 % find optimal trajectory through quadratic programming
 %xT_all = quadprog(Q_opt,[],A_ineq, b_ineq,A_opt,b_opt);
-[xT_all,fval] = fmincon(@costfunction,zeros((n+1)*m*d, 1),A_ineq, b_ineq, A_opt,b_opt);
+[xT_all,fval] = fmincon(@costfunction,zeros((, 1),A_ineq, b_ineq, A_opt,b_opt);
 
 
 
@@ -242,8 +240,6 @@ d = options.d;
 m = options.m;
 n = options.n;
 r = options.r;
-t0 = options.t0;
-t1 = options.t1;
 
 
 persistent Q
@@ -269,7 +265,7 @@ if (isempty(Q))
     Q.Q_opt = Q_opt;
 end
 
-f = x'*Q.Q_opt*x;
+f = x'*Q_opt*x;
 
 end
 

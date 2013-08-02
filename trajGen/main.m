@@ -85,13 +85,13 @@ end
 xT = zeros(n+1, m, d); 
 xT2 = zeros(n+1, m, d); 
 for i = 1:d,
-    xT(:, :, i) = findTraj(r, n, m, i, tDes, posDes);
-    xT2(:, :, i) = findTrajJoint(r, n, m, i, tDes, posDes);
+    %xT(:, :, i) = findTraj(r, n, m, i, tDes, posDes);
+    %xT2(:, :, i) = findTrajJoint(r, n, m, i, tDes, posDes);
 end
 
 
-xT3 = findTrajCorr(r, n, m, d, tDes, posDes, ineqConst);
-
+%xT3 = findTrajCorr(r, n, m, d, tDes, posDes, ineqConst);
+xT3 = findTrajLoad(r, n, m, d, tDes, posDes, ineqConst);
 
 
 
@@ -105,8 +105,8 @@ dimLabels{3} = 'z (m)';
 plotDim = [1 2 3]; %if you want to plot two dimensions against each other, specify here 
     % nxm matrix, creates n plots of column 1 vs. column 2
     
-plotTraj(xT, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim);
-plotTraj(xT2, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim);
+%plotTraj(xT, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim);
+%plotTraj(xT2, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim);
 plotTraj(xT3, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim);
 
 
