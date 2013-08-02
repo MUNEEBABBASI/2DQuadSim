@@ -71,6 +71,7 @@ global s
 s.currentTimeIndex = 1;
 s.simSpeed = 3;
 s.time = evalin('base', 'tout');
+s.quadLength = 0.5;
 
 s.modes = evalin('base', 'modeout');
 s.xQ = evalin('base','quadx');
@@ -213,7 +214,10 @@ plot(s.xL(t, 1), s.xL(t, 2), 'ro', 'Markersize', 10, 'MarkerFaceColor', 'r');
 hold on
 grid on
 box on
-plot(s.xQ(t, 1), s.xQ(t, 2), 'k+', 'Markersize', 12);
+s.phiQ(t, 1)
+line([s.xQ(t, 1)-s.quadLength/2*cos(s.phiQ(t, 1)) s.xQ(t, 1)+s.quadLength/2*cos(s.phiQ(t, 1))], ...
+    [s.xQ(t, 2)-s.quadLength/2*sin(s.phiQ(t, 1)) s.xQ(t, 2)+s.quadLength/2*sin(s.phiQ(t, 1))], 'Color', 'k');
+%plot(s.xQ(t, 1), s.xQ(t, 2), 'k+', 'Markersize', 12);
 plot(s.xTraj(:, 1), s.xTraj(:, 2), 'r--');
 line([s.xQ(t, 1) s.xL(t, 1)], [s.xQ(t, 2) s.xL(t, 2)], 'Color', 'k', 'LineStyle', '--');
 s.limits = [min([s.xQ(:, 1); s.xQ(:, 2); s.xL(:, 1); s.xL(:, 2)])-0.5 ...
@@ -701,7 +705,9 @@ while (get(hObject,'Value') && stop==0)
       hold on
       grid on
       box on
-      plot(s.xQ(t, 1), s.xQ(t, 2), 'k+', 'Markersize', 12);
+      %plot(s.xQ(t, 1), s.xQ(t, 2), 'k+', 'Markersize', 12);
+      line([s.xQ(t, 1)-s.quadLength/2*cos(s.phiQ(t, 1)) s.xQ(t, 1)+s.quadLength/2*cos(s.phiQ(t, 1))], ...
+            [s.xQ(t, 2)-s.quadLength/2*sin(s.phiQ(t, 1)) s.xQ(t, 2)+s.quadLength/2*sin(s.phiQ(t, 1))], 'Color', 'k');
       line([s.xQ(t, 1) s.xL(t, 1)], [s.xQ(t, 2) s.xL(t, 2)], 'Color', 'k', 'LineStyle', '--');
       plot(s.xTraj(:, 1), s.xTraj(:, 2), 'r--');
       

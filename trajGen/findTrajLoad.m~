@@ -30,6 +30,8 @@
 
 function [xT] = findTrajLoad(r, n, m, d, tDes, posDes, ineqConst)
 
+delta = 1e-5; % really small value
+
 % use nondimensionalized time
 t0 = 0;
 t1 = 1;
@@ -60,6 +62,8 @@ if (isempty(options))
     options.d = d;
     options.tDes = tDes;
     options.posDes = posDes;
+    options.t0 = t0;
+    options.t1 = t1;
 end
 
 
@@ -95,7 +99,7 @@ end
 %%%
 % find optimal trajectory through quadratic programming
 %xT_all = quadprog(Q_opt,[],A_ineq, b_ineq,A_opt,b_opt);
-[xT_all,fval] = fmincon(@costfunction,zeros((, 1),A_ineq, b_ineq, A_opt,b_opt);
+[xT_all,fval] = fmincon(@costfunction,zeros((n+1)*m*d, 1),A_ineq, b_ineq, A_opt,b_opt, [], [], @tensionConst);
 
 
 
@@ -117,6 +121,62 @@ end
 
 
 
+
+
+
+function f = costfunction(x)
+
+global options;
+
+d = options.d;
+m = options.m;
+n = options.n;
+r = options.r;
+t0 = options.t0;
+t1 = options.t1;
+
+
+persistent Q
+
+if (isempty(Q))
+    %%%
+    % construct cost matrix Q
+    Q_opt = [];
+    
+    for dim = 1:d,
+        
+        Q_joint = zeros(m*(n+1));
+        for i = 1:m,
+            Q = findCostMatrix(n, r, t0, t1); % find cost matrix for each segment
+            
+            Q_joint(2*r*(i-1)+1:2*r*i, (n+1)*(i-1)+1:(n+1)*i) = Q; %put in block diagonal matrix
+        end
+        
+        % put each dimension's Q_joint into a block diagonal matrix
+        Q_opt = blkdiag(Q_opt, Q_joint);
+    end
+    
+    Q.Q_opt = Q_opt;
+end
+
+f = x'*Q.Q_opt*x;
+
+end
+
+
+
+
+
+function T = tensionConst(x)
+
+global options
+d = options.d;
+
+for i = 1:d,
+    
+end
+
+end
 
 
 
@@ -232,41 +292,5 @@ end
 
 
 
-function f = costfunction(x)
-
-global options;
-
-d = options.d;
-m = options.m;
-n = options.n;
-r = options.r;
-
-
-persistent Q
-
-if (isempty(Q))
-    %%%
-    % construct cost matrix Q
-    Q_opt = [];
-    
-    for dim = 1:d,
-        
-        Q_joint = zeros(m*(n+1));
-        for i = 1:m,
-            Q = findCostMatrix(n, r, t0, t1); % find cost matrix for each segment
-            
-            Q_joint(2*r*(i-1)+1:2*r*i, (n+1)*(i-1)+1:(n+1)*i) = Q; %put in block diagonal matrix
-        end
-        
-        % put each dimension's Q_joint into a block diagonal matrix
-        Q_opt = blkdiag(Q_opt, Q_joint);
-    end
-    
-    Q.Q_opt = Q_opt;
-end
-
-f = x'*Q_opt*x;
-
-end
 
 
