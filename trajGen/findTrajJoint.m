@@ -2,7 +2,7 @@
 % findTrajJoint.m
 % generate optimal trajectory for through a set of keyframes by optimizing
 %   derivatives at endpoints, for one dimension
-% 	uses technique from"Polynominal Trajectory Planning for Quadrotor Flight", Richter et al.  
+% 	uses technique from "Polynominal Trajectory Planning for Quadrotor Flight", Richter et al.  
 % Dependencies: findCostMatrix.m, findConstConstraints.m
 %
 % inputs: 
