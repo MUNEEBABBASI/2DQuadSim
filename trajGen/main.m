@@ -27,7 +27,7 @@ clc
 r = 4; %derivative to minimize in cost function
 n = 7; %order of desired trajectory
 m = 3; %number of pieces in trajectory
-d = 2; %dimensions
+d = 3; %dimensions
 
 % specify the m+1 keyframes
 tDes = [0; 2; 4; 6]; %specify desired arrival times at keyframes
@@ -37,6 +37,7 @@ tDes = [0; 2; 4; 6]; %specify desired arrival times at keyframes
 posDes = zeros(r, m+1, d);
 posDes(:, :, 1) = [0 1 1 0; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0]; 
 posDes(:, :, 2) = [0 0 2 2; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0];
+posDes(:, :, 3) = [1 2 3 4; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0];
 [i, j, k] = size(posDes);
 l = length(tDes);
 
@@ -82,12 +83,15 @@ end
 % xT holds all coefficents for all trajectories
 % row i is the ith coefficient for the column jth trajectory in dimension k
 xT = zeros(n+1, m, d); 
+xT2 = zeros(n+1, m, d); 
 for i = 1:d,
-    %xT(:, :, i) = findTraj(r, n, m, i, tDes, posDes);
-    xT(:, :, i) = findTrajJoint(r, n, m, i, tDes, posDes);
+    xT(:, :, i) = findTraj(r, n, m, i, tDes, posDes);
+    xT2(:, :, i) = findTrajJoint(r, n, m, i, tDes, posDes);
 end
 
-%xT2 = findTrajCorr(r, n, m, d, tDes, posDes, ineqConst);
+
+xT3 = findTrajCorr(r, n, m, d, tDes, posDes, ineqConst);
+
 
 
 
@@ -95,14 +99,15 @@ end
 % plot the trajectory
 
 % create legend labels for dimensions, must correspond to order of m
-dimLabels{1} = 'y (m)';
-dimLabels{2} = 'z (m)'; 
-plotDim = [1 2]; %if you want to plot two dimensions against each other, specify here 
+dimLabels{1} = 'x (m)';
+dimLabels{2} = 'y (m)'; 
+dimLabels{3} = 'z (m)'; 
+plotDim = [1 2 3]; %if you want to plot two dimensions against each other, specify here 
     % nxm matrix, creates n plots of column 1 vs. column 2
     
-%plotTraj(xT, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim);
-%plotTraj(xT2, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim);
-
+plotTraj(xT, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim);
+plotTraj(xT2, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim);
+plotTraj(xT3, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim);
 
 
 

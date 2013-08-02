@@ -44,14 +44,24 @@ xlabel('time (s)');
 ylabel(dimLabels{i});
 end
 
+
 [extraPlots, ~] = size(plotDim);
 for i = 1:extraPlots,
 figure()
 hold on;
-plot(pos(:, plotDim(i, 1)), pos(:, plotDim(i, 2)));
-plot(posDes(1, :, 1), posDes(1, :, 2), 'k^');
-xlabel(dimLabels{plotDim(i, 1)});
-ylabel(dimLabels{plotDim(i, 2)});
+grid on
+if (nnz(plotDim(i, :)) == 2)
+    plot(pos(:, plotDim(i, 1)), pos(:, plotDim(i, 2)));
+    plot(posDes(1, :, 1), posDes(1, :, 2), 'k^');
+	xlabel(dimLabels{plotDim(i, 1)});
+    ylabel(dimLabels{plotDim(i, 2)});
+elseif (nnz(plotDim(i, :)) == 3)
+    plot3(pos(:, plotDim(i, 1)), pos(:, plotDim(i, 2)), pos(:, plotDim(i, 3)));
+    plot3(posDes(1, :, 1), posDes(1, :, 2), posDes(1, :, 3), 'k^');
+	xlabel(dimLabels{plotDim(i, 1)});
+    ylabel(dimLabels{plotDim(i, 2)});
+    zlabel(dimLabels{plotDim(i, 3)});
+end
 end
 
 

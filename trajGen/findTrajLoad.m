@@ -1,7 +1,8 @@
 % 7/30/13
-% findTrajCorr.m
+% findTrajLoad.m
 % generate optimal trajectory in many dimensions
 %   this allows for specification of corridor constraints
+%   also allows for nonlinear constraints
 % Dependencies: findContConstraints.m, findFixedConstraints.m,
 %   findDerivativeCoeff.m, findCostMatrix.m
 %
@@ -27,7 +28,7 @@
 %       xT is nondimensionalized in time
 
 
-function [xT] = findTrajCorr(r, n, m, d, tDes, posDes, ineqConst)
+function [xT] = findTrajLoad(r, n, m, d, tDes, posDes, ineqConst)
 
 % use nondimensionalized time
 t0 = 0;
@@ -77,7 +78,7 @@ b_opt = [];
 for dim = 1:d,
     
     % construct fixed value constraints
-    [A_fixed, b_fixed] = findFixedConstraints(r, n, m, dim, posDes, t0, t1, [], 1);
+    [A_fixed, b_fixed] = findFixedConstraints(r, n, m, dim, posDes, t0, t1);
     [A_cont, b_cont] = findContConstraints(r, n, m, dim, posDes, t0, t1);
     
     % put each A_eq for each dimension into block diagonal matrix

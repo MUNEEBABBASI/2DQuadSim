@@ -58,17 +58,17 @@ for i = 1:m,
     
     % find coefficients of derivatives
     derCoeff = findDerivativeCoeff(n, r-1);
-    derCoeff
+
     % substitute in the time values
     A = zeros(2*r, n+1);
     
     for j = 0:r-1,
         maxPower = nnz(derCoeff(j+1, :))-1;
-        maxPower
+    
         for k = 0:maxPower,
                 tinit = tDes(i, 1);
                 tfinal = tDes(i+1, 1);
-                k
+                
                 A(j+1, k+1) = tinit^(maxPower-k)*derCoeff(j+1, k+1);
                 A(j+1+r, k+1) = tfinal^(maxPower-k)*derCoeff(j+1, k+1);
         end
@@ -79,98 +79,159 @@ end
 
 
 
-% % construct D_F
-% % D_F = [x1(t0) x1(t1) x2(t2) t3(t3) ... x_[m-1](t_[m-1]) x1'(t0) x1''(t0)
-% %   ... x1^(n)(t0) x[m-1]'(t_[m-1]) x[m-1]''(t_[m-1]) ...
-% %   x[m-1]^(n)(t_[m-1])]
-% % D_P = [x1'(t1) ... x1^(n)(t1) x2'(t2) ... x2^(n)(t2) ... x[m-1]'(t_[m-1]) ...
-% %   x[m-1]^(n)(t_[m-1])]
-% 
-% D_F = zeros(2*r-2+m, 1);
-% 
-% % fix positions at each waypoint
-% for i = 1:m,
-%     D_F(i, 1) = xConst(1, i);
-% end
-% 
-% % fix derivatives at t0 and t_[m-1]
-% for i = 2:r,
-%     D_F(m+i-1, 1) = xConst(i, 1);
-% end
-% 
-% for i = 2:r,
-%     D_F(m+r+i-2, 1) = xConst(i, m);
-% end
-% 
-% % construct M
-% 
-% % x1(t0) terms
-% M = [1 zeros(1, r*m-1)];
-% M = [M; zeros(r-1, m) eye(r-1) zeros(r-1, m*r-m-r+1)];
-% 
-% % terms for trajectories at times t1 to t_[m-2]
-% for i = 1:m-2,
-%     Mtemp= [zeros(1, i) 1 zeros(1, r*m-i-1)];
-%     Mtemp = [Mtemp; zeros(r-1, m+(2+i-1)*(r-1)) eye(r-1) zeros(r-1, m*r-(r-1)-(m+(2+i-1)*(r-1)))];
-%     M = [M; Mtemp; Mtemp];
-% end
-% 
-% % x_[m-1](t_[m-1]) terms
-% Mtemp = [zeros(1, m-1) 1 zeros(1, r*m-m)];
-% Mtemp = [Mtemp; zeros(r-1, m+r-1) eye(r-1) zeros(r-1, m*r-(r-1)-(m+r-1))];
-% M = [M; Mtemp];
-% 
-% % R = M' * inv(A_joint)' * Q_joint * inv(A_joint) * M;
-% % R has dimensions r*m x r*m
-% R = M'*inv(A_joint)'*Q_joint*inv(A_joint)*M;
-% 
-% % find R_FP and R_PP
-% R_FF = R(1:m+2*(r-1), 1:m+2*(r-1));
-% R_FP = R(1:m+2*(r-1), m+2*(r-1)+1:r*m);
-% R_PF = R(m+2*(r-1)+1:r*m, 1:m+2*(r-1));
-% R_PP = R(m+2*(r-1)+1:r*m, m+2*(r-1)+1:r*m);
-% 
-% % D_opt = -inv(R_PP)'*R_FP'*D_F
-% % D_opt = [x1'(t1) ... x1^(n-1)(t1) x2'(t2) ... x_[m-1]'(t_[m-1]) ... x_[m-1]^(n-1)(t_[m-1])]
-% D_opt = -inv(R_PP)'*R_FP'*D_F;
+%%%
+% construct D_F and M
+% D_F = [x1(t0) x1(t1) x2(t2) t3(t3) ... x_[m](t_[m]) ...
+%       x1'(t0) x1'(t1) x2'(t2) t3'(t3) ... x_[m]'(t_[m]) ...
+%       x1^(r-1) (t0) x1^(r-1)(t1) x2^(r-1)(t2) ... x_[m]^(r-1)(t_[m])]
+% fixed values from these values
+
+Dnum = 0;
+D_F = [];
+M = zeros(2*r*m, r*(m+1));
+
+for i = 0:r-1,
+    for j = 0:m,
+        if (posDes(i+1, j+1) ~= Inf)
+            D_F = [D_F; posDes(i+1, j+1)]; %add this constraint to D_F
+            
+            % add the appropriate M rows 
+            if (j == 0),
+                % if first row, add one condition
+                M(i+1, :) = [zeros(1, Dnum) 1 zeros(1, r*(m+1)-Dnum-1)];
+            elseif (j == m),
+                % if last row, add one condition
+                M((m-1)*2*r+r+i+1, :) = [zeros(1, Dnum) 1 zeros(1, r*(m+1)-Dnum-1)];
+            else
+                % if intermediate row, add two conditions to reflect continuity
+                M((j-1)*2*r+r+i+1, :) = [zeros(1, Dnum) 1 zeros(1, r*(m+1)-Dnum-1)];
+                M(j*2*r+i+1, :) = [zeros(1, Dnum) 1 zeros(1, r*(m+1)-Dnum-1)];
+            end
+            
+            Dnum = Dnum + 1;
+        end
+    end
+end
+
+% construct M values for D_P, where 
+% D_P = [x1(t0) x1(t1) x2(t2) t3(t3) ... x_[m](t_[m]) ...
+%       x1'(t0) x1'(t1) x2'(t2) t3'(t3) ... x_[m]'(t_[m]) ...
+%       x1^(r-1) (t0) x1^(r-1)(t1) x2^(r-1)(t2) ... x_[m]^(r-1)(t_[m])]
+% unfixed values from these values
+
+for i = 0:r-1,
+    for j = 0:m,
+        if (posDes(i+1, j+1) == Inf)
+            
+            % add the appropriate M rows 
+            if (j == 0),
+                % if first row, add one condition
+                M(i+1, :) = [zeros(1, Dnum) 1 zeros(1, r*(m+1)-Dnum-1)];
+            elseif (j == m),
+                % if last row, add one condition
+                M((m-1)*2*r+r+i+1, :) = [zeros(1, Dnum) 1 zeros(1, r*(m+1)-Dnum-1)];
+            else
+                % if intermediate row, add two conditions to reflect continuity
+                M((j-1)*2*r+r+i+1, :) = [zeros(1, Dnum) 1 zeros(1, r*(m+1)-Dnum-1)];
+                M(j*2*r+i+1, :) = [zeros(1, Dnum) 1 zeros(1, r*(m+1)-Dnum-1)];
+            end
+            
+            Dnum = Dnum + 1;
+        end
+    end
+end
 
 
 
-% 
-% % find optimal trajectory through quadratic programming
-% % find trajectory for each segment 
-% 
-% xT = zeros(2*r, m-1);
-% 
-% for i = 1:m-1,
-%     % construct beginning and ending constraints, using values from D_opt
-%     % for intermediate derivative values
-%     if i == 1,
-%         x0 = xConst(:, 1);
-%         
-%         xf = zeros(r, 1);
-%         xf(1, 1) = xConst(1, i+1);
-%         xf(2:r, 1) = D_opt((i-1)*(r-1)+1:(i)*(r-1), 1);    
-%     elseif i < m-1,
-%         x0 = zeros(r, 1);
-%         x0(1, 1) = xConst(1, i);
-%         x0(2:r, 1) = D_opt((i-2)*(r-1)+1:(i-1)*(r-1), 1);
-%         
-%         xf = zeros(r, 1);
-%         xf(1, 1) = xConst(1, i+1);
-%         xf(2:r, 1) = D_opt((i-1)*(r-1)+1:(i)*(r-1), 1);        
-%     else
-%         x0 = zeros(r, 1);
-%         x0(1, 1) = xConst(1, i);
-%         x0(2:r, 1) = D_opt((i-2)*(r-1)+1:(i-1)*(r-1), 1);
-%         
-%         xf = xConst(:, m);
-%     end
-% 
-%     xTemp = optTraj(x0, xf);
-%   
-%     xT(:, i) = xTemp;
-% end
+
+%%%
+% find optimal keyframe derivatives
+
+% find R = M' inv(A)' Q inv(A) M
+R = M'*inv(A_joint)'*Q_joint*inv(A_joint)*M;
+
+
+% partition R matrix
+numFree = length(D_F);
+R_PP = R(numFree+1:(m+1)*r, numFree+1:(m+1)*r);
+R_FP = R(1:numFree, numFree+1:(m+1)*r);
+
+
+
+% find D_opt
+D_opt = -inv(R_PP)'*R_FP'*D_F;
+
+
+
+
+
+%%%
+% find the minimum order polynominals with the optimal boundary conditions
+% found using matrix inverses
+
+% use D_opt to fill in missing boundary conditions
+posDes_opt = zeros(r, m+1);
+Dnum = 1;
+for i = 1:r,
+    for j = 1:m+1,
+        if (posDes(i, j, dim) ~= Inf),
+            posDes_opt(i, j) = posDes(i, j, dim);
+        else
+            posDes_opt(i, j) = D_opt(Dnum, 1);
+            Dnum = Dnum+1;
+        end
+    end
+end
+
+
+
+
+
+%%%
+% [2*Q A'; A 0]^(-1)*[0;b] to find [x;lambda], where lambda are lagrange
+%       multipler constraint constants 
+% to finds coefficients x = [c1,n c1,n-1 ... c1,1 c1,0 ... c2,n ... cm,n ... cm, 0]
+
+% non-dimensionalize the problem to avoid large numbers in computations
+
+t0 = 0;
+t1 = 1;
+
+
+Q_joint = [];
+for i = 1:m,
+    Q = findCostMatrix(n, r, t0, t1);
+      
+    Q_joint = blkdiag(Q_joint, Q);
+end
+
+
+% note that here, since posDes is only one dimensional in k, dim is always
+%   1 even though when the original posDes matrix is used, a dimension is
+%   specified
+[A_eq, b_eq] = findFixedConstraints(r, n, m, 1, posDes_opt, t0, t1, [], 1);
+
+
+% note A_eq should have dimensions 2*n*m x (n+1)*m, since all derivatives are
+%   constrained now 
+% Q_joint has dimensions (n+1)*m x (n+1)*m
+solution_temp = inv([2.*Q_joint A_eq'; A_eq zeros(2*r*m)]) * [zeros((n+1)*m, 1); b_eq];
+
+% x coefficients are the first (n+1)*m terms 
+xT_all = solution_temp(1:(n+1)*m, 1);
+
+
+
+%%%
+% explicitly break trajectory into its piecewise parts for output
+xT = zeros((n+1), m);
+for j = 1:m,
+    xT(:, j) = xT_all((j-1)*(n+1)+1:j*(n+1));
+end
+
+
+
+
 
 end
 

@@ -87,11 +87,15 @@ if(isempty(traj))
     % row i is the ith coefficient for the column jth trajectory in dimension k
     traj.xT = zeros(n+1, m, d);
     for i = 1:d,
-        traj.xT(:, :, i) = findTraj(r, n, m, i, tDes, posDes);
+        %traj.xT(:, :, i) = findTraj(r, n, m, i, tDes, posDes);
         %xT(:, :, i) = findTrajJoint(r, n, m, i, tDes, posDes);
     end
     
-    %xT2 = findTrajCorr(r, n, m, d, tDes, posDes, ineqConst);
+    traj.xT = findTrajCorr(r, n, m, d, tDes, posDes, ineqConst);
+    
+    
+    
+    % plot trajectory
     dimLabels{1} = 'y (m)';
     dimLabels{2} = 'z (m)';
     plotDim = [1 2]; %if you want to plot two dimensions against each other, specify here

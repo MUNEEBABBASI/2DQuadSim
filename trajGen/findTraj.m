@@ -47,7 +47,7 @@ end
 
 %%%
 % construct equality constraints 
-[A_fixed, b_fixed] = findFixedConstraints(r, n, m, dim, posDes, t0, t1);
+[A_fixed, b_fixed] = findFixedConstraints(r, n, m, dim, posDes, t0, t1, [], 1);
 [A_cont, b_cont] = findContConstraints(r, n, m, dim, posDes, t0, t1);
 
 % put each A_eq for each dimension into block diagonal matrix
@@ -64,7 +64,7 @@ xT_all = quadprog(Q_joint,[],[],[],A_eq,b_eq);
 
 
 %%%
-% explicitly break trajetory into its piecewise parts for output
+% explicitly break tracjetory into its piecewise parts for output
 xT = zeros((n+1), m);
 for j = 1:m,
     xT(:, j) = xT_all((j-1)*(n+1)+1:j*(n+1));
