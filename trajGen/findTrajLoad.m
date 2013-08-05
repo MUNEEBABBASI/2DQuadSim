@@ -30,8 +30,6 @@
 
 function [xT] = findTrajLoad(r, n, m, d, tDes, posDes, ineqConst)
 
-delta = 1e-5; % really small value
-
 % use nondimensionalized time
 t0 = 0;
 t1 = 1;

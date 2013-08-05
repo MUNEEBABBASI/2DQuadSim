@@ -34,9 +34,12 @@ function [t, x1, te, ye, ie] = integrateMode1(tspan, options1, x10, g, mL, mQ, J
         %find desired trajectory and its higher derivatives 
         [xT, dxT, d2xT, d3xT, d4xT, d5xT, d6xT] = desiredTraj(t, g, mQ, JQ); 
 
+        
         %calculate desired control inputs
         [f, M, ~, ~, ~] = calculateInputs1(t, x1, g, mL, mQ, JQ, l, kpx, kdx, kpL, kdL, kpQ, kdQ);
         
+        
+
         %%%
         %dynamic equations of the system
         x1dot = zeros(8,1);

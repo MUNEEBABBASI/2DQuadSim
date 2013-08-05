@@ -23,21 +23,14 @@ IQ = [2.32e-3,0,0;0,2.32e-3,0;0,0,4e-3] ;
 JQ = IQ(2,2) ;
 l = 1; %length of cable, m
 
-global s
-s.g = g;
-s.mQ = mQ;
-s.mL = mL;
-s.JQ = JQ;
-s.l = l;
-
 % control gains
 % mode 1
-kpx = [2*5*0.1; 20*5*0.1];%[2*5*0.1; 20*5*0.1];
-kdx = [2*0.5; 10*2*0.5];%[2*0.5; 10*2*0.5];
+kpx = [2*5*0.1; 20*5*0.1];
+kdx = [2*0.5; 10*2*0.5];
 kpL = 0.7;
 kdL = 0.1;
-kpQ = 140; %160;
-kdQ = 56;%56;
+kpQ = 160;
+kdQ = 56;
 
 % mode 2
 kp = 0.8;
@@ -50,7 +43,7 @@ kd_phi = 7;
 %%% 
 % initial conditions 
 tstart = 0;
-tend = 50; %total time of simulation, s
+tend = 1; %total time of simulation, s
 [xT, dxT, d2xT, d3xT, d4xT, d5xT, d6xT] = desiredTraj(0, g, mQ, JQ);
 [p_nom, dp_nom, d2p_nom, d3p_nom, d4p_nom, ...
     phiL_nom, dphiL_nom, d2phiL_nom, d3phiL_nom, d4phiL_nom, ...
@@ -118,17 +111,17 @@ desout = []; %record desired states [xQ vQ phiQdes phiLdes]
         modeout = [modeout; currentMode*ones(nt-1, 1)];
         xout = [xout; [x1(2:nt, :) zeros(nt-1, 2)]];
         
-        utemp = zeros(nt, 2);
-        destemp = zeros(nt, 6);
-        for tempTime = 1:nt,
-            [f, M, phiL_des, phiQ_des, p_des, dp_des] = calculateInputs1(t(tempTime), x1(tempTime, :)', g, mL, mQ, JQ, l, kpx, kdx, kpL, kdL, kpQ, kdQ);
-            utemp(tempTime, :) = [f M];
-            destemp(tempTime, :) = [x1(tempTime, 1)-l*p_des(1, 1) x1(tempTime, 2)-l*p_des(2, 1) ...
-                x1(tempTime, 3)-l*dp_des(1, 1) x1(tempTime, 4)-l*dp_des(2, 1) ...
-                phiQ_des phiL_des];
-        end
-        uout = [uout; utemp];
-        desout = [desout; destemp];
+%         utemp = zeros(nt, 2);
+%         destemp = zeros(nt, 6);
+%         for tempTime = 1:nt,
+%             [f, M, phiL_des, phiQ_des, p_des, dp_des] = calculateInputs1(t(tempTime), x1(tempTime, :)', g, mL, mQ, JQ, l, kpx, kdx, kpL, kdL, kpQ, kdQ);
+%             utemp(tempTime, :) = [f M];
+%             destemp(tempTime, :) = [x1(tempTime, 1)-l*p_des(1, 1) x1(tempTime, 2)-l*p_des(2, 1) ...
+%                 x1(tempTime, 3)-l*dp_des(1, 1) x1(tempTime, 4)-l*dp_des(2, 1) ...
+%                 phiQ_des phiL_des];
+%         end
+%         uout = [uout; utemp];
+%         desout = [desout; destemp];
         
         
         % only add the event if an event occured (te > 0)
@@ -270,7 +263,7 @@ figure()
 hold on;
 plot(xout(:, 1), xout(:, 2), 'b'); %x-z position of load
 plot(quadx(:, 1), quadx(:, 2), 'k');
-plot(xTraj(:, 1), xTraj(:, 2), 'r--');
+plot(xTraj(1, :), xTraj(2, :), 'r--');
 legend('load', 'quadcopter', 'desired load trajectory');
 xlabel('x position');
 ylabel('z position');
@@ -345,32 +338,6 @@ ylabel('distance (m)');
 title('distance between quad and load');
 
 
-% plot inputs over time
-figure()
-plot(tout, uout(:, 1));
-xlabel('time (s)');
-ylabel('f (N)');
-title('force over time');
-
-figure()
-plot(tout, uout(:, 2));
-xlabel('time (s)');
-ylabel('M');
-title('moment over time');
-
-
-% plot tension over time
-figure()
-T = zeros(length(d2xTraj(:, 1)), 1);
-for i = 1:length(d2xTraj(:, 1))
-    T(i, 1) = mL.* norm ( [d2xTraj(i, 1); d2xTraj(i, 2)] + [0; g]);
-end
-plot(tout, T);
-xlabel('time (s)');
-ylabel('tension (N)');
-title('tension over time');
-
-
 
 
 
@@ -378,8 +345,7 @@ title('tension over time');
 %%%%%
 % event for when string goes from taut to slack
 function [value, isterminal, direction] = slack(t, x1)
-    [xT, dxT, d2xT, d3xT, d4xT, d5xT, d6xT] = desiredTraj(t, g, mQ, JQ);
-    value = mL * norm( [d2xT(1, 1); d2xT(2, 1)] + [0; g] ); %when tension goes to 0, T = || mL (d/dt vL + ge3) ||
+    value = mL * norm( [x1(3, 1); x1(4, 1)] + [0; g] ); %when tension goes to 0, T = || mL (vL + ge3) ||
     isterminal = 1;
     direction = 0;
 end

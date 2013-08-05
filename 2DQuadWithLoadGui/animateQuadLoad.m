@@ -26,7 +26,7 @@ function varargout = animateQuadLoad(varargin)
 
 % Edit the above text to modify the response to help animateQuadLoad
 
-% Last Modified by GUIDE v2.5 23-Jul-2013 17:04:50
+% Last Modified by GUIDE v2.5 05-Aug-2013 17:04:56
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -179,6 +179,8 @@ plot(s.time,s.des(:, 3).*180./pi,'r--');
 legend('phiQ', 'phidotQ', 'phiQ des', 'Location', 'SouthEastOutside');
 ylabel('quad angle (deg, s)');
 
+
+% plot inputs
 axes(handles.axes8)
 hold on
 box on
@@ -197,7 +199,25 @@ plot(s.time,s.u(:, 2),'r');
 %ylim(s.limits9);
 ylabel('M');
 
-linkaxes([handles.axes2, handles.axes3, handles.axes4, handles.axes5, handles.axes6, handles.axes7, handles.axes8, handles.axes9], 'x');
+
+
+% plot tension over time
+figure()
+T = zeros(length(s.d2xTraj(:, 1)), 1);
+for i = 1:length(s.d2xTraj(:, 1))
+    T(i, 1) = s.mL.* norm ( [s.d2xTraj(i, 1); s.d2xTraj(i, 2)] + [0; s.g]);
+end
+
+axes(handles.axes10)
+hold on
+box on
+plot(s.time,T,'r');
+%s.limits10 = get(handles.axes9, 'YLim');
+%s.line10 = line([s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)],[-100,100]);
+%ylim(s.limits10);
+ylabel('tension');
+
+linkaxes([handles.axes2, handles.axes3, handles.axes4, handles.axes5, handles.axes6, handles.axes7, handles.axes8, handles.axes9, handles.axes10], 'x');
 
 
 
@@ -214,7 +234,6 @@ plot(s.xL(t, 1), s.xL(t, 2), 'ro', 'Markersize', 10, 'MarkerFaceColor', 'r');
 hold on
 grid on
 box on
-s.phiQ(t, 1)
 line([s.xQ(t, 1)-s.quadLength/2*cos(s.phiQ(t, 1)) s.xQ(t, 1)+s.quadLength/2*cos(s.phiQ(t, 1))], ...
     [s.xQ(t, 2)-s.quadLength/2*sin(s.phiQ(t, 1)) s.xQ(t, 2)+s.quadLength/2*sin(s.phiQ(t, 1))], 'Color', 'k');
 %plot(s.xQ(t, 1), s.xQ(t, 2), 'k+', 'Markersize', 12);
@@ -231,7 +250,7 @@ end
 zlabel('z (m)');
 ylabel('y (m)');
 xlabel('x (m)');
-set(gca, 'XLim', s.limits, 'YLim', s.limits)
+set(gca, 'XLim', s.limits, 'YLim', s.limits);
 %set(gca,'xlim',[-1 1], 'ylim',ylimits, 'zlim', ylimits);
 
 
@@ -723,7 +742,7 @@ while (get(hObject,'Value') && stop==0)
       zlabel('z (m)');
       ylabel('y (m)');
       xlabel('x (m)');
-      pause(1/(10^(s.simSpeed*5)))      
+      pause(1/(10^(s.simSpeed*5)));     
       
       
       
@@ -797,3 +816,12 @@ function axes7_CreateFcn(hObject, eventdata, handles)
 % handles    empty - handles not created until after all CreateFcns called
 
 % Hint: place code in OpeningFcn to populate axes7
+
+
+% --- Executes during object creation, after setting all properties.
+function axes10_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to axes10 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: place code in OpeningFcn to populate axes10

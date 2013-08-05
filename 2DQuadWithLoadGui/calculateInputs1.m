@@ -36,7 +36,7 @@ p_des = - FA./norm(FA);
 phiL_des = atan2(-FA(1, 1), FA(2, 1));
 
 FB = mQ.*d2xT-mQ.*l.*d2p_nom+mQ.*g.*[0;1];
-F = (mL*(FA)+FB);
+F = (mL*FA+FB);
 f = -F(1, 1)*sin(phiQ) + F(2, 1)*cos(phiQ);
 
 
@@ -56,6 +56,7 @@ end
 %%%
 %quadrotor attitude control
 M = JQ*(-kpQ*(phiQ-phiQ_des) - kdQ*(phidotQ-dphiQ_nom)) + JQ*d2phiQ_nom;
+
 
 
     % takes difference of two angles, bounding output between -pi and pi

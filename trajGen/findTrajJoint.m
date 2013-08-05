@@ -36,14 +36,20 @@ function [xT] = findTrajJoint(r, n, m, dim, tDes, posDes)
 
 
 
+% nondimensionalized time 
+t0 = 0;
+t1 = 1;
+
+
+
 
 %%%
 % construct Q_joint by making a block diagonal matrix from Q's of
 %   each piece of the trajectory
-%   note that we are not nondimensionalizing the time here
+%   note that we are nondimensionalizing the time here
 Q_joint = [];
 for i = 1:m,
-    Q = findCostMatrix(n, r, tDes(i, 1), tDes(i+1, 1));
+    Q = findCostMatrix(n, r, 0, 1);
       
     Q_joint = blkdiag(Q_joint, Q);
 end
@@ -66,11 +72,11 @@ for i = 1:m,
         maxPower = nnz(derCoeff(j+1, :))-1;
     
         for k = 0:maxPower,
-                tinit = tDes(i, 1);
-                tfinal = tDes(i+1, 1);
+                %tinit = tDes(i, 1);
+                %tfinal = tDes(i+1, 1);
                 
-                A(j+1, k+1) = tinit^(maxPower-k)*derCoeff(j+1, k+1);
-                A(j+1+r, k+1) = tfinal^(maxPower-k)*derCoeff(j+1, k+1);
+                A(j+1, k+1) = t0^(maxPower-k)*derCoeff(j+1, k+1);
+                A(j+1+r, k+1) = t1^(maxPower-k)*derCoeff(j+1, k+1);
         end
     end
     
@@ -93,7 +99,7 @@ M = zeros(2*r*m, r*(m+1));
 for i = 0:r-1,
     for j = 0:m,
         if (posDes(i+1, j+1) ~= Inf)
-            D_F = [D_F; posDes(i+1, j+1)]; %add this constraint to D_F
+            D_F = [D_F; posDes(i+1, j+1, dim)]; %add this constraint to D_F
             
             % add the appropriate M rows 
             if (j == 0),
@@ -121,7 +127,7 @@ end
 
 for i = 0:r-1,
     for j = 0:m,
-        if (posDes(i+1, j+1) == Inf)
+        if (posDes(i+1, j+1, dim) == Inf)
             
             % add the appropriate M rows 
             if (j == 0),

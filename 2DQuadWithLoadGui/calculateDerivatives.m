@@ -27,6 +27,7 @@ function [p, dp, d2p, d3p, d4p, phiL, dphiL, d2phiL, d3phiL, d4phiL, f, phiQ, dp
     
     dT = mL*(d2xT(1, 1)*d3xT(1, 1) + (d2xT(2, 1)+g)*d3xT(2, 1))*(d2xT(1, 1)^2+(d2xT(2, 1)+g)^2)^(-1/2);
     dp = -1./T.*(mL.*d3xT + dT.*p);
+    %dphiL = (d2xT(1, 1)*d2xT(2, 1)-d2xT(1, 1)*(d2xT(2, 1)+g))/(d2xT(1, 1)^2+(d2xT(2, 1)+g)^2);
     dphiL = dp(1, 1)*cos(phiL) + dp(2, 1)*sin(phiL);
     
     

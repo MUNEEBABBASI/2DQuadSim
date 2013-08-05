@@ -24,6 +24,23 @@ clc
 
 %%%
 % set up problem
+% r = 6; %derivative to minimize in cost function
+% n = 11; %order of desired trajectory
+% m = 3; %number of pieces in trajectory
+% d = 2; %dimensions
+% 
+% % specify the m+1 keyframes
+% tDes = [0; 2; 4; 6]; %specify desired arrival times at keyframes
+% % specify desired positions and/or derivatives at keyframes, 
+% % Inf represents unconstrained values
+% % r x (m+1) x d, where each row i is the value the (i-1)th derivative of keyframe j for dimensions k 
+% posDes = zeros(r, m+1, d);
+% posDes(:, :, 1) = [0 1 1 0; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0]; 
+% posDes(:, :, 2) = [0 3 2 2; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0];
+% posDes(:, :, 3) = [1 2 3 4; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0];
+% [i, j, k] = size(posDes);
+% l = length(tDes);
+
 r = 4; %derivative to minimize in cost function
 n = 7; %order of desired trajectory
 m = 3; %number of pieces in trajectory
@@ -36,7 +53,7 @@ tDes = [0; 2; 4; 6]; %specify desired arrival times at keyframes
 % r x (m+1) x d, where each row i is the value the (i-1)th derivative of keyframe j for dimensions k 
 posDes = zeros(r, m+1, d);
 posDes(:, :, 1) = [0 1 1 0; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0]; 
-posDes(:, :, 2) = [0 0 2 2; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0];
+posDes(:, :, 2) = [0 3 2 2; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0];
 posDes(:, :, 3) = [1 2 3 4; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0];
 [i, j, k] = size(posDes);
 l = length(tDes);
@@ -85,14 +102,17 @@ end
 xT = zeros(n+1, m, d); 
 xT2 = zeros(n+1, m, d); 
 for i = 1:d,
-    xT(:, :, i) = findTraj(r, n, m, i, tDes, posDes);
-    xT2(:, :, i) = findTrajJoint(r, n, m, i, tDes, posDes);
+   xT(:, :, i) = findTraj(r, n, m, i, tDes, posDes);
+   xT2(:, :, i) = findTrajJoint(r, n, m, i, tDes, posDes);
 end
 
 
 xT3 = findTrajCorr(r, n, m, d, tDes, posDes, ineqConst);
 %xT3 = findTrajLoad(r, n, m, d, tDes, posDes, ineqConst);
 
+
+xT
+xT2
 
 
 %%% 
