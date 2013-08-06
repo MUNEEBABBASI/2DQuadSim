@@ -31,6 +31,7 @@ d = 2; %dimensions
 
 % specify the m+1 keyframes
 tDes = [0; 8; 16; 24]; %specify desired arrival times at keyframes
+%tDes = [0; 2;4;6]; %specify desired arrival times at keyframes
 % specify desired positions and/or derivatives at keyframes, 
 % Inf represents unconstrained values
 % r x (m+1) x d, where each row i is the value the (i-1)th derivative of keyframe j for dimensions k 

@@ -1,10 +1,10 @@
-This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012) (format=pdflatex 2012.6.30)  5 AUG 2013 17:25
+This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012) (format=pdflatex 2012.6.30)  6 AUG 2013 12:42
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
  %&-line parsing enabled.
-**2Dload.tex
-(./2Dload.tex
+**trajectoryGeneration.tex
+(./trajectoryGeneration.tex
 LaTeX2e <2011/06/27>
 Babel <v3.8m> and hyphenation patterns for english, dumylang, nohyphenation, ge
 rman-x-2012-05-30, ngerman-x-2012-05-30, afrikaans, ancientgreek, ibycus, arabi
@@ -242,8 +242,8 @@ Package caption Info: float package is loaded.
 \sf@top=\skip54
 \sf@bottom=\skip55
 )
-(./2Dload.aux)
-\openout1 = `2Dload.aux'.
+(./trajectoryGeneration.aux)
+\openout1 = `trajectoryGeneration.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 16.
 LaTeX Font Info:    ... okay on input line 16.
@@ -367,63 +367,68 @@ LaTeX Font Info:    Try loading font information for U+lasy on input line 26.
 (/usr/local/texlive/2012/texmf-dist/tex/latex/base/ulasy.fd
 File: ulasy.fd 1998/08/17 v2.2e LaTeX symbol font definitions
 )
-Overfull \hbox (23.49934pt too wide) in paragraph at lines 26--46
+Overfull \hbox (16.88397pt too wide) in paragraph at lines 26--41
 [][]
  []
 
 [1
 
 {/usr/local/texlive/2012/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
-Overfull \hbox (9.24945pt too wide) detected at line 157
-\OT1/cmr/m/n/10 ^^F : []
+[2] [3] [4] [5] [6] [7] [8] [9] [10]
+Overfull \hbox (51.8361pt too wide) in paragraph at lines 575--579
+\OT1/cmr/m/n/10 [\OML/cmm/m/it/10 x[]\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 t[]\OT1/
+cmr/m/n/10 )  \OML/cmm/m/it/10 x[]\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 t[]\OT1/cmr
+/m/n/10 )  \OML/cmm/m/it/10 :::  x[]\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 t[]\OT1/c
+mr/m/n/10 )  \OML/cmm/m/it/10 x[]\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 t[]\OT1/cmr/
+m/n/10 )  \OML/cmm/m/it/10 x[]\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 t[]\OT1/cmr/m/n
+/10 )  \OML/cmm/m/it/10 :::  x[]\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 t[]\OT1/cmr/m
+/n/10 )  \OML/cmm/m/it/10 x[]\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 t[]\OT1/cmr/m/n/
+10 )  \OML/cmm/m/it/10 x[]\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 t[]\OT1/cmr/m/n/10 
+)  \OML/cmm/m/it/10 :::  x[]\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 t[]\OT1/cmr/m/n/1
+0 )  \OML/cmm/m/it/10 :::  x[]\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 t[]\OT1/cmr/m/n
+/10 )  \OML/cmm/m/it/10 x[]\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 t[]\OT1/cmr/m/n/10
+ )  \OML/cmm/m/it/10 :::  x[]\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 t[]\OT1/cmr/m/n/
+10 )][]$.  
  []
 
-[2] [3] [4] [5] [6] [7]
-Overfull \hbox (35.05638pt too wide) in paragraph at lines 540--540
+
+Overfull \hbox (4.88603pt too wide) in paragraph at lines 589--589
 [] 
  []
 
-[8] [9]
-Overfull \hbox (48.788pt too wide) in paragraph at lines 616--616
-[] 
- []
-
-[10] [11] [12] [13] [14] [15] [16] (./2Dload.aux) ) 
+[11] [12] [13] (./trajectoryGeneration.aux) ) 
 Here is how much of TeX's memory you used:
- 4383 strings out of 493488
- 64170 string characters out of 3141326
- 157309 words of memory out of 3000000
- 7601 multiletter control sequences out of 15000+200000
- 15993 words of font info for 65 fonts, out of 3000000 for 9000
+ 4370 strings out of 493488
+ 64204 string characters out of 3141326
+ 152392 words of memory out of 3000000
+ 7597 multiletter control sequences out of 15000+200000
+ 12156 words of font info for 51 fonts, out of 3000000 for 9000
  957 hyphenation exceptions out of 8191
- 44i,16n,42p,435b,256s stack positions out of 5000i,500n,10000p,200000b,50000s
-</usr/local/texlive/2012/tex
-mf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/local/texlive/2012/texm
-f-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/local/texlive/2012/texmf
--dist/fonts/type1/public/amsfonts/cm/cmbx7.pfb></usr/local/texlive/2012/texmf-d
-ist/fonts/type1/public/amsfonts/cm/cmbx9.pfb></usr/local/texlive/2012/texmf-dis
-t/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/local/texlive/2012/texmf-dist
-/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2012/texmf-dist/
-fonts/type1/public/amsfonts/cm/cmmi5.pfb></usr/local/texlive/2012/texmf-dist/fo
-nts/type1/public/amsfonts/cm/cmmi6.pfb></usr/local/texlive/2012/texmf-dist/font
-s/type1/public/amsfonts/cm/cmmi7.pfb></usr/local/texlive/2012/texmf-dist/fonts/
-type1/public/amsfonts/cm/cmmi9.pfb></usr/local/texlive/2012/texmf-dist/fonts/ty
-pe1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2012/texmf-dist/fonts/type
-1/public/amsfonts/cm/cmr5.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/p
-ublic/amsfonts/cm/cmr6.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/publ
-ic/amsfonts/cm/cmr7.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/public/
-amsfonts/cm/cmr8.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/public/ams
-fonts/cm/cmr9.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfon
-ts/cm/cmsy10.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfont
-s/cm/cmsy5.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/
-cm/cmsy7.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm
-/cmsy9.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/c
-mti10.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/symbo
-ls/msbm10.pfb>
-Output written on 2Dload.pdf (16 pages, 261460 bytes).
+ 44i,16n,42p,652b,220s stack positions out of 5000i,500n,10000p,200000b,50000s
+</usr/local/texlive/2012/texmf-dis
+t/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/local/texlive/2012/texmf-dist
+/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/local/texlive/2012/texmf-dist/
+fonts/type1/public/amsfonts/cm/cmbx7.pfb></usr/local/texlive/2012/texmf-dist/fo
+nts/type1/public/amsfonts/cm/cmex10.pfb></usr/local/texlive/2012/texmf-dist/fon
+ts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2012/texmf-dist/font
+s/type1/public/amsfonts/cm/cmmi12.pfb></usr/local/texlive/2012/texmf-dist/fonts
+/type1/public/amsfonts/cm/cmmi5.pfb></usr/local/texlive/2012/texmf-dist/fonts/t
+ype1/public/amsfonts/cm/cmmi6.pfb></usr/local/texlive/2012/texmf-dist/fonts/typ
+e1/public/amsfonts/cm/cmmi7.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1
+/public/amsfonts/cm/cmmi9.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/p
+ublic/amsfonts/cm/cmr10.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/pub
+lic/amsfonts/cm/cmr12.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/publi
+c/amsfonts/cm/cmr5.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/public/a
+msfonts/cm/cmr7.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsf
+onts/cm/cmr9.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfont
+s/cm/cmsy10.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts
+/cm/cmsy5.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/c
+m/cmsy7.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/
+cmsy9.pfb>
+Output written on trajectoryGeneration.pdf (13 pages, 221791 bytes).
 PDF statistics:
- 145 PDF objects out of 1000 (max. 8388607)
- 103 compressed objects within 2 object streams
+ 123 PDF objects out of 1000 (max. 8388607)
+ 88 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 

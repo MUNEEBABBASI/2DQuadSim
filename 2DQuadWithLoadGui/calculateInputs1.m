@@ -12,7 +12,7 @@
 %   [f M]: 1x2 vector, control inputs for 2d quadrotor system at time t
 
 
-function [f, M, phiL_des, phiQ_des, p_des, dp_nom] = calculateInputs1(t, x1, g, mL, mQ, JQ, l, kpx, kdx, kpL, kdL, kpQ, kdQ)
+function [f, M, phiL_des, phiQ_des, d2phiQ_nom, p_des, dp_nom] = calculateInputs1(t, x1, g, mL, mQ, JQ, l, kpx, kdx, kpL, kdL, kpQ, kdQ)
 
 % x1 = [xL vL phiL phidotL phiQ phidotQ]', note xL and vL are vectors in R^2
 yL = x1(1, 1); zL = x1(2, 1); vyL = x1(3, 1); vzL = x1(4, 1); phiL = x1(5, 1); phidotL = x1(6, 1); ...
@@ -56,8 +56,6 @@ end
 %%%
 %quadrotor attitude control
 M = JQ*(-kpQ*(phiQ-phiQ_des) - kdQ*(phidotQ-dphiQ_nom)) + JQ*d2phiQ_nom;
-
-
 
     % takes difference of two angles, bounding output between -pi and pi
     function diff = angleDiff(x1, x2)

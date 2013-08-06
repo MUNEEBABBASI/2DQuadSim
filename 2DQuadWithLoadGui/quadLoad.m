@@ -50,7 +50,7 @@ kd_phi = 7;
 %%% 
 % initial conditions 
 tstart = 0;
-tend = 50; %total time of simulation, s
+tend = 24; %total time of simulation, s
 [xT, dxT, d2xT, d3xT, d4xT, d5xT, d6xT] = desiredTraj(0, g, mQ, JQ);
 [p_nom, dp_nom, d2p_nom, d3p_nom, d4p_nom, ...
     phiL_nom, dphiL_nom, d2phiL_nom, d3phiL_nom, d4phiL_nom, ...
@@ -119,13 +119,13 @@ desout = []; %record desired states [xQ vQ phiQdes phiLdes]
         xout = [xout; [x1(2:nt, :) zeros(nt-1, 2)]];
         
         utemp = zeros(nt, 2);
-        destemp = zeros(nt, 6);
+        destemp = zeros(nt, 7);
         for tempTime = 1:nt,
-            [f, M, phiL_des, phiQ_des, p_des, dp_des] = calculateInputs1(t(tempTime), x1(tempTime, :)', g, mL, mQ, JQ, l, kpx, kdx, kpL, kdL, kpQ, kdQ);
+            [f, M, phiL_des, phiQ_des, d2phiQ_nom, p_des, dp_des] = calculateInputs1(t(tempTime), x1(tempTime, :)', g, mL, mQ, JQ, l, kpx, kdx, kpL, kdL, kpQ, kdQ);
             utemp(tempTime, :) = [f M];
             destemp(tempTime, :) = [x1(tempTime, 1)-l*p_des(1, 1) x1(tempTime, 2)-l*p_des(2, 1) ...
                 x1(tempTime, 3)-l*dp_des(1, 1) x1(tempTime, 4)-l*dp_des(2, 1) ...
-                phiQ_des phiL_des];
+                phiQ_des phiL_des d2phiQ_nom ];
         end
         uout = [uout; utemp];
         desout = [desout; destemp];
