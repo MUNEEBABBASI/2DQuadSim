@@ -118,14 +118,14 @@ end
 % %%% 
 % % plot the trajectory
 % 
-% create legend labels for dimensions, must correspond to order of m
+% % create legend labels for dimensions, must correspond to order of m
 dimLabels{1} = 'x (m)';
 dimLabels{2} = 'y (m)'; 
 dimLabels{3} = 'z (m)'; 
 plotDim = [1 2]; %if you want to plot two dimensions against each other, specify here 
     % nxm matrix, creates n plots of column 1 vs. column 2
     
-%plotTraj(xT, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim);
+% plotTraj(xT, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim);
 plotTraj(xT2, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim);
 % plotTraj(xT3, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim);
 

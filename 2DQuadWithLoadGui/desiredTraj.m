@@ -30,7 +30,7 @@ m = 3; %number of pieces in trajectory
 d = 2; %dimensions
 
 % specify the m+1 keyframes
-tDes = [0; 8; 16; 24]; %specify desired arrival times at keyframes
+tDes = [0; 2;4;6]; %specify desired arrival times at keyframes
 %tDes = [0; 2;4;6]; %specify desired arrival times at keyframes
 % specify desired positions and/or derivatives at keyframes, 
 % Inf represents unconstrained values
