@@ -17,13 +17,13 @@
 function [p, dp, d2p, d3p, d4p, phiL, dphiL, d2phiL, d3phiL, d4phiL, f, phiQ, dphiQ, d2phiQ] = calculateDerivatives(t, g, mL, mQ, JQ, l)
 
     % find desired trajectory and its derivatives
-    [xT, dxT, d2xT, d3xT, d4xT, d5xT, d6xT] = desiredTraj(t, g, mQ, JQ);
+    [xT, dxT, d2xT, d3xT, d4xT, d5xT, d6xT] = desiredTraj(t, g, mQ, JQ, 1)
 
     %calculate derivatives of T, p, phiL
     Tp = -(mL.*d2xT + mL.*g.*[0;1]);
     p = Tp./ norm(Tp);
     phiL = atan2(Tp(1, 1), -Tp(2, 1));
-    T = Tp(1, 1)*sin(phiL) - Tp(2, 1)*cos(phiL);
+    T = Tp(1, 1)*sin(phiL) - Tp(2, 1)*cos(phiL)
     
     dT = mL*(d2xT(1, 1)*d3xT(1, 1) + (d2xT(2, 1)+g)*d3xT(2, 1))*(d2xT(1, 1)^2+(d2xT(2, 1)+g)^2)^(-1/2);
     dp = -1./T.*(mL.*d3xT + dT.*p);

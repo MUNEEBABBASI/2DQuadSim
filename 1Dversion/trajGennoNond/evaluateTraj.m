@@ -75,22 +75,14 @@ t1 = 1;
 
 % evaluate trajectory at given time
 if (t < tDes(1, 1)),
-    
     disp('one')
-    1
-    
-     scaledt = t0;
-    %scaledt = t;
-    scaledt
-    
     % evaluate in each dimension
     for k = 1:d
         for l = 0:r %evaluate each derivative at the first trajectory's inital time
-            
-            term = 1/((tDes(2, 1)-tDes(1, 1))^(l));
-            %term = 1;
-
-            
+            %scaledt = t0;
+            %term = 1/((tDes(2, 1)-tDes(1, 1))^(l));
+            term = 1;
+            scaledt = t;
             dxT(l+1, k) = term*polyval(derivativesX{l+1}(:, 1, k), scaledt);
         end
     end
@@ -101,21 +93,27 @@ elseif (t < tDes(m+1, 1));
 
     for j = 1:m,
         if (t < tDes(j+1, 1));
+                disp('two')
+    j
+%             % check if the point we switched from was the boundary of a mode switch
+%             if (~isempty(modes) && ismember(j-1, modes(:, 1)))
+%                 index = find((j-1) == modes(:, 1));
+%                 % if so, check which side of the switch we're on
+%                 % if still in last mode for integration, go back to last
+%                 %   segement
+%                 if currentMode == modes(index, 2),
+%                     j = j-1;
+%                 end
+%             end
             
-            disp('two')
-            j
-            
-             scaledt = (t-tDes(j, 1))/(tDes(j+1, 1)-tDes(j, 1)); % find the nondimensionalized time
-            %scaledt = t;
-            scaledt
+            %scaledt = (t-tDes(j, 1))/(tDes(j+1, 1)-tDes(j, 1)); % find the nondimensionalized time
+            %term = 1/((tDes(j+1, 1)-tDes(j, 1))^(l));
+            term = 1;
+            scaledt = t;
             
             % evaluate in each dimension
             for k = 1:d,
                 for l = 0:r,
-                    
-                    term = 1/((tDes(j+1, 1)-tDes(j, 1))^(l));
-                    %term = 1;
-
                     dxT(l+1, k) = term * polyval(derivativesX{l+1}(:, j, k), scaledt);
                 end
             end
@@ -126,27 +124,22 @@ elseif (t < tDes(m+1, 1));
     
     % if after the final keyframe time, assume hover at final keyframe position
 else
-    
     disp('three')
-    m
-
-    scaledt = t1;
-    scaledt
-
     % evaluate in each dimension
     for k = 1:d
-        for l = 0:r, %evaluate each derivative
-           
-                        
-            term = 1/((tDes(m+1, 1)-tDes(m, 1))^(l));
-            %term = 1;
-
+        for l = 0:r, %evaluate each derivative 
+            %scaledt = (t-tDes(j, 1))/(tDes(j+1, 1)-tDes(j, 1)); % find the nondimensionalized time
+            %term = 1/((tDes(m+1, 1)-tDes(m, 1))^(l));
+            term = 1;
+            scaledt = t1;
             
-            dxT(l+1, k) = term * polyval(derivativesX{l+1}(:, m, k), scaledt);
+        	dxT(l+1, k) = term * polyval(derivativesX{l+1}(:, m, k), scaledt);
         end
     end
 end
-
+r
+t
+dxT
 
 
 end

@@ -217,7 +217,7 @@ for i = 0:m,
         posDesQ = zeros(4, 2); % we want to optimize snap of quadrotor between 2 points
         
         % find states at moment of T = 0
-        [temp, ~] = evaluateTraj(tDes(2, 1), n, 1, 1, xTL(:, mNew), tDes, 5, [])
+        [temp, ~] = evaluateTraj(tDes(2, 1), n, 1, 1, xTL(:, mNew), tDes, 5, []);
 
         
         % beginning quadrotor position, velocity can be derived from state at
@@ -235,7 +235,7 @@ for i = 0:m,
         %   conditions
         
         % find displacement
-        d = posDes(1, 3) - temp(1, 1)
+        d = posDes(1, 3) - temp(1, 1);
         % find time it takes to reach beginning of free fall to end
         % take the larger time - assume this is positive
         t_temp = roots([-g*1/2 temp(2, 1) -d]); % solve for -1/2gt^2+vit - d = 0
@@ -244,7 +244,7 @@ for i = 0:m,
         else
             t = t_temp(2, 1);
         end
-        t
+
         
         % find the nondimensionalized time
         %tau = (t-t0)/(t1-t0);
@@ -276,11 +276,10 @@ for i = 0:m,
         %Q = findCostMatrix(7, 4, tDes(2, 1), tDes(3, 1));
         Q = findCostMatrix(7, 4, t0, t1);
         
-        posDesQ
+  
         % find A matrix
         [A_fixed, b_fixed] = findFixedConstraints(4, 7, 1, 1, posDesQ, t0, t1, tDes(2:3, 1), 1);
-        A_fixed 
-        b_fixed
+ 
         % find trajectory
         xT_all = quadprog(Q,[],[],[],A_fixed, b_fixed);
         

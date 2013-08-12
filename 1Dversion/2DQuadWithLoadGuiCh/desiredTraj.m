@@ -37,6 +37,9 @@ global s
 
 
 
+
+
+ 
 % %%%
 % % design an optimal trajectory
 % 
@@ -49,7 +52,7 @@ global s
 % d = 2; %dimensions
 % 
 % % specify the m+1 keyframes
-% tDes = [0; 2;4;6]; %specify desired arrival times at keyframes
+% tDes = [0; 8; 16; 24]; %specify desired arrival times at keyframes
 % %tDes = [0; 2;4;6]; %specify desired arrival times at keyframes
 % % specify desired positions and/or derivatives at keyframes, 
 % % Inf represents unconstrained values
@@ -57,14 +60,11 @@ global s
 % posDes = zeros(r, m+1, d);
 % posDes(:, :, 1) = [0 1 1 0; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0]; 
 % posDes(:, :, 2) = [0 3 2 2; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0];
-% 
-% %posDes(:, :, 1) = [0 1 1 0; 0 0 Inf 0; 0 0 Inf 0; 0 0 Inf 0; 0 0 Inf 0; 0 0 Inf 0]; 
-% %posDes(:, :, 2) = [0 0 2 2; 0 0 Inf 0; 0 0 Inf 0; 0 0 Inf 0; 0 0 Inf 0; 0 0 Inf 0];
 % [i, j, k] = size(posDes);
-% l = length(tDes);
+% p = length(tDes);
 % 
 % % specify s corridor constraints
-% ineqConst.numConst = 1; %integer, number of constraints 
+% ineqConst.numConst = 0; %integer, number of constraints 
 % ineqConst.start = 2; %sx1 matrix of keyframes where constraints begin
 % ineqConst.nc = 20; %sx1 matrix of numbers of intermediate points
 % ineqConst.delta = 0.05; %sx1 matrix of maximum distnaces
@@ -77,7 +77,7 @@ global s
 % % verify that the problem is well-formed
 % 
 % % polynominal trajectories must be at least of order 2r-1 to have all derivatives lower than r defined
-% if (n < (2*r-1)) 
+% if (n < (2*r-p)) 
 %     error('trajectory is not of high enough order for derivative optimized')
 % end
 % 
@@ -85,13 +85,13 @@ global s
 %     error('not enough contraints specified: to minimize kth derivative, constraints must go up to the (k-1)th derivative');
 % end
 % 
-% if (j < m+1 || l < m+1), % must specify m+1 keyframes for m pieces of trajectory
+% if (j < m+1 || p < m+1), % must specify m+1 keyframes for m pieces of trajectory
 %     error('minimum number of keyframes not specified');
 % end
-% 
-% if (ismember(Inf, posDes(:, 1, :)) || ismember(Inf, posDes(:, m+1, :)) )
-%     error('endpoints must be fully constrained');
-% end
+% % 
+% % if (ismember(Inf, posDes(:, 1, :)) || ismember(Inf, posDes(:, m+1, :)) )
+% %     error('endpoints must be fully constrained');
+% % end
 % 
 % if (k < d)
 %     error('not enough dimensions specified');
@@ -234,6 +234,7 @@ global s
 
 
 
+
 %%%%
 % 1D load with constraint changes
 
@@ -250,13 +251,13 @@ m = 2; %number of pieces in trajectory
 d = 2; %dimensions
 
 % specify the m+1 keyframes
-tDes = [0; 2; 2.6993]; %specify desired arrival times at keyframes
+tDes = [0; 1; 1.4515]; %specify desired arrival times at keyframes
 TDes = [Inf; 0; Inf]; %specify keyframes where you want tension to be 0
 % specify desired positions and/or derivatives at keyframes, 
 % Inf represents unconstrained values
 % r x (m+1) x d, where each row i is the value the (i-1)th derivative of keyframe j for dimensions k 
 posDes = zeros(r, m+1, d);
-posDes(:, :, 2) = [-1 0 -1; 0 2 0; 0 -g 0; 0 0 0; 0 0 0; 0 0 0];
+posDes(:, :, 2) = [-1 0 -1; 0 Inf 0; 0 -g*tDes(2, 1)^2 0; 0 0 0; 0 0 0; 0 0 0];
 [i, j, k] = size(posDes);
 p = length(tDes);
 
@@ -348,13 +349,13 @@ if(isempty(traj))
     %plotDim = [1 2]; %if you want to plot two dimensions against each other, specify here
     % nxm matrix, creates n plots of column 1 vs. column 2
     
-    plotTraj(traj.xT(:, :, 2), n, 2, dtemp, tDes, posDes(:, :, 2), 0.01, dimLabels, plotDim);
-    plotTraj(traj.xTQ(:, :, 2), n, 2, dtemp, tDes, posDes(:, :, 2), 0.01, dimLabels, plotDim);
+    plotTraj(traj.xT, n, 2, dtemp, tDes, posDes, 0.01, dimLabels, plotDim);
+    plotTraj(traj.xTQ, n, 2, dtemp, tDes, posDes, 0.01, dimLabels, plotDim);
     
     
     [~, traj.derivativesX] = evaluateTraj(t, n, 2, d, traj.xT, tDes, r, []);
     [~, traj.derivativesXQ] = evaluateTraj(t, n, 2, d, traj.xTQ, tDes, r, []);
-
+    traj.derivativesX{1}
 end
 
 

@@ -76,12 +76,8 @@ t1 = 1;
 % evaluate trajectory at given time
 if (t < tDes(1, 1)),
     
-    disp('one')
-    1
-    
      scaledt = t0;
     %scaledt = t;
-    scaledt
     
     % evaluate in each dimension
     for k = 1:d
@@ -101,13 +97,9 @@ elseif (t < tDes(m+1, 1));
 
     for j = 1:m,
         if (t < tDes(j+1, 1));
-            
-            disp('two')
-            j
-            
+
              scaledt = (t-tDes(j, 1))/(tDes(j+1, 1)-tDes(j, 1)); % find the nondimensionalized time
             %scaledt = t;
-            scaledt
             
             % evaluate in each dimension
             for k = 1:d,
@@ -126,12 +118,8 @@ elseif (t < tDes(m+1, 1));
     
     % if after the final keyframe time, assume hover at final keyframe position
 else
-    
-    disp('three')
-    m
 
     scaledt = t1;
-    scaledt
 
     % evaluate in each dimension
     for k = 1:d

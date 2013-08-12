@@ -38,13 +38,13 @@ m = 2; %number of pieces in trajectory
 d = 1; %dimensions
 
 % specify the m+1 keyframes
-tDes = [0; 2; 2.6993]; %specify desired arrival times at keyframes
+tDes = [0; 1; 1.4515]; %specify desired arrival times at keyframes
 TDes = [Inf; 0; Inf]; %specify keyframes where you want tension to be 0
 % specify desired positions and/or derivatives at keyframes, 
 % Inf represents unconstrained values
 % r x (m+1) x d, where each row i is the value the (i-1)th derivative of keyframe j for dimensions k 
 posDes = zeros(r, m+1, d);
-posDes(:, :, 1) = [-1 0 -1; 0 2 0; 0 -g 0; 0 0 0; 0 0 0; 0 0 0];
+posDes(:, :, 1) = [-1 0 -1; 0 Inf 0; 0 -g*tDes(2, 1)^2 0; 0 0 0; 0 0 0; 0 0 0];
 [i, j, k] = size(posDes);
 p = length(tDes);
 
@@ -101,11 +101,9 @@ xT2 = zeros(n+1, m, d);
 %xT3 = findTrajCorr(r, n, m, d, tDes, posDes, ineqConst);
 [xTL, xTQ, mode, mNew] = findTrajLoad1D(r, n, m, d, tDes, posDes, TDes, g, l, mL, mQ)
 
-xTL
-xTQ
 
 % look at l
-t = 0:0.001:tDes(m+1); %construct t vector 
+t = 0:0.01:tDes(m+1); %construct t vector 
 len = zeros(1, length(t));
 der2 = zeros(1, length(t));
 for i = 1:length(t),
@@ -127,19 +125,6 @@ plot(t, mL*(der2+g));
 title('tension');
 ylabel('len (m)');
 xlabel('time');
-
-
-
-disp('continuity checks')
-%check for continuity
-for i = 0:m
-    i
-[contL, ~] = evaluateTraj(tDes(i+1, 1), n, m, d, xTL, tDes, 5, [])
-
-[contQ, ~] = evaluateTraj(tDes(i+1, 1), n, m, d, xTQ, tDes, 5, [])
-end
-
-
 
 
 %%% 

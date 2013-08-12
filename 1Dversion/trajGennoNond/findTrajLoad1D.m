@@ -52,8 +52,8 @@ end
 
 
 % use nondimensionalized time
-t0 = 0;
-t1 = 1;
+%t0 = 0;
+%t1 = 1;
 
 % we seek trajectories
 % x1(t) = cx1,n*t^n + cx1,n-1*t^(n-1) + ... cx1,0;
@@ -129,8 +129,8 @@ for i = 0:m,
         % i is the keyframe we want to end at 
         % i is also trajectory piece we want to end at
         for j = (lastStart+1):i, 
-            %t0 = tDes(lastStart+1, 1);
-            %t1 = tDes(i, 1);
+            t0 = tDes(lastStart+1, 1);
+            t1 = tDes(i, 1);
     
             Q = findCostMatrix(n, r, t0, t1);
             
@@ -146,18 +146,14 @@ for i = 0:m,
         posDesNew = zeros(r, i-lastStart);
         tDesN = zeros(i-lastStart, 1);
         for j = 0:i-lastStart,
-            for k = 1:r
-            posDesNew(k, j+1) = posDes(k, lastStart+j+1);
-            if (lastStart+j) > 0,
-                posDesNew(k, j+1) = posDesNew(k, j+1)*(tDes(lastStart+j+1, 1)-tDes(lastStart+j, 1))^(k-1);
-            end
-            end
+            posDesNew(:, j+1) = posDes(:, lastStart+j+1);
             tDesN(j+1, 1) = tDes(lastStart+j+1 ,1);
         end
+        
 
         
         % construct fixed value constraints and continuity constraints 
-        [A_fixed, b_fixed] = findFixedConstraints(r, n, i-lastStart, 1, posDesNew, t0, t1, tDesN, 1);
+        [A_fixed, b_fixed] = findFixedConstraints(r, n, i-lastStart, 1, posDesNew, t0, t1, tDesN, 0);
         %[A_cont, b_cont] = findContConstraints(r, n, i-lastStart, 1, posDesNew, t0, t1);
         
         % put in one matrix - recall there is only one dimension here
@@ -185,7 +181,6 @@ for i = 0:m,
         % explicitly break tracjetory into its piecewise parts for output
         xT_this = zeros((n+1), i-lastStart);
         for j = 1:i-lastStart,
-            % scale to nondimensionalized time
             xT_this(:, j) = xT_all((j-1)*(n+1)+1:j*(n+1));
         end
         xTL = [xTL xT_this];
@@ -217,22 +212,13 @@ for i = 0:m,
         posDesQ = zeros(4, 2); % we want to optimize snap of quadrotor between 2 points
         
         % find states at moment of T = 0
-        [temp, ~] = evaluateTraj(tDes(2, 1), n, 1, 1, xTL(:, mNew), tDes, 5, [])
+        [temp, ~] = evaluateTraj(tDes(2, 1), n, 1, 1, xTL(:, mNew), tDes, 4, [])
 
         
         % beginning quadrotor position, velocity can be derived from state at
         %   keyframe i
         posDesQ(1, 1) = temp(1, 1)+len; %xQ = xL+l
-        
-        % nondimensionalize all higher derivatives
-        for k = 2:4
-            posDesQ(k, 1) = temp(k, 1)*(tDes(3, 1)-tDes(2, 1))^(k-1); % all higher derivatives equal
-        end
-
-        
-        
-        % these calculations happen in real time to find end-point
-        %   conditions
+        posDesQ(2:4, 1) = temp(2:4, 1); % all higher derivatives equal
         
         % find displacement
         d = posDes(1, 3) - temp(1, 1)
@@ -245,9 +231,6 @@ for i = 0:m,
             t = t_temp(2, 1);
         end
         t
-        
-        % find the nondimensionalized time
-        %tau = (t-t0)/(t1-t0);
         %t = t+tDes(2, 1)
         
         
@@ -260,10 +243,6 @@ for i = 0:m,
         vQminus = ((mL+mQ)*vLplus+mL*vLminus)/mQ;
         posDesQ(2, 2) = vQminus;
         
-        % look for nondimensionalizd constraint
-        posDesQ(2, 2) = vQminus*(tDes(3, 1)-tDes(2, 1));
-        
-        
         posDesQ(1, 2) = posDes(1, i+1)+len; % again, xQ = xL+l
         posDesQ(3:4, 2) = Inf;
         
@@ -273,12 +252,11 @@ for i = 0:m,
         %%% find trajectory
         % construct QP problem - note that there is always only 1 segment
         % construct Q matrix
-        %Q = findCostMatrix(7, 4, tDes(2, 1), tDes(3, 1));
-        Q = findCostMatrix(7, 4, t0, t1);
+        Q = findCostMatrix(7, 4, tDes(2, 1), tDes(3, 1));
         
         posDesQ
         % find A matrix
-        [A_fixed, b_fixed] = findFixedConstraints(4, 7, 1, 1, posDesQ, t0, t1, tDes(2:3, 1), 1);
+        [A_fixed, b_fixed] = findFixedConstraints(4, 7, 1, 1, posDesQ, t0, t1, tDes(2:3, 1), 0);
         A_fixed 
         b_fixed
         % find trajectory
@@ -300,8 +278,8 @@ for i = 0:m,
         % all higher derivatives = 0;
         
         % first n-2 terms are 0
-        xTL = [xTL [zeros(n-2, 1); -1/2*g*(tDes(3, 1)-tDes(2, 1))^2; temp(2, 1)*(tDes(3, 1)-tDes(2, 1)); temp(1, 1)]];
-        %xTL = [xTL [zeros(n-2, 1); -1/2*g; (temp(2, 1)); temp(1, 1)]];
+        xTL = [xTL [zeros(n-2, 1); -1/2*g; temp(2, 1)+g*tDes(2, 1); temp(1, 1)-temp(2, 1)*tDes(2, 1)-0.5*g*tDes(2, 1)^2]];
+        
         
         
         % add a time for this new time segment

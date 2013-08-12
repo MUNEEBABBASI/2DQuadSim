@@ -1,13 +1,15 @@
-% 7/26/13
-% quadLoad.m
+% 8/6/13
+% quadLoad1D.m
 % Simulation of quadrotor with cable-suspended load, assuming the cable remains taut
+% 1D system - 2D implementation but y, phiL, phiQ are always treated as 0 -
+%   only z veriations
 % Dependancies: calculateInputs1.m, calculateInputs2.m, calculateDerivatives.m, desiredTraj.m,
 %   integrateMode1.m, integrateMode2.m, animateQuadLoad.m
 % putvar.m (http://www.mathworks.com/matlabcentral/fileexchange/27106-putvar)
 
 
 
-function quadLoad
+function quadLoad1D
 
 clear all
 close all
@@ -50,8 +52,8 @@ kd_phi = 7;
 %%% 
 % initial conditions 
 tstart = 0;
-tend = 2.5; %total time of simulation, s
-[xT, dxT, d2xT, d3xT, d4xT, d5xT, d6xT] = desiredTraj(0, g, mQ, JQ);
+tend = 1; %total time of simulation, s
+[xT, dxT, d2xT, d3xT, d4xT, d5xT, d6xT] = desiredTraj(0, g, mQ, JQ, 1);
 [p_nom, dp_nom, d2p_nom, d3p_nom, d4p_nom, ...
     phiL_nom, dphiL_nom, d2phiL_nom, d3phiL_nom, d4phiL_nom, ...
     f_nom, phiQ_nom, dphiQ_nom, d2phiQ_nom] = calculateDerivatives(0, g, mL, mQ, JQ, l);
@@ -104,12 +106,11 @@ ieout = [];
 uout = []; %record outputs, [f M]
 desout = []; %record desired states [xQ vQ phiQdes phiLdes]
 
-% integrate
-while tstart < tend,
-
-    currentMode
-            tstart
-            
+% integrate if we are switching between modes or if integration time 
+%   hasn't completed yet
+while tstart < tend && tout(length(tout)) < tend,
+    
+    % when rope is taut
     if currentMode == 1,
         
         options1 = odeset('Events', @slack);
@@ -121,97 +122,98 @@ while tstart < tend,
         modeout = [modeout; currentMode*ones(nt-1, 1)];
         xout = [xout; [x1(2:nt, :) zeros(nt-1, 2)]];
         
-        utemp = zeros(nt, 2);
-        destemp = zeros(nt, 7);
-        for tempTime = 1:nt,
-            [f, M, phiL_des, phiQ_des, d2phiQ_nom, p_des, dp_des] = calculateInputs1(t(tempTime), x1(tempTime, :)', g, mL, mQ, JQ, l, kpx, kdx, kpL, kdL, kpQ, kdQ);
-            utemp(tempTime, :) = [f M];
-            destemp(tempTime, :) = [x1(tempTime, 1)-l*p_des(1, 1) x1(tempTime, 2)-l*p_des(2, 1) ...
-                x1(tempTime, 3)-l*dp_des(1, 1) x1(tempTime, 4)-l*dp_des(2, 1) ...
-                phiQ_des phiL_des d2phiQ_nom ];
-        end
-        uout = [uout; utemp];
-        desout = [desout; destemp];
+%         utemp = zeros(nt, 2);
+%         destemp = zeros(nt, 7);
+%         for tempTime = 1:nt,
+%             [f, M, phiL_des, phiQ_des, d2phiQ_nom, p_des, dp_des] = calculateInputs1(t(tempTime), x1(tempTime, :)', g, mL, mQ, JQ, l, kpx, kdx, kpL, kdL, kpQ, kdQ);
+%             utemp(tempTime, :) = [f M];
+%             
+%             % find desired x
+%             [xT, dxT, d2xT, d3xT, d4xT, d5xT, d6xT] = desiredTraj(tempTime, g, mQ, JQ, 1); 
+%             
+%             destemp(tempTime, :) = [xT(1, 1)-l*p_des(1, 1) xT(2, 1)-l*p_des(2, 1) ...
+%                 dxT(1, 1)-l*dp_des(1, 1) dxT(2, 1)-l*dp_des(2, 1) ...
+%                 phiQ_des phiL_des d2phiQ_nom ];
+%         end
+%         uout = [uout; utemp];
+%         desout = [desout; destemp];
         
         
-        % only add the event if an event occured (te > 0)
+        % if an event occured (te > 0)
         if te > 0,
+            
+            % log the event
             teout = [teout; te];
             yeout = [yeout; [ye zeros(1, 2)]];
             ieout = [ieout; ie];
+            
+            % set new initial conditions and flip mode
+            currentMode = 2;
+            x20 = [x1(nt, 1) x1(nt, 2) x1(nt, 3) x1(nt, 4) ...
+                x1(nt, 1)-l*sin(x1(nt, 5)) x1(nt, 2)+l*cos(x1(nt, 5)) ...
+                x1(nt, 3)-l*x1(nt, 6)*cos(x1(nt, 5)) x1(nt, 4)-l*x1(nt, 6)*sin(x1(nt, 5)) ...
+                x1(nt, 7) x1(nt, 8)];
+            tstart = t(nt);
 
-        % set new initial conditions and flip mode       
-        currentMode = 2;
-        x1(nt, :)
-
-        x20 = [x1(nt, 1) x1(nt, 2) x1(nt, 3) x1(nt, 4) ...
-            x1(nt, 1)-l*sin(x1(nt, 5)) x1(nt, 2)+l*cos(x1(nt, 5)) ...
-            x1(nt, 3)-l*x1(nt, 6)*cos(x1(nt, 5)) x1(nt, 4)-l*x1(nt, 6)*sin(x1(nt, 5)) ...
-            x1(nt, 7) x1(nt, 8)];
-        x20
-        tstart = t(nt);
-        
+            
         end
         
+    % when rope is slack
     elseif currentMode == 2,
         
         options2 = odeset('Events', @taut);
-        %options2 = odeset('Events', @collision2);
+        x20
         [t, x2, te, ye, ie] = integrateMode2([tstart tend], options2, x20, g, mQ, JQ, kp, kd, kp_phi, kd_phi); 
-        
-        t
         x2
-        
         % accumulate output
         nt = length(t);
         tout = [tout; t(2:nt)];
         modeout = [modeout; currentMode*ones(nt-1, 1)];
         xout = [xout; x2(2:nt, :)];
         
-        utemp = zeros(nt, 2);
-        destemp = zeros(nt, 7);
-        for tempTime = 1:nt,
-            [f, M, phiQ_des, phiddotQ_des] = calculateInputs2(t(tempTime), x2(tempTime, :)', g, mQ, JQ, kp, kd, kp_phi, kd_phi);
-            utemp(tempTime, :) = [f M];
-            destemp(tempTime, :) = [0 0 ...
-                0 0 ...
-                phiQ_des 0 phiddotQ_des ];
-        end
-        uout = [uout; utemp];
-        desout = [desout; destemp];
-
-        % only add the event if an event occured (te > 0)
+%         utemp = zeros(nt, 2);
+%         destemp = zeros(nt, 7);
+%         for tempTime = 1:nt,
+%             [f, M, phiQ_des, phiddotQ_des] = calculateInputs2(t(tempTime), x2(tempTime, :)', g, mQ, JQ, kp, kd, kp_phi, kd_phi);
+%             [xT, dxT, d2xT, d3xT, d4xT, d5xT, d6xT] = desiredTraj(tempTime, g, mQ, JQ, 2);
+%             utemp(tempTime, :) = [f M];
+%             destemp(tempTime, :) = [xT(1, 1) xT(2, 1) ...
+%                 dxT(1, 1) dxT(2, 1) ...
+%                 phiQ_des 0 phiddotQ_des];
+%         end
+%         uout = [uout; utemp];
+%         desout = [desout; destemp];
+        
+        
+        % only add the event if an event occured (te > 0) 
         if te > 0,
             teout = [teout; te];
             yeout = [yeout; ye];
             ieout = [ieout; ie];
-            
-                    
+        
             % if the event wasn't a collision
             if (pdist([x2(nt, 1), x2(nt, 2); x2(nt, 5), x2(nt, 6)])>0)
+                
+                disp('reset condition')
                 
                 % set new intial conditions and flip mode
                 currentMode = 1;
                 x10 = [x2(nt, 1) x2(nt, 2) (mL*x2(nt, 3)+mQ*x2(nt, 7))/(mL+mQ) (mL*x2(nt, 4)+mQ*x2(nt, 8))/(mL+mQ) ...
                     real(acos(-(x2(nt, 2)-x2(nt, 6))/l)) 0 x2(nt, 9) x2(nt, 10)];
                 tstart = t(nt);
-
-                x2(nt, :)
-                x10
-                tstart
-
-                
             else
                 
                 % otherwise, a collison occured so end the program
                 disp('quad and load collision!')
                 %break;
             end
-        end
         
 
-
+        
+        end
+        
     end
+    
 end
 
 % save output matrices
@@ -283,7 +285,7 @@ d4xTraj = zeros(length(tout), 2);
 d5xTraj = zeros(length(tout), 2);
 d6xTraj = zeros(length(tout), 2);
 for t = 1:length(tout),
-    [xT, dxT, d2xT, d3xT, d4xT, d5xT, d6xT] = desiredTraj(tout(t), g, mQ, JQ);
+    [xT, dxT, d2xT, d3xT, d4xT, d5xT, d6xT] = desiredTraj(tout(t), g, mQ, JQ, 2, 1);
     xTraj(t, :) = xT';
     dxTraj(t, :) = dxT';
     d2xTraj(t, :) = d2xT';
@@ -384,7 +386,6 @@ xlabel('time (s)');
 ylabel('distance (m)');
 title('distance between quad and load');
 
-
 % plot inputs over time
 figure()
 plot(tout, uout(1:length(tout), 1));
@@ -403,7 +404,8 @@ title('moment over time');
 figure()
 T = zeros(length(d2xTraj(:, 1)), 1);
 for i = 1:length(d2xTraj(:, 1))
-    T(i, 1) = mL.* norm ( [d2xTraj(i, 1); d2xTraj(i, 2)] + [0; g]);
+   % T(i, 1) = mL.* norm ( [d2xTraj(i, 1); d2xTraj(i, 2)] + [0; g]);
+    T(i, 1) = mL * ( d2xTraj(i, 2) + g );
 end
 plot(tout, T);
 xlabel('time (s)');
@@ -418,9 +420,9 @@ title('tension over time');
 %%%%%
 % event for when string goes from taut to slack
 function [value, isterminal, direction] = slack(t, x1)
-    [xT, dxT, d2xT, d3xT, d4xT, d5xT, d6xT] = desiredTraj(t, g, mQ, JQ);
-
-    value = mL * ( d2xT(2, 1) + g ) - 0.001; %when tension goes to 0, T = || mL (d/dt vL + ge3) ||
+    [xT, dxT, d2xT, d3xT, d4xT, d5xT, d6xT] = desiredTraj(t, g, mQ, JQ, 1);
+    %value = mL * norm( [d2xT(1, 1); d2xT(2, 1)] + [0; g] ); %when tension goes to 0, T = || mL (d/dt vL + ge3) ||
+    value = mL * ( d2xT(2, 1) + g ); %when tension goes to 0, T = || mL (d/dt vL + ge3) ||
     isterminal = 1;
     direction = 0;
 end
@@ -433,11 +435,13 @@ function [value, isterminal, direction] = taut(t, x2)
 
     value = [ ...
         x2(2, 1)- x2(6, 1); ... %when load and quad collide
-        pdist([x2(1, 1), x2(2, 1); x2(5, 1), x2(6, 1)]) - l; ... %when string is at length l
+        ... %pdist([x2(1, 1), x2(2, 1); x2(5, 1), x2(6, 1)]) - l; ... %when string is at length l
         ];
-    isterminal = [1; 1];
-    direction = [0; -1];
+    isterminal = 1; %[1; 1];
+    direction = 0; %[0; -1];
 end
+
+
 
 
 

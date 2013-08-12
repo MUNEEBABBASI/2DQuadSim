@@ -14,13 +14,18 @@
 
 function [f, M, phiL_des, phiQ_des, d2phiQ_nom, p_des, dp_nom] = calculateInputs1(t, x1, g, mL, mQ, JQ, l, kpx, kdx, kpL, kdL, kpQ, kdQ)
 
+
+t
+x1
+
+
 % x1 = [xL vL phiL phidotL phiQ phidotQ]', note xL and vL are vectors in R^2
 yL = x1(1, 1); zL = x1(2, 1); vyL = x1(3, 1); vzL = x1(4, 1); phiL = x1(5, 1); phidotL = x1(6, 1); ...
     phiQ = x1(7, 1); phidotQ = x1(8, 1);
 
 
 %find desired trajectory and its higher derivatives
-[xT, dxT, d2xT, d3xT, d4xT, d5xT, d6xT] = desiredTraj(t, g, mQ, JQ);
+[xT, dxT, d2xT, d3xT, d4xT, d5xT, d6xT] = desiredTraj(t, g, mQ, JQ, 1);
 
 % find nominal p, phiL, phiQ, f, higher derivatives
 [p_nom, dp_nom, d2p_nom, d3p_nom, d4p_nom, ...
@@ -31,14 +36,14 @@ yL = x1(1, 1); zL = x1(2, 1); vyL = x1(3, 1); vzL = x1(4, 1); phiL = x1(5, 1); p
 %%%
 %load position control
 %FA = -kpx.*([yL;zL]-xT) - kdx.*([vyL; vzL]-dxT) + mL.*d2xT + mL.*g.*[0; 1];
-FA = -kpx.*([yL;zL]-xT) - kdx.*([vyL; vzL]-dxT) + d2xT + g.*[0; 1];
-p_des = - FA./norm(FA);
-phiL_des = atan2(-FA(1, 1), FA(2, 1));
+FA = -kpx.*([yL;zL]-xT) - kdx.*([vyL; vzL]-dxT) + d2xT + g.*[0; 1]
+p_des = - FA./norm(FA)
+phiL_des = atan2(-FA(1, 1), FA(2, 1))
 
-FB = mQ.*d2xT-mQ.*l.*d2p_nom+mQ.*g.*[0;1];
-F = (mL*FA+FB);
-f = -F(1, 1)*sin(phiQ) + F(2, 1)*cos(phiQ);
-
+FB = mQ.*d2xT-mQ.*l.*d2p_nom+mQ.*g.*[0;1]
+F = (mL*FA+FB)
+phiQ
+f = -F(1, 1)*sin(phiQ) + F(2, 1)*cos(phiQ)
 
 %%%
 %load attitude control
@@ -57,7 +62,6 @@ end
 %quadrotor attitude control
 M = JQ*(-kpQ*(phiQ-phiQ_des) - kdQ*(phidotQ-dphiQ_nom)) + JQ*d2phiQ_nom;
 
-M = 0;
 
 
 
