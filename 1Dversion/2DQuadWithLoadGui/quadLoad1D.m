@@ -40,8 +40,8 @@ kpQ = 140; %160;
 kdQ = 56;%56;
 
 % mode 2
-kp = 0.8;
-kd = 1;
+kp = 0.8*10;
+kd = 1*10;
 kp_phi = 20; 
 kd_phi = 7;
 
@@ -50,7 +50,7 @@ kd_phi = 7;
 %%% 
 % initial conditions 
 tstart = 0;
-tend = 2.5; %total time of simulation, s
+tend = 3; %total time of simulation, s
 [xT, dxT, d2xT, d3xT, d4xT, d5xT, d6xT] = desiredTraj(0, g, mQ, JQ);
 [p_nom, dp_nom, d2p_nom, d3p_nom, d4p_nom, ...
     phiL_nom, dphiL_nom, d2phiL_nom, d3phiL_nom, d4phiL_nom, ...
@@ -105,16 +105,16 @@ uout = []; %record outputs, [f M]
 desout = []; %record desired states [xQ vQ phiQdes phiLdes]
 
 % integrate
-while tstart < tend,
+while tstart < tend && tout(length(tout))<tend,
 
-    currentMode
-            tstart
-            
+
     if currentMode == 1,
+
         
         options1 = odeset('Events', @slack);
         [t, x1, te, ye, ie] = integrateMode1([tstart tend], options1, x10, g, mL, mQ, JQ, l, kpx, kdx, kpL, kdL, kpQ, kdQ);
         
+
         % accumulate output
         nt = length(t);
         tout = [tout; t(2:nt)];
@@ -142,13 +142,12 @@ while tstart < tend,
 
         % set new initial conditions and flip mode       
         currentMode = 2;
-        x1(nt, :)
 
         x20 = [x1(nt, 1) x1(nt, 2) x1(nt, 3) x1(nt, 4) ...
             x1(nt, 1)-l*sin(x1(nt, 5)) x1(nt, 2)+l*cos(x1(nt, 5)) ...
             x1(nt, 3)-l*x1(nt, 6)*cos(x1(nt, 5)) x1(nt, 4)-l*x1(nt, 6)*sin(x1(nt, 5)) ...
             x1(nt, 7) x1(nt, 8)];
-        x20
+
         tstart = t(nt);
         
         end
@@ -159,9 +158,7 @@ while tstart < tend,
         %options2 = odeset('Events', @collision2);
         [t, x2, te, ye, ie] = integrateMode2([tstart tend], options2, x20, g, mQ, JQ, kp, kd, kp_phi, kd_phi); 
         
-        t
-        x2
-        
+
         % accumulate output
         nt = length(t);
         tout = [tout; t(2:nt)];
@@ -195,10 +192,6 @@ while tstart < tend,
                 x10 = [x2(nt, 1) x2(nt, 2) (mL*x2(nt, 3)+mQ*x2(nt, 7))/(mL+mQ) (mL*x2(nt, 4)+mQ*x2(nt, 8))/(mL+mQ) ...
                     real(acos(-(x2(nt, 2)-x2(nt, 6))/l)) 0 x2(nt, 9) x2(nt, 10)];
                 tstart = t(nt);
-
-                x2(nt, :)
-                x10
-                tstart
 
                 
             else
@@ -283,7 +276,7 @@ d4xTraj = zeros(length(tout), 2);
 d5xTraj = zeros(length(tout), 2);
 d6xTraj = zeros(length(tout), 2);
 for t = 1:length(tout),
-    [xT, dxT, d2xT, d3xT, d4xT, d5xT, d6xT] = desiredTraj(tout(t), g, mQ, JQ);
+    [xT, dxT, d2xT, d3xT, d4xT, d5xT, d6xT] = desiredTraj(tout(t), g, mQ, JQ, 1);
     xTraj(t, :) = xT';
     dxTraj(t, :) = dxT';
     d2xTraj(t, :) = d2xT';
@@ -291,6 +284,15 @@ for t = 1:length(tout),
     d4xTraj(t, :) = d4xT';
     d5xTraj(t, :) = d5xT';
     d6xTraj(t, :) = d6xT';
+    
+    [xTQ, dxTQ, d2xTQ, d3xTQ, d4xTQ, d5xTQ, d6xTQ] = desiredTraj(tout(t), g, mQ, JQ, 2);
+    xTrajQ(t, :) = xTQ';
+    dxTrajQ(t, :) = dxTQ';
+    d2xTrajQ(t, :) = d2xTQ';
+    d3xTrajQ(t, :) = d3xTQ';
+    d4xTrajQ(t, :) = d4xTQ';
+    d5xTrajQ(t, :) = d5xTQ';
+    d6xTrajQ(t, :) = d6xTQ';
 end
 
 % save tajectory properties
@@ -320,30 +322,34 @@ figure()
 hold on;
 plot(tout, quadx(:, 1)', 'b');
 plot(tout, quadx(:, 2)', 'r');
+plot(tout, xTrajQ(:, 1), 'b--');
+plot(tout, xTrajQ(:, 2), 'r--');
 xlabel('time (s)');
 ylabel('position (m)');
 title('quad position over time');
-legend('x position', 'z position')
+legend('x position', 'z position', 'desired x', 'desired z')
 
 % plot velocity over time
 figure()
 hold on;
 plot(tout, quadv(:, 1)', 'b');
 plot(tout, quadv(:, 2)', 'r');
+plot(tout, dxTrajQ(:, 1), 'b--');
+plot(tout, dxTrajQ(:, 2), 'r--');
 xlabel('time (s)');
 ylabel('velocity (m/s)');
 title('quad velocity over time');
-legend('x velocity', 'z velocity');
-
-% plot quad angle over time
-figure()
-hold on;
-plot(tout, quadphi(:, 1)'./pi*180, 'b');
-plot(tout, quadphi(:, 2)'./pi.*180, 'r');
-xlabel('time (s)');
-ylabel('angle (degrees)');
-title('quad angle over time');
-legend('phiQ', 'phiQdot');
+legend('x velocity', 'z velocity', 'desired xdot', 'desired zdot');
+% 
+% % plot quad angle over time
+% figure()
+% hold on;
+% plot(tout, quadphi(:, 1)'./pi*180, 'b');
+% plot(tout, quadphi(:, 2)'./pi.*180, 'r');
+% xlabel('time (s)');
+% ylabel('angle (degrees)');
+% title('quad angle over time');
+% legend('phiQ', 'phiQdot');
 
 % plot position over time
 figure()
@@ -362,20 +368,55 @@ figure()
 hold on;
 plot(tout, xout(:, 3)', 'b');
 plot(tout, xout(:, 4)', 'r');
+plot(tout, dxTraj(:, 1), 'b--');
+plot(tout, dxTraj(:, 2), 'r--');
 xlabel('time (s)');
 ylabel('velocity (m/s)');
 title('load velocity over time');
-legend('x velocity', 'z velocity');
+legend('x velocity', 'z velocity', 'desired xdot', 'desired zdot');
+% 
+% % plot load angle over time (0 when rope is slack)
+% figure()
+% hold on;
+% plot(tout, loadphi(:, 1)'./pi*180, 'b');
+% plot(tout, loadphi(:, 2)'./pi*180, 'r');
+% xlabel('time (s)');
+% ylabel('angle (degrees)');
+% title('load angle over time');
+% legend('phiL', 'phiLdot');
 
-% plot load angle over time (0 when rope is slack)
+
+
+
+% plot position over time
 figure()
 hold on;
-plot(tout, loadphi(:, 1)'./pi*180, 'b');
-plot(tout, loadphi(:, 2)'./pi*180, 'r');
+plot(tout, quadx(:, 1)', 'b');
+plot(tout, quadx(:, 2)', 'r');
+plot(tout, xout(:, 1)', 'b--');
+plot(tout, xout(:, 2)', 'r--');
 xlabel('time (s)');
-ylabel('angle (degrees)');
-title('load angle over time');
-legend('phiL', 'phiLdot');
+ylabel('position (m)');
+title('position over time');
+legend('quad x', 'quad z', 'load x', 'load z')
+
+% plot velocity over time
+figure()
+hold on;
+plot(tout, quadv(:, 1)', 'b');
+plot(tout, quadv(:, 2)', 'r');
+plot(tout, xout(:, 3)', 'b--');
+plot(tout, xout(:, 4)', 'r--');
+xlabel('time (s)');
+ylabel('velocity (m/s)');
+title('velocity over time');
+legend('quad x', 'quad z', 'load x', 'load z')
+
+
+
+
+
+
 
 % plot l over time
 figure()
@@ -430,13 +471,13 @@ end
 %%%%%
 % event for when string goes from slack to taut
 function [value, isterminal, direction] = taut(t, x2)
-
-    value = [ ...
-        x2(2, 1)- x2(6, 1); ... %when load and quad collide
+    
+ value = [ ...
+        1; ...x2(2, 1)- x2(6, 1); ... %when load and quad collide
         pdist([x2(1, 1), x2(2, 1); x2(5, 1), x2(6, 1)]) - l; ... %when string is at length l
         ];
     isterminal = [1; 1];
-    direction = [0; -1];
+    direction = [0; 1];
 end
 
 

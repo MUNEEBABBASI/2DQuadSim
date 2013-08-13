@@ -24,9 +24,7 @@ function  [t, x2, te, ye, ie] = integrateMode2(tspan, options2, x20, g, mQ, JQ, 
     % outputs:
     %   x2dot: nx1 vector, state dx/dt at time t
     function x2dot = mode2(t, x2) 
-        
-        t
-        
+
         % x2 = [xL vL xQ vQ phiQ phidotQ]', note x, v are vectors in R^2
         yL = x2(1, 1); zL = x2(2, 1); vyL = x2(3, 1); vzL = x2(4, 1); 
         yQ = x2(5, 1); zQ = x2(6, 1); vyQ = x2(7, 1); vzQ = x2(8, 1); 

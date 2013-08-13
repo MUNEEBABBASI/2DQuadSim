@@ -7,15 +7,10 @@
 % inputs: 
 %   t: real value, current time
 %   g, mQ, JQ: real values, constants
-%   mode [optional]: integer, 1 or 2, current mode and leads to default
-%   evaluations: 
-%       1 - evaluate load trajectory
-%       2 - evaluate quad trajectory
-%       default is 1
 %   whichTraj [optional]: integer, 1 or 2
 %       1 - evaluate load trajectory
 %       2 - evaluate quad trajectory
-%       default value is 0, leading to default evaluations based on mode
+%       default value is 1
 % outputs:
 %   xT, dxT, d2xT, d3xT, d4xT, d5xT, d6xT: each a 2x1 vector, position and higher derivatives of trajectory at current time
 
@@ -23,14 +18,11 @@
 % Specify the position and derivatives of the desired trajectory
 function [xT, dxT, d2xT, d3xT, d4xT, d5xT, d6xT] = desiredTraj(t, g, mQ, JQ, varargin)
 
-mode = 1;
-whichTraj = 0;
+whichTraj = 1;
 if (nargin > 4)
-    mode = varargin{1};
+    whichTraj = varargin{1};
 end
-if (nargin > 5),
-    whichTraj = varargin{2};
-end
+
 
 global traj
 global s
@@ -359,19 +351,12 @@ end
 
 
 
-if mode == 2 && whichTraj == 0,
-    % evaluate trajectory at the desired time
-    [xEval, ~] = evaluateTraj(t, n, m, d, traj.xTQ, tDes, r, traj.derivativesXQ, traj.modes, mode);
-elseif mode == 1 && whichTraj == 0,
-
-    % evaluate trajectory at the desired time
-    [xEval, ~] = evaluateTraj(t, n, m, d, traj.xT, tDes, r, traj.derivativesX, traj.modes, mode);
-elseif whichTraj == 1,
+if whichTraj == 1,
     % evaluate load
-    [xEval, ~] = evaluateTraj(t, n, m, d, traj.xT, tDes, r, traj.derivativesX, traj.modes, mode);
+    [xEval, ~] = evaluateTraj(t, n, m, d, traj.xT, tDes, r, traj.derivativesX);
 elseif whichTraj == 2,
     % evaluate trajectory at the desired time
-    [xEval, ~] = evaluateTraj(t, n, m, d, traj.xTQ, tDes, r, traj.derivativesXQ, traj.modes, mode);
+    [xEval, ~] = evaluateTraj(t, n, m, d, traj.xTQ, tDes, r, traj.derivativesXQ);
 end
     
 

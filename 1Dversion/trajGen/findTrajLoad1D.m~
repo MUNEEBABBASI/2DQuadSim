@@ -41,7 +41,7 @@
 %       0 didn't match time 
 
 
-function [xTL, xTQ, mode, tDes] = findTrajLoad1D(r, n, m, d, tDes, posDes, TDes, g, len, mL, mQ)
+function [xTL, xTQ, mode, tDesN] = findTrajLoad1D(r, n, m, d, tDes, posDes, TDes, g, len, mL, mQ)
 
 
 % check that we are dealing with a 1D problem
@@ -91,12 +91,15 @@ end
 
 
 lastStart = 0; %keyframe that trajectory should begin at
-mNew = 0; % final number of segments in trajectory
 mode = [];
 xTL = [];
 xTQ = [];
 currentMode = 1; %assume for now system always starts with taut rope
 
+
+% track new endpoint constraints
+
+% track new time values if any 
 
 
 %%%

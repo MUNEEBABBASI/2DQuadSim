@@ -19,12 +19,16 @@ function [f, M, phiQ_des, phiddotQ_des] = calculateInputs2(t, x2, g, mQ, JQ, kp,
         phiQ = x2(9, 1); phidotQ = x2(10, 1);
         
         % control laws
-        [xT dxT d2xT d3xT d4xT] = desiredTraj(t, g, mQ, JQ);
+        [xTL dxTL d2xTL d3xTL d4xTL] = desiredTraj(t, g, mQ, JQ, 1)
+        [xT dxT d2xT d3xT d4xT] = desiredTraj(t, g, mQ, JQ, 2)
 
         % find f input
         F1 =  mQ*g.*[0; 1] + mQ.*d2xT;
         F = -kp*([yQ; zQ] - xT) - kd*([vyQ; vzQ] - dxT) + F1;
-        f = - F(1, 1)*sin(phiQ) + F(2, 1)*cos(phiQ);
+        
+        [yQ; zQ] - xT
+        [vyQ; vzQ] - dxT
+        f = - F(1, 1)*sin(phiQ) + F(2, 1)*cos(phiQ)
         phiQ_des = atan2(-F(1, 1), F(2, 1));
         
         %calculate nominal f and phiQ_des values

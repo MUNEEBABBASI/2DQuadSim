@@ -20,7 +20,7 @@ yL = x1(1, 1); zL = x1(2, 1); vyL = x1(3, 1); vzL = x1(4, 1); phiL = x1(5, 1); p
 
 
 %find desired trajectory and its higher derivatives
-[xT, dxT, d2xT, d3xT, d4xT, d5xT, d6xT] = desiredTraj(t, g, mQ, JQ);
+[xT, dxT, d2xT, d3xT, d4xT, d5xT, d6xT] = desiredTraj(t, g, mQ, JQ, 1);
 
 % find nominal p, phiL, phiQ, f, higher derivatives
 [p_nom, dp_nom, d2p_nom, d3p_nom, d4p_nom, ...

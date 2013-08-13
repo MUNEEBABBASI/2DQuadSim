@@ -177,8 +177,9 @@ for i = 0:m,
             % nondimensionalized and t1 =1 
         b_ineq = 0;
         
-        % find this trajectory
+        % find this trajectory            
         xT_all = quadprog(Q_joint,[],A_ineq,b_ineq,A_eq,b_eq);
+  
         
         
         %%%
@@ -214,18 +215,19 @@ for i = 0:m,
         
         % assume for now we have a full set of constraints at the end of
         %   the free fall
-        posDesQ = zeros(4, 2); % we want to optimize snap of quadrotor between 2 points
+        posDesQ = zeros(6, 2); % we want to optimize snap of quadrotor between 2 points
+                        % we still specify constraints for up to 5th
+                        % derivative for continuity of trajectory
         
         % find states at moment of T = 0
         [temp, ~] = evaluateTraj(tDes(2, 1), n, 1, 1, xTL(:, mNew), tDes, 5, []);
-
         
         % beginning quadrotor position, velocity can be derived from state at
         %   keyframe i
         posDesQ(1, 1) = temp(1, 1)+len; %xQ = xL+l
         
         % nondimensionalize all higher derivatives
-        for k = 2:4
+        for k = 2:6
             posDesQ(k, 1) = temp(k, 1)*(tDes(3, 1)-tDes(2, 1))^(k-1); % all higher derivatives equal
         end
 
@@ -257,7 +259,7 @@ for i = 0:m,
         vLplus = posDes(2, i+1);
         
         % solve for vQ final 
-        vQminus = ((mL+mQ)*vLplus+mL*vLminus)/mQ;
+        vQminus = ((mL+mQ)*vLplus-mL*vLminus)/mQ;
         posDesQ(2, 2) = vQminus;
         
         % look for nondimensionalizd constraint
@@ -265,7 +267,7 @@ for i = 0:m,
         
         
         posDesQ(1, 2) = posDes(1, i+1)+len; % again, xQ = xL+l
-        posDesQ(3:4, 2) = Inf;
+        posDesQ(3:6, 2) = zeros(4, 1)%Inf
         
         
         

@@ -16,33 +16,13 @@
 %   derivativesX: optional, r+1 cell of (n)xmxd matrices containing
 %       coefficients of derivatives of the trajectory, calculated if input
 %       is []
-%   mode [optional]: a x 3 vector, logs mode switches
-%       column 1 indicates keyframe switch occurs, column 2 is last mode,
-%           column 3 is new mode (redundant, but just to be explicit)
-%       1 indicates mode where cable is taut, trajectory is for load
-%       2 indicates mode where cable is slack, trajectory is for quadrotor 
-%       default is empty
-%   currentMode [optional]: integer, 1 or 2 indicating current mode
-%       default is 1
 % outputs:
 %   dxT: (r+1) x d vector, row i contains value of (i-1)th derivative in dimension j of xT at t
 
 
 %%%%%
 % Specify the position and derivatives of the desired trajectory
-function [dxT, derivativesX] = evaluateTraj(t, n, m, d, xT, tDes, r, derivativesX, varargin)
-
-modes = [];
-currentMode = 1;
-
-if (nargin > 8)
-    modes = varargin{1};
-end
-if (nargin> 9)
-    currentMode = varargin{2}; %assume default mode
-end
-
-
+function [dxT, derivativesX] = evaluateTraj(t, n, m, d, xT, tDes, r, derivativesX)
 
 
 dxT = zeros(r+1, d);
@@ -74,7 +54,7 @@ t0 = 0;
 t1 = 1;
 
 % evaluate trajectory at given time
-if (t < tDes(1, 1)),
+if (t <= tDes(1, 1)),
     
      scaledt = t0;
     %scaledt = t;
@@ -93,10 +73,10 @@ if (t < tDes(1, 1)),
     
     % find which piece of the trajectory we're on based on time and
     %   evaluate there
-elseif (t < tDes(m+1, 1));
+elseif (t <= tDes(m+1, 1));
 
     for j = 1:m,
-        if (t < tDes(j+1, 1));
+        if (t <= tDes(j+1, 1));
 
              scaledt = (t-tDes(j, 1))/(tDes(j+1, 1)-tDes(j, 1)); % find the nondimensionalized time
             %scaledt = t;

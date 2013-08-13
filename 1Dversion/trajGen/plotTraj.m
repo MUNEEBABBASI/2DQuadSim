@@ -4,6 +4,7 @@
 % Dependencies: evaluateTraj.m
 %
 % inputs: 
+%   tstart, tend: real values, time to start and end plot
 %   xT: (n+1) x m x d matrix, where row i contains the ith coefficient for the
 %       jth trajectory in dimension k, nondimensionalized in time 
 %   n: integer, order of desired trajectory
@@ -19,10 +20,10 @@
 %   figure plotting trajectory
 
 
-function [] = plotTraj(xT, n, m, d, tDes, posDes, dt, dimLabels, plotDim)
+function [] = plotTraj(tstart, tend, xT, n, m, d, tDes, posDes, dt, dimLabels, plotDim)
 
 
-t = 0:dt:tDes(m+1); %construct t vector 
+t = tstart:dt:tend; %construct t vector 
 t = t';
 pos = zeros(length(t), d); %holds position at time i for dimension d
 
@@ -36,7 +37,7 @@ end
 
 
 for i = 1:d,
-figure()
+figure(10)
 hold on;
 plot(t, pos(:, i));
 plot(tDes, posDes(1, :, i), 'k^');
