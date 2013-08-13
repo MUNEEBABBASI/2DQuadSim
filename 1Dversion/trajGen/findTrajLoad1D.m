@@ -37,11 +37,13 @@
 %           column 3 is new mode (redundant, but just to be explicit)
 %       1 indicates mode where cable is taut, trajectory is for load
 %       2 indicates mode where cable is slack, trajectory is for quadrotor
-%   tDes: time arrival at keyframes, could have changed if position of T =
+%   tDesN: (m+1)x1 vector, time arrival at keyframes, could have changed if position of T =
 %       0 didn't match time 
+%   posDesN: r x m x d matrix, endpoint conditions at keyframes after
+%       optimization
 
 
-function [xTL, xTQ, mode, tDes] = findTrajLoad1D(r, n, m, d, tDes, posDes, TDes, g, len, mL, mQ)
+function [xTL, xTQ, mode, tDesN, posDesN] = findTrajLoad1D(r, n, m, d, tDes, posDes, TDes, g, len, mL, mQ)
 
 
 % check that we are dealing with a 1D problem
@@ -91,12 +93,17 @@ end
 
 
 lastStart = 0; %keyframe that trajectory should begin at
-mNew = 0; % final number of segments in trajectory
 mode = [];
 xTL = [];
 xTQ = [];
 currentMode = 1; %assume for now system always starts with taut rope
 
+
+% track new endpoint constraints
+posDesN = posDes;
+
+% track new time values if any 
+tDesN = tDes;
 
 
 %%%
@@ -106,17 +113,14 @@ for i = 0:m,
     
     % if cable is taut
     if currentMode == 1,
-        lastStart
-        currentMode
-        i
-        
+
         % if tension at a keyframe is 0, design a trajectory for all the ones
         %   before it leading to this point
         if TDes(i+1, 1) == 0 || i==m,
             
             
             % we are now seeking an x, where
-            % p = lastSart+1
+            % p = lastStart+1
             % x = [cp,(n) cp,(n-1) ... cp,1 cp,0 ...
             %      c(p+1),n c(p+1),(n-1) ... c(p+1),1 c(p+1),0 ....
             %      ...
@@ -124,16 +128,13 @@ for i = 0:m,
             
             
             
-            % construct Q matrix
+            % construct Q matrix 
             Q_joint = [];
             % lastStart is the keyframe we want to start at
             % lastStart+1 is the trajectory piece we want to start at
             % i is the keyframe we want to end at
             % i is also trajectory piece we want to end at
-            for j = (lastStart+1):i,
-                %t0 = tDes(lastStart+1, 1);
-                %t1 = tDes(i, 1);
-                
+            for j = (lastStart+1):i,                
                 Q = findCostMatrix(n, r, t0, t1);
                 
                 Q_joint = blkdiag(Q_joint, Q);
@@ -143,37 +144,35 @@ for i = 0:m,
             
             % construct A matrix
             
-            % make a new desired position matrix based on the keyframes being
-            %   optimized
-            posDesNew = zeros(r, i-lastStart);
-            tDesN = zeros(i-lastStart, 1);
-            for j = 0:i-lastStart,
+            % make a new desired position matrix with nondimensionalized
+            %   endpoint constraints 
+            for j = (lastStart+1):(i+1),
                 for k = 1:r
-                    posDesNew(k, j+1) = posDes(k, lastStart+j+1);
-                    if (lastStart+j) > 0,
-                        posDesNew(k, j+1) = posDesNew(k, j+1)*(tDes(lastStart+j+1, 1)-tDes(lastStart+j, 1))^(k-1);
+                    if j > 1,
+                    posDesN(k, j) = posDesN(k, j)*(tDesN(j, 1)-tDesN(j-1, 1))^(k-1);
                     end
                 end
-                tDesN(j+1, 1) = tDes(lastStart+j+1 ,1);
+
             end
             
-            % enforce constraints when tension goes to 0
+            % enforce constraints if tension goes to 0
+            % assuming 1D trajectory, tension = 0 when mL*(d2xT+g) = 0
             if TDes(i+1, 1) == 0,
                 posDesT = zeros(r, 1);
-                posDesT(1:2, 1) = posDesNew(1:2, i-lastStart);
-                posDesT(3, 1) = -g*(tDes(lastStart+j+1, 1)-tDes(lastStart+j, 1))^2;
+                posDesT(1:2, 1) = posDesN(1:2, i+1);
+                posDesT(3, 1) = -g*(tDesN(i+1, 1)-tDesN(i, 1))^2;
                 posDesT(4:r, 1) = 0;
                 
-                if (posDesT(:, 1) ~= posDesNew(:, i-lastStart)),
+                if (posDesT(:, 1) ~= posDesN(:, i+1)),
                     disp('warning: constraints changed to accomodate tension')
                 end
-                posDesNew(:, i-lastStart) = posDesT;
+                posDesN(:, i+1) = posDesT;
             end
-            
+
             
             % construct fixed value constraints and continuity constraints
-            [A_fixed, b_fixed] = findFixedConstraints(r, n, i-lastStart, 1, posDesNew, t0, t1, tDesN, 1);
-            [A_cont, b_cont] = findContConstraints(r, n, i-lastStart, 1, posDesNew, t0, t1);
+            [A_fixed, b_fixed] = findFixedConstraints(r, n, i-lastStart, 1, posDesN(:, lastStart+1:i+1), t0, t1, [], 1);
+            [A_cont, b_cont] = findContConstraints(r, n, i-lastStart, 1, posDesN(:, lastStart+1:i+1), t0, t1);
             
             % put in one matrix - recall there is only one dimension here
             A_eq = [A_fixed; A_cont];
@@ -192,38 +191,41 @@ for i = 0:m,
 %             b_ineq = 0;
             
             % find this trajectory
-            xT_all = quadprog(Q_joint,[],A_ineq,b_ineq,A_eq,b_eq)
+            xT_all = quadprog(Q_joint,[],A_ineq,b_ineq,A_eq,b_eq);
   
+            
             
             %%%
             % explicitly break tracjetory into its piecewise parts for output
             xT_this = zeros((n+1), i-lastStart);
             for j = 1:i-lastStart,
-                % scale to nondimensionalized time
                 xT_this(:, j) = xT_all((j-1)*(n+1)+1:j*(n+1));
             end
             xTL = [xTL xT_this];
             
             
-            % add empty trajectories to quad
+            % add corresponding trajectories to quad
             xTQ = [xTQ [xTL(1:n, i);xTL(n+1, i)+len]];
             
-            mNew = mNew+(i-lastStart); %add new trajectory segments added
+            % log the change in modes 
             mode = [mode; [i 1 2]];
-            
 
-            
-            lastStart = i;
-            currentMode = 2;
-            
-            
+            % update variables 
+            lastStart = i; %keyframe next trajectory designed begins at
+            currentMode = 2; %update mode to 2 
+                   
         end
         
     elseif currentMode == 2,
-        lastStart
-        currentMode
-        i
 
+        % lastStart is the keyframe we want to start at
+        % lastStart+1 is the trajectory piece we want to start at
+        % i is the keyframe we want to end at
+        % i is also trajectory piece we want to end at
+        
+        % note that here, i = lastStart+1 and we're always designing for
+        %   one trajectory piece
+        
         
         %%% 
         % construct conditions for finding quadrotor trajectory
@@ -231,8 +233,8 @@ for i = 0:m,
             % we still specify constraints for up to rth derivative for continuity of trajectory
                 
         % find states at moment of T = 0
-        [stateEnd, ~] = evaluateTraj(tDes(2, 1), n, 1, 1, xTL(:, mNew), tDes, r-1, []);
-  
+        [stateEnd, ~] = evaluateTraj(tDesN(lastStart+1, 1), n, 1, 1, xTL(:, lastStart), tDesN, r-1, []);
+
         
         
         
@@ -241,10 +243,13 @@ for i = 0:m,
         % these calculations happen in real time to find end-point
         %   conditions
         
+        
+        % find end position of quad
         % if a displacement is specified, find the time it takes to reach it
-        if (posDes(1, i+1) ~= Inf), 
+        if (posDesN(1, i+1) ~= Inf), 
             % find displacement
-            d = posDes(1, i+1) - stateEnd(1, 1);
+            d = posDesN(1, i+1) - stateEnd(1, 1);
+            
             
             % find time it takes to reach beginning of free fall to end
             % take the larger time - assume this is positive
@@ -254,35 +259,34 @@ for i = 0:m,
             else
                 tFall = t_temp(2, 1);
             end
+     
+            posDesQ(1, 2) = posDesN(1, i+1)+len; % xQ = xL+l
             
-            posDesQ(1, 2) = posDes(1, i+1)+len; % xQ = xL+l
-            
-            if (tDes(i+1, 1)-tDes(i, 1) ~= tFall)
-
-            tDes(i+1, 1) = tDes(i, 1)+tFall;
-            disp('updating time to accomodate freefall')
+            if (tDesN(i+1, 1)-tDesN(i, 1) ~= tFall)
+                tDesN(i+1, 1) = tDes(i, 1)+tFall;
+                disp('updating time to accomodate freefall')
             end
             
         % otherwise, find where the load will be at the specified time
         else
-            tFall = tDes(i+1, 1)-tDes(i, 1);
+            tFall = tDesN(i+1, 1)-tDesN(i, 1);
             
             % find position at end of free fall
             % d = -1/2*g*t^2+vit+xi
-            posDesQ(1, 2) = (-1/2*g*tFall^2 + stateEnd(2, 1)*tFall + stateEnd(1, 1)) + len; %xQ = xL+l
+            posDesN(1, i+1) = (-1/2*g*tFall^2 + stateEnd(2, 1)*tFall + stateEnd(1, 1));
+            posDesQ(1, 2) =  posDesN(1, i+1) + len; %xQ = xL+l
             
         end
 
         
-        % solve for velocity 
+        % find end velocity of quad 
         % vminus is moment right before rope goes taut
         % vplus is moment right after rope goes taut
         vLminus = stateEnd(2, 1) - g*tFall; % solve for vf = vi-gt
-        vLplus = posDes(2, i+1);
+        vLplus = posDesN(2, i+1);
         
         % solve for vQ final
         vQminus = ((mL+mQ)*vLplus-mL*vLminus)/mQ;
-        
         
         
         
@@ -295,24 +299,28 @@ for i = 0:m,
         
         % nondimensionalize all higher derivatives
         for k = 2:r
-            posDesQ(k, 1) = stateEnd(k, 1)*(tDes(i+1, 1)-tDes(i, 1))^(k-1); % all higher derivatives equal
+            posDesQ(k, 1) = stateEnd(k, 1)*(tDesN(i+1, 1)-tDesN(i, 1))^(k-1); % all higher derivatives equal
         end
         
+        %%% 
+        % find quad final states
+        posDesQ(2, 2) = vQminus*(tDesN(i+1, 1)-tDesN(i, 1)); % look for nondimensionalizd constraint
         
-        % fill in final states
-        posDesQ(2, 2) = vQminus*(tDes(i+1, 1)-tDes(i, 1)); % look for nondimensionalizd constraint
-        
-        % all other constraints match the velocity constraints
+        % all other constraints match the load constraints
         for k = 3:r,
-        posDesQ(k, 2) = Inf; %posDes(k, i+1)*(tDes(i+1, 1)-tDes(i, 1))^(k-1);
+            posDesQ(k, 2) = posDesN(k, i+1)*(tDesN(i+1, 1)-tDesN(i, 1))^(k-1);
         end
 
         
-        %%% find trajectory
+        
+        
+        
+        %%% 
         % construct QP problem - note that there is always only 1 segment
-        %   for which we want to minimize the snap 
+        %   we want to minimize the snap 
+        
         % construct Q matrix
-        Q = findCostMatrix(r, n, t0, t1);
+        Q = findCostMatrix(n, 4, t0, t1);
               
         % find A matrix
         [A_fixed, b_fixed] = findFixedConstraints(r, n, 1, 1, posDesQ, t0, t1, [], 1);
@@ -339,9 +347,7 @@ for i = 0:m,
 %             b_ineq(Nc+k, 1) = (-g/2*(tDes(i+1, 1)-tDes(i, 1))^2*tEval^2+stateEnd(2, 1)*(tDes(i+1, 1)-tDes(i, 1))*tEval+stateEnd(1, 1))+len-epilson;
 %         end
 
-        
-        
-        
+
         
         % find trajectory
         xT_all = quadprog(Q,[],A_ineq, b_ineq,A_fixed, b_fixed);
@@ -363,10 +369,29 @@ for i = 0:m,
         % all higher derivatives = 0;
         
         % first n-2 terms are 0
-        xTL = [xTL [zeros(n-2, 1); -1/2*g*(tDes(i+1, 1)-tDes(i, 1))^2; stateEnd(2, 1)*(tDes(i+1, 1)-tDes(i, 1)); stateEnd(1, 1)]];
+        xTL = [xTL [zeros(n-2, 1); -1/2*g*(tDesN(i+1, 1)-tDesN(i, 1))^2; stateEnd(2, 1)*(tDesN(i+1, 1)-tDesN(i, 1)); stateEnd(1, 1)]];
         
-        
+        % log mode switch
         mode = [mode; [i 2 1]];
+        
+        % calculate load initial conditions after the switch
+        [stateEnd, ~] = evaluateTraj(tDesN(i+1, 1), n, i, 1, xTQ, tDesN, r-1, []);
+
+        
+        posDesT = zeros(r, 1);
+        posDesT(1, 1) = stateEnd(1, 1)-len;
+        posDesT(2, 1) = (stateEnd(2, 1)*mQ+vLminus*mL)/(mQ+mL);
+        posDesT(3:r, 1) = stateEnd(3:r, 1);
+        
+        if (posDesT(:, 1) ~= posDesN(:, i+1)),
+            disp('warning: updating constraints at end of collision')
+        end
+        
+        posDesN(:, i+1) = posDesT;
+        
+
+        
+        % update variables
         currentMode = 1;
         lastStart = i;
         
@@ -377,56 +402,6 @@ for i = 0:m,
 end
 
 
-
-
-
-
-
-
-% %%%
-% % construct equality constraints
-% A_opt = [];
-% b_opt = [];
-%
-% for dim = 1:d,
-%
-%     % construct fixed value constraints
-%     [A_fixed, b_fixed] = findFixedConstraints(r, n, m, dim, posDes, t0, t1, [], 1);
-%     [A_cont, b_cont] = findContConstraints(r, n, m, dim, posDes, t0, t1);
-%
-%     % put each A_eq for each dimension into block diagonal matrix
-%     A_opt = blkdiag(A_opt, [A_fixed; A_cont]);
-%     b_opt = [b_opt; [b_fixed; b_cont]];
-%
-% end
-%
-%
-%
-%
-%
-% %%%
-% % construct any inequality constraints
-% [A_ineq, b_ineq] = constructCorrConstraints(n, m, d, posDes, ineqConst, t0, t1);
-%
-%
-%
-%
-% %%%
-% % find optimal trajectory through quadratic programming
-% %xT_all = quadprog(Q_opt,[],A_ineq, b_ineq,A_opt,b_opt);
-% xT_all = fmincon(@costfunction,zeros((n+1)*m*d, 1),A_ineq, b_ineq, A_opt,b_opt, [], [], 'tensionConst');
-%
-%
-%
-% %%%
-% % explicitly break trajectory into its piecewise parts and dimensions for output
-% xT = zeros((n+1), m, d);
-% for dim = 1:d,
-%     thisxT = xT_all((dim-1)*(n+1)*m+1:dim*(n+1)*m);
-%     for j = 1:m,
-%         xT(:, j, dim) = thisxT((j-1)*(n+1)+1:j*(n+1));
-%     end
-% end
 
 
 

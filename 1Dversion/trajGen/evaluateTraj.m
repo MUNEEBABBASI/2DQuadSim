@@ -56,7 +56,7 @@ for l = 1:r,
     thisDer = zeros(n-l+1, m, d);
     for j = 1:m
         for k = 1:d,
-            
+
             [a, b, c] = size(thisDer); 
             [a2, b2, c2] = size(polyder(derivativesX{l}(:, j, k)));
             thisDer(:, j, k) = [zeros(1, a-b2) polyder(derivativesX{l}(:, j, k))];
@@ -99,7 +99,7 @@ elseif (t <= tDes(m+1, 1));
 
     for j = 1:m,
         if (t <= tDes(j+1, 1));
-
+            
              scaledt = (t-tDes(j, 1))/(tDes(j+1, 1)-tDes(j, 1)); % find the nondimensionalized time
             %scaledt = t;
 
