@@ -34,7 +34,7 @@ l = 1; %length of cable, m
 % set up problem
 r = 6; %derivative to minimize in cost function
 n = 11; %order of desired trajectory
-m = 2; %number of pieces in trajectory
+m = 3; %number of pieces in trajectory
 d = 1; %dimensions
 
 % specify the m+1 keyframes

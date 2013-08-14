@@ -6,6 +6,7 @@
 %   r: integer, derivative to minimize in cost function
 %   t0: real value, begnning time of the trajectory
 %   t1: real value, end time of the trajectory
+%   tDes: (m+1) x 1 vector, desired times of arrival at keyframes
 % outputs:
 %   Q: (n+1) x (n+1) matrix, Q matrix for the cost function J = x'Qx
 function [Q] = findCostMatrix(n, r, t0, t1)
@@ -31,5 +32,6 @@ end
 
 % flip Q so that it'll correspond to the order of x coefficients
 Q = rot90(rot90(Q));
+
 
 end

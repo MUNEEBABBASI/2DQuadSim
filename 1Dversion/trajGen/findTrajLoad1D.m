@@ -147,6 +147,9 @@ for i = 0:m,
             % make a new desired position matrix with nondimensionalized
             %   endpoint constraints 
             for j = (lastStart+1):(i+1),
+                
+                %%%%% ADD IN ENDPOINT SPECIAL CASES! 
+                
                 for k = 1:r
                     if j > 1,
                     posDesN(k, j) = posDesN(k, j)*(tDesN(j, 1)-tDesN(j-1, 1))^(k-1);
@@ -161,7 +164,7 @@ for i = 0:m,
                 posDesT = zeros(r, 1);
                 posDesT(1:2, 1) = posDesN(1:2, i+1);
                 posDesT(3, 1) = -g*(tDesN(i+1, 1)-tDesN(i, 1))^2;
-                posDesT(4:r, 1) = 0;
+                %posDesT(4:r, 1) = 0;
                 
                 if (posDesT(:, 1) ~= posDesN(:, i+1)),
                     disp('warning: constraints changed to accomodate tension')
@@ -169,6 +172,9 @@ for i = 0:m,
                 posDesN(:, i+1) = posDesT;
             end
 
+            
+            
+            posDesN(:, lastStart+1:i+1)
             
             % construct fixed value constraints and continuity constraints
             [A_fixed, b_fixed] = findFixedConstraints(r, n, i-lastStart, 1, posDesN(:, lastStart+1:i+1), t0, t1, [], 1);
@@ -179,9 +185,11 @@ for i = 0:m,
             b_eq = [b_fixed; b_cont];
             
             
+            
+            %%% construct inequality constraints
             A_ineq = [];
             b_ineq = [];
-%             % constraint the velocity to be greater than 0 (implying no
+%             % constrain the velocity to be greater than 0 (implying no
 %             %   overshooting)
 %             A_ineq = zeros(1, n+1);
 %             derCoeff = findDerivativeCoeff(n, 1);
@@ -189,6 +197,36 @@ for i = 0:m,
 %             % note we skip evaluating at time t1 beacuse time is
 %             % nondimensionalized and t1 =1
 %             b_ineq = 0;
+
+
+            % constraint tension force to be greater than 0
+            epilson = 1e-5;
+            Nc = 20;
+            derrCoeff = findDerivativeCoeff(n, 2);
+            derrDes = 2;
+            
+            for j = (lastStart+1):i, % for each segment
+                
+                % at each sample point, the tension is greater than or
+                %   equal to 0
+                A_ineqTemp = zeros(Nc, n+1);
+                b_ineqTemp = zeros(Nc, 1);
+                for k = 1:Nc,
+                    
+                    for p = derrDes+1:n+1,
+                        tEval = t0+k/(Nc+1)*(t1-t0);
+                        A_ineqTemp(k, p) = -derrCoeff(derrDes+1, p-derrDes)*tEval^(n-p+1);
+                    end
+                    b_ineqTemp(k, 1) = g*(tDes(j+1, 1)-tDes(j, 1))^2-epilson/mL;
+                end
+                A_ineq = blkdiag(A_ineq, A_ineqTemp);
+                b_ineq = [b_ineq; b_ineqTemp];
+            end
+
+            A_ineq = [];
+            b_ineq = [];
+
+            
             
             % find this trajectory
             xT_all = quadprog(Q_joint,[],A_ineq,b_ineq,A_eq,b_eq);
@@ -201,11 +239,13 @@ for i = 0:m,
             for j = 1:i-lastStart,
                 xT_this(:, j) = xT_all((j-1)*(n+1)+1:j*(n+1));
             end
-            xTL = [xTL xT_this];
+            xTL = [xTL xT_this]
             
             
             % add corresponding trajectories to quad
-            xTQ = [xTQ [xTL(1:n, i);xTL(n+1, i)+len]];
+            for j = (lastStart+1):i
+                xTQ = [xTQ [xTL(1:n, j);xTL(n+1, j)+len]]
+            end
             
             % log the change in modes 
             mode = [mode; [i 1 2]];
@@ -243,17 +283,19 @@ for i = 0:m,
         % these calculations happen in real time to find end-point
         %   conditions
         
-        
+        posDesN
         % find end position of quad
         % if a displacement is specified, find the time it takes to reach it
         if (posDesN(1, i+1) ~= Inf), 
             % find displacement
-            d = posDesN(1, i+1) - stateEnd(1, 1);
+            stateEnd
+            i
+            d = posDesN(1, i+1) - stateEnd(1, 1)
             
             
             % find time it takes to reach beginning of free fall to end
             % take the larger time - assume this is positive
-            t_temp = roots([-g*1/2 stateEnd(2, 1) -d]); % solve for -1/2gt^2+vit - d = 0
+            t_temp = roots([-g*1/2 stateEnd(2, 1) -d]) % solve for -1/2gt^2+vit - d = 0
             if (t_temp(1, 1) > t_temp(2, 1)),
                 tFall = t_temp(1, 1);
             else
@@ -311,7 +353,7 @@ for i = 0:m,
             posDesQ(k, 2) = posDesN(k, i+1)*(tDesN(i+1, 1)-tDesN(i, 1))^(k-1);
         end
 
-        
+        posDesQ
         
         
         
@@ -326,27 +368,34 @@ for i = 0:m,
         [A_fixed, b_fixed] = findFixedConstraints(r, n, 1, 1, posDesQ, t0, t1, [], 1);
         
         
-        
-        % constraint position of quad to be always greater than the load
-        %   (no collisions) and less than the length of the rope
         A_ineq = [];
         b_ineq = [];
         
-%         epilson = 0.1;
-%         Nc = 50;
-%         derrCoeff = findDerivativeCoeff(n, 0);
-%         A_ineq = zeros(2*Nc, n+1);
-%         b_ineq = zeros(2*Nc, 1);
-%         for k = 1:Nc,
-%             for p = 1:n+1,
-%                 tEval = t0+k/Nc;
-%                 A_ineq(k, p) = -derrCoeff(p)*tEval^(n-p-1);
-%                 A_ineq(Nc+k, p) = derrCoeff(p)*tEval^(n-p-1);
-%             end
-%             b_ineq(k, 1) = -(-g/2*(tDes(i+1, 1)-tDes(i, 1))^2*tEval^2+stateEnd(2, 1)*(tDes(i+1, 1)-tDes(i, 1))*tEval+stateEnd(1, 1))-epilson;
-%             b_ineq(Nc+k, 1) = (-g/2*(tDes(i+1, 1)-tDes(i, 1))^2*tEval^2+stateEnd(2, 1)*(tDes(i+1, 1)-tDes(i, 1))*tEval+stateEnd(1, 1))+len-epilson;
-%         end
+        
+        % constraint position of quad to be always greater than the load
+        %   (no collisions) and less than the length of the rope
 
+        
+        epilson1 = 0.3;
+        epilson2 = 1e-5;
+        Nc = 20;
+        derrCoeff = findDerivativeCoeff(n, 0);
+        A_ineq = zeros(2*Nc, n+1);
+        b_ineq = zeros(2*Nc, 1);
+        for k = 1:Nc,
+            for p = 1:n+1,
+                tEval = t0+k/(Nc+1)*(t1-t0);
+                A_ineq(k, p) = -derrCoeff(1, p)*tEval^(n-p+1);
+                A_ineq(Nc+k, p) = derrCoeff(1, p)*tEval^(n-p+1);
+            end
+
+            b_ineq(k, 1) = -(-g/2*(tDesN(i+1, 1)-tDesN(i, 1))^2*tEval^2+stateEnd(2, 1)*(tDesN(i+1, 1)-tDesN(i, 1))*tEval+stateEnd(1, 1))-epilson1;
+            b_ineq(Nc+k, 1) = (-g/2*(tDesN(i+1, 1)-tDesN(i, 1))^2*tEval^2+stateEnd(2, 1)*(tDesN(i+1, 1)-tDesN(i, 1))*tEval+stateEnd(1, 1))+len-epilson2;
+        end
+
+%         
+%         A_ineq = [];
+%         b_ineq = [];
 
         
         % find trajectory

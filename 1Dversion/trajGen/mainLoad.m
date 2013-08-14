@@ -34,17 +34,17 @@ l = 1; %length of cable, m
 % set up problem
 r = 6; %derivative to minimize in cost function
 n = 11; %order of desired trajectory
-m = 3; %number of pieces in trajectory
+m = 2; %number of pieces in trajectory
 d = 1; %dimensions
 
 % specify the m+1 keyframes
-tDes = [0; 2; 2.5; 4]; %specify desired arrival times at keyframes
-TDes = [Inf; 0; Inf; Inf]; %specify keyframes where you want tension to be 0
+tDes = [0; 2; 3; 4]; %specify desired arrival times at keyframes
+TDes = [Inf; Inf; 0; Inf]; %specify keyframes where you want tension to be 0
 % specify desired positions and/or derivatives at keyframes, 
 % Inf represents unconstrained values
 % r x (m+1) x d, where each row i is the value the (i-1)th derivative of keyframe j for dimensions k 
 %posDes = zeros(r, m+1, d);
-posDes(:, :, 1) = [-1 0 -1 2; 0 2 0 0; 0 -g Inf 0; 0 0 Inf 0; 0 0 Inf 0; 0 0 Inf 0];
+posDes(:, :, 1) = [-1 0 1 -1; 0 Inf Inf 0; 0 Inf -g 0; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0];
 [i, j, k] = size(posDes);
 p = length(tDes);
 
@@ -123,19 +123,19 @@ xlabel('time');
 figure()
 plot(t, mL*(der2+g));
 title('tension');
-ylabel('len (m)');
+ylabel('force (N)');
 xlabel('time');
 
 
 
-disp('continuity checks')
-%check for continuity
-for i = 0:m
-    i
-[contL, ~] = evaluateTraj(tDes(i+1, 1), n, m, d, xTL, tDes, 5, [])
-
-[contQ, ~] = evaluateTraj(tDes(i+1, 1), n, m, d, xTQ, tDes, 5, [])
-end
+% disp('continuity checks')
+% %check for continuity
+% for i = 0:m
+%     i
+% [contL, ~] = evaluateTraj(tDes(i+1, 1), n, m, d, xTL, tDes, 5, [])
+% 
+% [contQ, ~] = evaluateTraj(tDes(i+1, 1), n, m, d, xTQ, tDes, 5, [])
+% end
 
 
 

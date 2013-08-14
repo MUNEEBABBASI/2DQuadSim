@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012) (format=pdflatex 2012.6.30)  6 AUG 2013 12:42
+This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012) (format=pdflatex 2012.6.30)  14 AUG 2013 12:33
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -374,34 +374,17 @@ Overfull \hbox (16.88397pt too wide) in paragraph at lines 26--41
 [1
 
 {/usr/local/texlive/2012/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
-[2] [3] [4] [5] [6] [7] [8] [9] [10]
-Overfull \hbox (51.8361pt too wide) in paragraph at lines 575--579
-\OT1/cmr/m/n/10 [\OML/cmm/m/it/10 x[]\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 t[]\OT1/
-cmr/m/n/10 )  \OML/cmm/m/it/10 x[]\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 t[]\OT1/cmr
-/m/n/10 )  \OML/cmm/m/it/10 :::  x[]\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 t[]\OT1/c
-mr/m/n/10 )  \OML/cmm/m/it/10 x[]\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 t[]\OT1/cmr/
-m/n/10 )  \OML/cmm/m/it/10 x[]\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 t[]\OT1/cmr/m/n
-/10 )  \OML/cmm/m/it/10 :::  x[]\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 t[]\OT1/cmr/m
-/n/10 )  \OML/cmm/m/it/10 x[]\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 t[]\OT1/cmr/m/n/
-10 )  \OML/cmm/m/it/10 x[]\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 t[]\OT1/cmr/m/n/10 
-)  \OML/cmm/m/it/10 :::  x[]\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 t[]\OT1/cmr/m/n/1
-0 )  \OML/cmm/m/it/10 :::  x[]\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 t[]\OT1/cmr/m/n
-/10 )  \OML/cmm/m/it/10 x[]\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 t[]\OT1/cmr/m/n/10
- )  \OML/cmm/m/it/10 :::  x[]\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 t[]\OT1/cmr/m/n/
-10 )][]$.  
- []
-
-
-Overfull \hbox (4.88603pt too wide) in paragraph at lines 589--589
+[2] [3] [4] [5] [6] [7] [8] [9] [10] [11] [12] [13] [14]
+Overfull \hbox (49.57353pt too wide) in paragraph at lines 925--925
 [] 
  []
 
-[11] [12] [13] (./trajectoryGeneration.aux) ) 
+[15] [16] [17] (./trajectoryGeneration.aux) ) 
 Here is how much of TeX's memory you used:
- 4370 strings out of 493488
- 64204 string characters out of 3141326
- 152392 words of memory out of 3000000
- 7597 multiletter control sequences out of 15000+200000
+ 4371 strings out of 493488
+ 64219 string characters out of 3141326
+ 154402 words of memory out of 3000000
+ 7598 multiletter control sequences out of 15000+200000
  12156 words of font info for 51 fonts, out of 3000000 for 9000
  957 hyphenation exceptions out of 8191
  44i,16n,42p,652b,220s stack positions out of 5000i,500n,10000p,200000b,50000s
@@ -425,10 +408,10 @@ s/cm/cmsy10.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts
 /cm/cmsy5.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/c
 m/cmsy7.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/
 cmsy9.pfb>
-Output written on trajectoryGeneration.pdf (13 pages, 221791 bytes).
+Output written on trajectoryGeneration.pdf (17 pages, 238129 bytes).
 PDF statistics:
- 123 PDF objects out of 1000 (max. 8388607)
- 88 compressed objects within 1 object stream
+ 135 PDF objects out of 1000 (max. 8388607)
+ 96 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
