@@ -49,10 +49,7 @@ t1 = 1;
 %   note that we are nondimensionalizing the time here
 Q_joint = [];
 for i = 1:m,
-    Q = findCostMatrix(n, r, t0, t1);
-    
-    % scale for time nondimensionalization
-    Q = 1./((tDes(i+1, 1)-tDes(i, 1))^(2*r)).*Q;
+    Q = findCostMatrix(n, r, 0, 1);
       
     Q_joint = blkdiag(Q_joint, Q);
 end
@@ -75,13 +72,11 @@ for i = 1:m,
         maxPower = nnz(derCoeff(j+1, :))-1;
     
         for k = 0:maxPower,
-            
+                %tinit = tDes(i, 1);
+                %tfinal = tDes(i+1, 1);
+                
                 A(j+1, k+1) = t0^(maxPower-k)*derCoeff(j+1, k+1);
                 A(j+1+r, k+1) = t1^(maxPower-k)*derCoeff(j+1, k+1);
-                
-                % scale for time nondimensionalization
-                A(j+1, k+1) = 1/((tDes(i+1, 1)-tDes(i, 1))^j)*A(j+1, k+1); 
-                A(j+1+r, k+1) = 1/((tDes(i+1, 1)-tDes(i, 1))^j)*A(j+1+r, k+1);
         end
     end
     
@@ -195,7 +190,6 @@ for i = 1:r,
 end
 
 
-posDes_opt
 
 
 
@@ -213,10 +207,7 @@ t1 = 1;
 Q_joint = [];
 for i = 1:m,
     Q = findCostMatrix(n, r, t0, t1);
-    
-    % scale for time nondimensionalization
-    Q = 1./((tDes(i+1, 1)-tDes(i, 1))^(2*r)).*Q;
-    
+      
     Q_joint = blkdiag(Q_joint, Q);
 end
 
@@ -224,7 +215,7 @@ end
 % note that here, since posDes is only one dimensional in k, dim is always
 %   1 even though when the original posDes matrix is used, a dimension is
 %   specified
-[A_eq, b_eq] = findFixedConstraints(r, n, m, 1, posDes_opt, t0, t1, tDes, 1);
+[A_eq, b_eq] = findFixedConstraints(r, n, m, 1, posDes_opt, t0, t1, [], 1);
 
 
 % note A_eq should have dimensions 2*n*m x (n+1)*m, since all derivatives are

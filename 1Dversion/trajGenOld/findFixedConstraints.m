@@ -16,12 +16,9 @@
 %   t0: real value, begnning time of the trajectory
 %   t1: real value, end time of the trajectory
 %   tDes: m+1 x 1 matrix, desired arrival times at each trajectory
-%   nonDim: 0 or 1, 1 uses nondimensionalized times t0 and t1
-%       and scales conditions specified by posDes by times in tDes when calculaing b_eq, 
-%       0 uses times in tDes times and doesn't scale endpoint conditions 
+%   nonDim: 0 or 1, 1 uses nondimensionalized times t0 and t1, 0 uses times in tDes
 % outputs:
 %   A_eq, b_eq: matrices for Ax=b formulation of constraints
-
 function [A_eq, b_eq] = findFixedConstraints(r, n, m, dim, posDes, t0, t1, tDes, nonDim)
 
 A_eq = [];
@@ -49,13 +46,7 @@ for j = 0:m, %for each keyframe
                     A_temp(1, j*(n+1)+k+1) = tinit^(maxPower - k)*derCoeff(i+1, k+1);
                 end
                 
-                b_temp = posDes(i+1, j+1, dim); 
-                
-                %scale by time for nondimensionalization if nondimensionalized
-                if nonDim,
-                    b_temp = ((tDes(j+2, 1)-tDes(j+1, 1))^i)*b_temp;
-                end
-                
+                b_temp = posDes(i+1, j+1, dim);
             elseif (j == m), % add one constraint to end of last piece
                 A_temp = zeros(1, (n+1)*m);
                 maxPower = nnz(derCoeff(i+1, :))-1;
@@ -71,12 +62,6 @@ for j = 0:m, %for each keyframe
                 end
                 
                 b_temp = posDes(i+1, j+1, dim);
-                
-                %scale by time for nondimensionalization if nondimensionalized
-                if nonDim,
-                    b_temp = ((tDes(j+1, 1)-tDes(j, 1))^i)*b_temp;
-                end
-                
             else % else, add two constraints
                 A_temp = zeros(2, (n+1)*m);
                 maxPower = nnz(derCoeff(i+1,:))-1;
@@ -95,13 +80,6 @@ for j = 0:m, %for each keyframe
                 end
                 
                 b_temp = posDes(i+1, j+1, dim)*ones(2, 1);
-                
-                %scale by time for nondimensionalization if nondimensionalized
-                if nonDim,
-                    b_temp(1, 1) = ((tDes(j+1, 1)-tDes(j, 1))^i)*b_temp(1, 1);
-                    b_temp(2, 1) = ((tDes(j+2, 1)-tDes(j+1, 1))^i)*b_temp(2, 1);
-                end
-                
             end
             
             A_eq = [A_eq; A_temp];

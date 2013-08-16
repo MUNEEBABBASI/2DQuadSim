@@ -34,10 +34,11 @@
 %       2 indicates mode where cable is slack, trajectory is for quadrotor
 %   tDesN: (m+1)x1 vector, time arrival at keyframes, could have changed if position of T =
 %       0 didn't match time 
+%   posDesN: r x m x d matrix, endpoint conditions for load at keyframes after
+%       optimization
 
 
-
-function [xTL, xTQ, modes] = findTrajLoad1D(r, n, m, d, tDes, posDes, TDes, g, len, mL, mQ)
+function [xTL, xTQ, mode, tDesN, posDesN] = findTrajLoad1D(r, n, m, d, tDes, posDes, TDes, g, len, mL, mQ)
 
 
 % check that we are dealing with a 1D problem
@@ -66,80 +67,31 @@ t1 = 1;
 %       cy1,(n) cy1,(n-1) ... cy1,1 cy1,0 cy2,n cy2,(n-1) ... cy2,1 cy2,0 .... cym,0 ....
 %       cz1,(n) cz1,(n-1) ... cz1,1 cz1,0 cz2,n cz2,(n-1) ... cz2,1 cz2,0 .... czm,0]
 
+
 % these represent the quadrotor trajectory
-
-
-
 
  
 %%%
 % construct cost matrix Q
-Q_joint = [];
-for i = 1:m,
+Q_opt = [];
+
+for dim = 1:d,
     
-    if (TDes(i, 1) ~=0)
-        Q = findCostMatrix(n, r, t0, t1); % optimize 6th derivative
+    Q_joint = zeros(m*(n+1));
+    for i = 1:m,
+        Q = findCostMatrix(n, r, t0, t1); % find cost matrix for each segment
         
-        % multiply by time factor to nondimensionalize
-        %Q = 1./((tDes(i+1, 1)-tDes(i, 1))^(2*r)).*Q;
-    elseif (TDes(i, 1) == 0)
-        Q = findCostMatrix(n, 4, t0, t1); % optimize 4th derivative
-        
-        % multiply by time factor to nondimensionalize
-        %Q = 1./((tDes(i+1, 1)-tDes(i, 1))^(2*4)).*Q;
+        Q_joint(2*r*(i-1)+1:2*r*i, (n+1)*(i-1)+1:(n+1)*i) = 1./((tDes(i+1, 1)-tDes(i, 1))^(2*r)).*Q; %put in block diagonal matrix
     end
     
-    
-    Q_joint = blkdiag(Q_joint, Q); %put in block diagonal matrix
+    % put each dimension's Q_joint into a block diagonal matrix
+    Q_opt = blkdiag(Q_opt, Q_joint);
 end
 
 
 
-%%%
-% construct equality constraints
-[A_eq, b_eq, modes] = findQuadConstraints(r, n, m, d, posDes, TDes, t0, t1, tDes, 1, g, len, mL, mQ);
+[posDesQ, tDesQ, modes] = translateLoadConst(r, n, m, d, tDes, posDes, TDes, g, len, mL, mQ);
 
-
-%%%
-% construct inequality constraints
-A_ineq = [];
-b_ineq = [];
-
-
-%%%
-% optimize trajectory
-xT_all = quadprog(Q_joint,[],A_ineq, b_ineq,A_eq, b_eq);
-
-
-
-%%% 
-% break trajectory into parts
-xTQ = zeros((n+1), m);
-for j = 1:m,
-    xTQ(:, j) = xT_all((j-1)*(n+1)+1:j*(n+1));
-end
-
-
-
-
-%%%
-% translate into load trajectory
-xTL = [];
-for j = 0:m-1
-
-    % if no switch occurs
-    if isempty(find(modes(:, 1) ==j)) || mode(find(modes(:, 1) == j), 2) == 2
-        xTL = [xTL [xTQ(1:n, j+1);xTQ(n+1, j+1)-len]];
-   
-    % if switching from mode 1
-    elseif mode(find(modes(:, 1) == j), 2) == 1
-        [stateEnd, ~] = evaluateTraj(tDes(j+1, 1), n, j, d, xTL(:, j), tDes, r-1, []);
- stateEnd
-        xTL = [xTL [zeros(n-2, 1); -1/2*g*(tDes(j+2, 1)-tDes(j+1, 1))^2; stateEnd(2, 1)*(tDes(j+2, 1)-tDes(j+1, 1)); stateEnd(1, 1)]];
-    end
- 
-    
-end
 
 
 

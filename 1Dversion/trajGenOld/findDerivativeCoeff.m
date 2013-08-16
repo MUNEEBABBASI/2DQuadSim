@@ -7,7 +7,7 @@
 % outputs:
 %   derCoeff: (r+1) x (n+1) matrix, row i contains coefficients for the
 %       (i-1)th derivative of a polynominal of order n, assuming all
-%       coefficients are 1
+%       position coefficients are 1
 function derCoeff = findDerivativeCoeff(n, r)
 
 derCoeff = zeros(r+1, n+1);

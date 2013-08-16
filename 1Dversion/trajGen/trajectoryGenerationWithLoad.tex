@@ -1,0 +1,352 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+
+\usepackage{graphicx}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{latexsym}
+\usepackage{graphicx}
+\usepackage{algorithm} 
+\usepackage{algorithmic} 
+\usepackage{setspace}
+\usepackage{subfig}
+
+\begin{document}
+
+\centering
+Trajectory Generation for Quadrotor with Cable-Suspended Load in 1D\\
+August 14th, 2013
+
+\raggedright
+
+\begin{table} [h!]
+\footnotesize
+\begin{tabular}{ c c }
+	$r$ & derivative to minimize in cost function \\
+		& implies $r$ initial conditions at each keyframe (position and $r-1$ derivatives, indexed from 0 (constant term) \\
+	$n$ & order of desired trajectory, minimum order is $2r-1$ \\
+		&  implies $n+1$ coefficients, indexed from 0 (constant term) \\
+	$d$ & number of dimensions to optimize, indexed from 1 \\
+	 	& $d=1$ for this document \\
+	$m$ & number of pieces in trajectory \\
+		& implies $m+1$ keyframes in trajectory, indexed from 1 \\
+	$t_{des}$ & vertical vector of desired arrival times at keyframes, indexed from 0 \\
+	$pos_{des}$ & matrix of desired positions, each row represents a derivative, each column represents a keyframe \\
+		&  Inf represents unconstrained  \\
+         $T_{des}$ & desired tensions at keyframes
+\end{tabular}
+%\caption{Variables used}
+\label{tab: vars}
+\end{table}
+
+
+
+
+%%%%%%%
+\newpage
+\small
+
+
+
+%%%
+% m keyframes, one dimension
+\newpage
+\section{Optimization of a trajectory between $m+1$ keyframes in one dimension} \label{sec: mkeyframes1d}
+
+We want to find a trajectory for a quadrotor that will allow a cable-suspended load to reach keyframes:
+\begin{align*}
+X_{des} = 
+\end{align*}
+
+
+
+
+
+\mbox{} \newline
+We seek the piece-wise trajectory: 
+\begin{align*}
+X(t) &= 
+\begin{cases}
+    X_1 (t), & t_0 \le t < t_1 \\
+    X_2 (t), & t_1 \le t < t_2 \\
+    ... \\
+    X_m (t), & t_{m-1} \le t < t_m \\
+\end{cases}
+\end{align*} 
+
+that will minimize the cost function:
+
+\begin{align*}
+J &= \int_{t_0}^{t_m} \|  \frac{d^{r} X(t) }{dt} \|^2 dt \\
+&= X^T Q_{(t_m, t_0)} X \\
+\text{subject to: } A_t X &=b_t
+%%
+\end{align*}
+
+We again look for the non-dimensionalized trajectory: 
+\begin{align*}
+x(\tau) &= 
+\begin{cases}
+    x_1 (\tau) = c_{1, n} \tau^n + c_{1, n-1} \tau^{n-1} + ... c_{1, 1} \tau + c_{1, 0}, & t_0 \le t < t_1, \tau = \frac{t-t_0}{t_1-t_0}  \\
+    x_2 (\tau) = c_{2, n} \tau^n + c_{2, n-1} \tau^{n-1} + ... c_{2, 1} \tau + c_{2, 0}, & t_1 \le t < t_2, \tau = \frac{t-t_1}{t_2-t_1}  \\
+    ... \\
+    x_m (\tau) = c_{m, n} \tau^n + c_{m, n-1} \tau^{n-1} + ... c_{m, 1} \tau + c_{m, 0}, & t_{m-1} \le t < t_m, \tau = \frac{t-t_{m-1}}{t_m-t_{m-1}} \\
+\end{cases},  0 \le \tau < 1
+\end{align*} 
+Let $x_k = [c_{k, n} \ \ c_{k, n-1} \ \ ... \ \ c_{k, 1} \ \ c_{k, 0}]^T$ and $x = [x_1; x_2; ...; x_m] = [c_{1, n} \ \ c_{1, n-1} \ \ c_{1, n-2} \ \ ... \ \ c_{1, 1} \ \ c_{1, 0} \ \ c_{2, n} \ \ c_{2, n-1} \ \ ... \ \ c_{m, 1} \ \ c_{m, 0} ]^T$. Here, $d = 1$. Each piece of the trajectory is individually optimized between $\tau_0 = 0$ and $\tau_1=1$. We evaluate a time $t$ on trajectory $x_k(\tau)$ by finding $k$ such that $t_{k-1} \le t < t_k$ at time $\tau = \frac{t-t_{k-1}}{t_k-t_{k-1}}$.  
+
+\mbox{} \newline
+We want to minimize:
+\begin{align*}
+J &= \int_{t_0}^{t_m} \|  \frac{d^{r} X(t) }{dt} \|^2 dt \\
+&= \sum_{k=1}^{m} \int_{t_{k-1}}^{t_k} \|  \frac{d^{r} X_k (t) }{dt} \|^2 dt  \\
+&= \sum_{k=1}^{m} \int_{0}^{1} \frac{1}{(t_k-t_{k-1})^{2r}} \|  \frac{d^{r} x_k (\tau) }{d\tau} \|^2 d\tau  \\
+&=  \sum_{k=1}^{m} x_k^T \frac{1}{(t_k-t_{k-1})^{2r}} Q_{(0, 1)} x_k \\
+&= x^T Q x \\
+\text{subject to: } A x &=b
+%%
+\end{align*}
+
+\mbox{} \newline
+Note that alternatively, we could have non-dimensionalized the entire trajectory between 0 and 1 and evaluate a time $t$ on trajectory $x_k(\tau)$ by finding $k$ such $\frac{t_{k-1}-t_0}{t_m-t_0} \le \tau < \frac{t_{k}-t_0}{t_m-t_0}$, where $\tau = \frac{t-t_0}{t_m-t_0}$. 
+
+
+
+%%%
+\mbox{} \newline
+\mbox{} \newline
+TO FIND Q: \newline
+Recall that for each $x'_k = [c_{k, 0} \ \ c_{k, 1} \ \ ... \ \ c_{k, n-1} \ \ c_{k, n}]^T$, where $k = 1...m$, $Q'_{(0, 1)}$ is given by Eq. \ref{eqn: Q}. Since our $x_k = [c_{k, n} \ \ c_{k, n-1} \ \ ... \ \ c_{k, 1} \ \ c_{k, 0}]^T$, reflecting $Q'$ horizontally and vertically will give us the desired $Q$ for the form of $x_k$. We can then create the block diagonal matrix:
+\begin{align}
+\label{eqn: Qkeyframes} Q &= 
+\begin{bmatrix}
+  \frac{1}{(t_1-t_{0})^{2r}} Q_{(0, 1)} & 0 & 0 & ... & 0 \\
+  0 & \frac{1}{(t_2-t_{1})^{2r}} Q_{(0, 1)} & 0 & ... & 0 \\
+  & & ... & &  \\
+  0 & ... & 0 & \frac{1}{(t_{m-1}-t_{m-2})^{2r}} Q_{(0, 1)} & 0 \\
+  0 & ... & 0 & 0 & \frac{1}{(t_m-t_{m-1})^{2r}} Q_{(0, 1)} \\ 
+ \end{bmatrix}
+\end{align}
+
+
+
+%%%
+\mbox{} \newline
+\mbox{} \newline
+TO FIND A: \newline
+
+\mbox{} \newline
+First, we need to account for endpoint constraints: 
+\begin{align*}
+A_{endpoint_t} X &= b_{endpoint_t} \\
+\begin{bmatrix}
+ A(t_0) & 0 & 0 & ... & 0 \\
+ A(t_1) & 0 & 0 & ... & 0 \\
+ 0 & A(t_1) & 0 & ... & 0 \\
+ 0 & A(t_2) & 0 & ... & 0 \\
+ 0 & 0 & A(t_2) & ... & 0 \\
+ 0 & 0 & A(t_3) & ... & 0 \\
+ & & ... & & \\
+ 0 & 0 & ... & 0 & A(t_{m-1}) \\
+ 0 & 0 & ... & 0 & A(t_m)  \\
+ \end{bmatrix}
+ X 
+ &= 
+ \begin{bmatrix}
+  X_1 (t_0) \\
+  \dot{X}_1 (t_0) \\
+  ... \\
+  X^{(r-1)}_1 (t_0) \\
+    X_1 (t_1) \\
+  \dot{X}_1 (t_1) \\
+  ... \\
+  X^{(r-1)}_1 (t_1) \\
+     X_2 (t_1) \\
+  \dot{X}_2 (t_1) \\
+  ... \\
+  X^{(r-1)}_2 (t_1) \\
+     X_2 (t_2) \\
+  \dot{X}_2 (t_2) \\
+  ... \\
+  X^{(r-1)}_2 (t_2) \\
+  ... \\
+     X_m (t_{m-1}) \\
+  \dot{X}_m (t_{m-1}) \\
+  ... \\
+  X^{(r-1)}_m (t_{m-1}) \\
+     X_m (t_m) \\
+  \dot{X}_m (t_m) \\
+  ... \\
+  X^{(r-1)}_m (t_m) \\
+ \end{bmatrix} 
+\end{align*}
+
+In the non-dimensionalized case, we have, $\tau_0=0$, $\tau_1=1$, and:
+\begin{align}
+\nonumber A_{endpoint} x &= b_{endpoint} \\
+\label{eqn: endpoint} \begin{bmatrix}
+ A(\tau_0) & 0 & 0 & ... & 0 \\
+ A(\tau_1) & 0 & 0 & ... & 0 \\
+ 0 & A(\tau_0) & 0 & ... & 0 \\
+ 0 & A(\tau_1) & 0 & ... & 0 \\
+ 0 & 0 & A(\tau_0) & ... & 0 \\
+ 0 & 0 & A(\tau_1) & ... & 0 \\
+ & & ... & & \\
+ 0 & 0 & ... & 0 & A(\tau_0) \\
+ 0 & 0 & ... & 0 & A(\tau_1)  \\
+ \end{bmatrix}
+ x 
+ &= 
+ \begin{bmatrix}
+  X_1 (t_0) \\
+  (t_1-t_0) \dot{X}_1 (t_0) \\
+  ... \\
+  (t_1-t_0)^{(r-1)}  X^{(r-1)}_1 (t_0) \\
+    X_1 (t_1) \\
+  (t_1-t_0) \dot{X}_1 (t_1) \\
+  ... \\
+  (t_1-t_0)^{(r-1)} X^{(r-1)}_1 (t_1) \\
+     X_2 (t_1) \\
+ (t_2-t_1) \dot{X}_2  (t_1) \\
+  ... \\
+ (t_2-t_1)^{(r-1)} X^{(r-1)}_2 (t_1) \\
+     X_2 (t_2) \\
+ (t_2-t_1)  \dot{X}_2 (t_2) \\
+  ... \\
+ (t_2-t_1)^{(r-1)}  X^{(r-1)}_2 (t_2) \\
+  ... \\
+     X_m (t_{m-1}) \\
+ (t_m-t_{m-1}) \dot{X}_m  (t_{m-1}) \\
+  ... \\
+(t_m-t_{m-1})^{(r-1)}  X^{(r-1)}_m (t_{m-1}) \\
+     X_m (t_m) \\
+(t_m-t_{m-1})  \dot{X}_m  (t_m) \\
+  ... \\
+(t_m-t_{m-1})^{(r-1)}  X^{(r-1)}_m (t_m) \\
+ \end{bmatrix} 
+\end{align}
+
+Note that again, we omit rows where a condition is unconstrained. Also, except for constraints at $t_0$ and $t_m$, every other constraint must be included twice - a constraint at $t_k$ must be applied as a final condition to $x_{k}(\tau_1)$ and an initial condition $x_{k+1}(\tau_0)$. The equation for $A[i, j] (t)$ is given in Eq. \ref{eqn: A}. 
+
+\mbox{} \newline
+We must also account for continuity constraints, which ensure that when the trajectory switches from one piece to another at the keyframes, position and all derivatives lower than $r$ remain continuous, for a smooth path. In other words, we require:
+\begin{align*}
+A_{cont_t} X &= b_{cont_t} \\
+\begin{bmatrix}
+  X_1 (t_1) - X_2(t_1) \\
+  \dot{X}_1 (t_1) - \dot{X}_2 (t_1) \\
+  ... \\
+  X^{(r-1)}_1 (t_1) - X^{(r-1)}_2 (t_1) \\
+    ... \\
+  X_{m-1} (t_{m-1}) - X_{m} (t_{m-1}) \\
+  \dot{X}_{m-1} (t_{m-1}) - \dot{X}_{m} (t_{m-1}) \\
+  ... \\
+  X^{(r-1)}_{m-1} (t_{m-1}) - X^{(r-1)}_m (t_{m-1}) \\
+ \end{bmatrix} 
+ &=
+ 0 
+ \end{align*}
+ 
+ Translating to the nondimensionalized case, $\tau_0 = 0$, $\tau_1 = 1$, and: 
+ \begin{align*}
+ A_{cont} x &= b_{cont} \\
+ \begin{bmatrix}
+  x_1 (\tau_1) - x_2(\tau_0) \\
+  \frac{1}{(t_1-t_0)} \dot{x}_1 (\tau_1) - \frac{1}{(t_2-t_1)} \dot{x}_2(\tau_0) \\
+  ... \\
+  \frac{1}{(t_1-t_0)^{(r-1)}} x^{(r-1)}_1 (\tau_1) - \frac{1}{(t_2-t_1)^{(r-1)}} x^{(r-1)}_2 (\tau_0) \\
+    ... \\
+  x_{m-1} (\tau_1) - x_{m} (\tau_0) \\
+ \frac{1}{(t_{m-2}-t_{m-1})} \dot{x}_{m-1} (\tau_1) -  \frac{1}{(t_m-t_{m-1})}  \dot{x}_{m} (\tau_0) \\
+  ... \\
+  \frac{1}{(t_{m-2}-t_{m-1})^{(r-1)}} x^{(r-1)}_{m-1} (\tau_1) - \frac{1}{(t_m-t_{m-1})^{(r-1)}} x^{(r-1)}_m (\tau_0) \\
+ \end{bmatrix} 
+ &=
+ 0 \\
+ \begin{bmatrix}
+ A_{cont} (t_1) & 0 & 0 & ... & 0 \\
+ 0 & A_{cont} (t_2) & 0 & ... & 0 \\
+ 0 & 0 & A_{cont} (t_3) & ... & 0 \\
+ & & ... & & \\
+ 0 & 0 & ... & 0 & A_{cont} (t_{m-1}) \\
+  \end{bmatrix} x 
+  &= 
+  0
+\end{align*} where:
+%%%
+\begin{align}
+\label{eqn: Acont} A_{cont}[i, j] (t_k) &= 
+\begin{cases}
+   \frac{1}{(t_{k}-t_{k-1})^i} \prod_{k=0}^{i-1} {(n-k-j)} \tau_1^{n-j-i}, & n-j \ge i \land j \le n \\
+    0, & n-j < i \land j \le n \\
+     - \frac{1}{(t_{k+1}-t_k)^i} \prod_{k=0}^{i-1} {(1-k-j)} \tau_0^{1-j-i}, & 1-j \ge i \land j > n \\   %replace all j with j-n-1 so index of n+1 will translate to j
+     0, & 1-j < i \land j > n \\       
+\end{cases}, i = 0...(r-1), j = 0...2(n+1)
+\end{align}
+
+Our constraints, $Ax = b$, take the form:
+\begin{align}
+\nonumber Ax &= b \\
+\label{eqn: Akeyframes} 
+\begin{bmatrix}
+A_{endpoint} \\
+A_{cont} \\
+ \end{bmatrix}
+ x 
+& = 
+ \begin{bmatrix}
+b_{endpoint} \\
+0 \\
+ \end{bmatrix} 
+\end{align}
+
+
+
+%%%
+\mbox{} \newline
+\mbox{} \newline
+TO EVALUATE: \newline
+
+\begin{align*}
+X(t) &= 
+\begin{cases}
+    x_1(0), & t < t_0 \\
+    x_1 (\tau) = c_{1, n} \tau^n + c_{1, n-1} \tau^{n-1} + ... c_{1, 1} \tau + c_{1, 0}, & t_0 \le t < t_1, \tau = \frac{t-t_0}{t_1-t_0}  \\
+    x_2 (\tau) = c_{2, n} \tau^n + c_{2, n-1} \tau^{n-1} + ... c_{2, 1} \tau + c_{2, 0}, & t_1 \le t < t_2, \tau = \frac{t-t_1}{t_2-t_1}  \\
+    ... \\
+    x_m (\tau) = c_{m, n} \tau^n + c_{m, n-1} \tau^{n-1} + ... c_{m, 1} \tau + c_{m, 0}, & t_{m-1} \le t < t_m, \tau = \frac{t-t_{m-1}}{t_m-t_{m-1}} \\
+    x_m(1), & t_m \le t \\
+\end{cases}
+\end{align*} 
+
+\begin{align*}
+X^{(k)}(t) &= 
+\begin{cases}
+    \frac{1}{(t_1-t_0)^k} x^{(k)}_1(0), & t < t_0 \\
+    \frac{1}{(t_1-t_0)^k} x^{(k)}_1 (\tau) , & t_0 \le t < t_1, \tau = \frac{t-t_0}{t_1-t_0}  \\
+    \frac{1}{(t_2-t_1)^k} x^{(k)}_2 (\tau) , & t_1 \le t < t_2, \tau = \frac{t-t_1}{t_2-t_1}  \\
+    ... \\
+    \frac{1}{(t_m-t_{m-1})^k} x^{(k)}_m (\tau) , & t_{m-1} \le t < t_m, \tau = \frac{t-t_{m-1}}{t_m-t_{m-1}} \\
+    \frac{1}{(t_m-t_{m-1})^k} x^{(k)}_m(1), & t_m \le t \\
+\end{cases}
+\end{align*} 
+
+
+
+
+
+
+
+
+
+
+
+
+
+%\clearpage
+%\bibliographystyle{phjcp}
+%\bibliography{references}
+
+\end{document}

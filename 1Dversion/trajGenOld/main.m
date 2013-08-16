@@ -41,27 +41,22 @@ clc
 % [i, j, k] = size(posDes);
 % l = length(tDes);
 
-
-
-r = 6; %derivative to minimize in cost function
-n = 11; %order of desired trajectory
+r = 4; %derivative to minimize in cost function
+n = 7; %order of desired trajectory
 m = 3; %number of pieces in trajectory
-d = 1; %dimensions
+d = 2; %dimensions
 
 % specify the m+1 keyframes
-tDes = [0;1.5; 1.8; 3.7]; %specify desired arrival times at keyframes
+tDes = [0; 2; 4; 6]; %specify desired arrival times at keyframes
 % specify desired positions and/or derivatives at keyframes, 
 % Inf represents unconstrained values
 % r x (m+1) x d, where each row i is the value the (i-1)th derivative of keyframe j for dimensions k 
-% posDes = zeros(r, m+1, d);
-% posDes(:, :, 1) = [0 1 1 0; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0]; 
-% posDes(:, :, 2) = [0 3 2 2; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0];
-% posDes(:, :, 3) = [1 2 3 4; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0];
-posDes(:, :, 1) = [0 1 4 -2; 1 Inf Inf 0; 0 -2 Inf 0; 0 Inf Inf 0; 0 Inf 3000 0; 0 Inf Inf 0];
+posDes = zeros(r, m+1, d);
+posDes(:, :, 1) = [0 1 1 0; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0]; 
+posDes(:, :, 2) = [0 3 2 2; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0];
+posDes(:, :, 3) = [1 2 3 4; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0];
 [i, j, k] = size(posDes);
 l = length(tDes);
-
-
 
 % specify s corridor constraints
 ineqConst.numConst = 1; %integer, number of constraints 
@@ -86,10 +81,10 @@ end
 if (j < m+1 || l < m+1), % must specify m+1 keyframes for m pieces of trajectory
     error('minimum number of keyframes not specified');
 end
-% 
-% if (ismember(Inf, posDes(:, 1, :)) || ismember(Inf, posDes(:, m+1, :)) )
-%     error('endpoints must be fully constrained');
-% end
+
+if (ismember(Inf, posDes(:, 1, :)) || ismember(Inf, posDes(:, m+1, :)) )
+    error('endpoints must be fully constrained');
+end
 
 if (k < d)
     error('not enough dimensions specified');
@@ -107,7 +102,7 @@ end
 xT = zeros(n+1, m, d); 
 xT2 = zeros(n+1, m, d); 
 for i = 1:d,
-   xT(:, :, i) = findTraj(r, n, m, i, tDes, posDes);
+   %xT(:, :, i) = findTraj(r, n, m, i, tDes, posDes);
    xT2(:, :, i) = findTrajJoint(r, n, m, i, tDes, posDes);
 end
 
@@ -115,29 +110,25 @@ end
 %xT3 = findTrajCorr(r, n, m, d, tDes, posDes, ineqConst);
 %xT3 = findTrajLoad(r, n, m, d, tDes, posDes, ineqConst);
 
-xT
-xT2
 
-for i = 1:m+1,
-[dxT, ~] = evaluateTraj(tDes(i, 1), n, m, d, xT, tDes, r, [])
-end
+%xT
+%xT2
 
 
+% %%% 
+% % plot the trajectory
 % 
-% % %%% 
-% % % plot the trajectory
-% % 
 % % create legend labels for dimensions, must correspond to order of m
-% dimLabels{1} = 'x (m)';
-% dimLabels{2} = 'y (m)'; 
-% dimLabels{3} = 'z (m)'; 
-% plotDim = []; %[1 2]; %if you want to plot two dimensions against each other, specify here 
-%     % nxm matrix, creates n plots of column 1 vs. column 2
-%     
-% plotTraj(0, tDes(m+1), xT, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim, r);
-% plotTraj(0, tDes(m+1), xT2, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim, r);
-% %plotTraj(0, tDes(m+1), xT3, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim, r);
-% 
+dimLabels{1} = 'x (m)';
+dimLabels{2} = 'y (m)'; 
+dimLabels{3} = 'z (m)'; 
+plotDim = [1 2]; %if you want to plot two dimensions against each other, specify here 
+    % nxm matrix, creates n plots of column 1 vs. column 2
+    
+% plotTraj(xT, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim);
+plotTraj(xT2, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim);
+% plotTraj(xT3, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim);
+
 
 
 
