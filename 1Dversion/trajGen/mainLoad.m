@@ -38,13 +38,13 @@ m = 3; %number of pieces in trajectory
 d = 1; %dimensions
 
 % specify the m+1 keyframes
-tDes = [0; 1; 2; 3]; %specify desired arrival times at keyframes
+tDes = [0; 3; 3.5; 5]; %[0; 1.5; 2.2; 2.8]; %specify desired arrival times at keyframes
 TDes = [Inf; 0; Inf; Inf]; %specify keyframes where you want tension to be 0
 % specify desired positions and/or derivatives at keyframes, 
 % Inf represents unconstrained values
 % r x (m+1) x d, where each row i is the value the (i-1)th derivative of keyframe j for dimensions k 
 %posDes = zeros(r, m+1, d);
-posDes(:, :, 1) = [-1 0 Inf -1; 0 2 0 0; 0 Inf -9.81 0; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf -500 0];
+posDes(:, :, 1) = [-1 Inf Inf 2; 0 Inf 0 0; 0 Inf -9.81 0; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0];
 [i, j, k] = size(posDes);
 p = length(tDes);
 
@@ -99,17 +99,17 @@ xT2 = zeros(n+1, m, d);
 
 
 %xT3 = findTrajCorr(r, n, m, d, tDes, posDes, ineqConst);
-[xTL, xTQ, mode] = findTrajLoad1D(r, n, m, d, tDes, posDes, TDes, g, l, mL, mQ)
+[xTL, xTQ, mode] = findTrajLoad1D(r, n, m, d, tDes, posDes, TDes, g, l, mL, mQ);
 
 
 % look at l
-t = 0:0.001:4; %tDes(m+1); %construct t vector 
+t = 0:0.001:tDes(m+1); %tDes(m+1); %construct t vector 
 len = zeros(1, length(t));
 der2 = zeros(1, length(t));
 for i = 1:length(t),
     [dxTL, derivativesXL] = evaluateTraj(t(i), n, m, d, xTL, tDes, 2, []);
     [dxTQ, derivativesXQ] = evaluateTraj(t(i), n, m, d, xTQ, tDes, 2, []);
-    len(1, i) = dxTQ(1, 1) - dxTL(1, 1);
+    len(1, i) = abs(dxTQ(1, 1) - dxTL(1, 1));
     
     der2(1, i) = dxTL(3, 1);
 end
@@ -127,17 +127,18 @@ ylabel('force (N)');
 xlabel('time');
 
 
-
-% disp('continuity checks')
-% %check for continuity
-% for i = 0:m
-%     i
-% [contL, ~] = evaluateTraj(tDes(i+1, 1), n, m, d, xTL, tDes, 5, [])
+% % 
+% % disp('continuity checks')
+% % %check for continuity
+% % for i = 0:m
+% %     i
+% %     tDes(i+1)
+% % [contL, ~] = evaluateTraj(tDes(i+1, 1), n, m, d, xTL, tDes, 5, [])
+% % 
+% % [contQ, ~] = evaluateTraj(tDes(i+1, 1), n, m, d, xTQ, tDes, 5, [])
+% % end
 % 
-% [contQ, ~] = evaluateTraj(tDes(i+1, 1), n, m, d, xTQ, tDes, 5, [])
-% end
-
-
+% 
 
 
 %%% 
@@ -149,7 +150,7 @@ plotDim = [];
 %plotDim = [1 2]; %if you want to plot two dimensions against each other, specify here 
     % nxm matrix, creates n plots of column 1 vs. column 2
     
-plotTraj(0, 4, xTL, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim, r);
-plotTraj(0, 4, xTQ, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim, r);
+plotTraj(0, tDes(m+1), xTL, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim, r);
+plotTraj(0, tDes(m+1), xTQ, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim, r);
 
 

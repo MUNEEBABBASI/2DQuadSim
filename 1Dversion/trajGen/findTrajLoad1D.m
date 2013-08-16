@@ -4,6 +4,7 @@
 %
 % Dependencies: findContConstraints.m, findFixedConstraints.m,
 %   findDerivativeCoeff.m, findCostMatrix.m, translateLoadConst.m
+%   findQuadEqConstraints.m, findQuadIneqConstraints.m
 %
 % inputs:
 %   r: integer, derivative to minimize in cost function
@@ -27,17 +28,15 @@
 %       the jth trajectory in dimension k
 %       trajectory for quad, only exists when system is in mode 2
 %       all coefficients 0 otherwise
-%   mode: a x 3 vector, logs mode switches
+%   modes: a x 3 vector, logs mode switches
 %       column 1 indicates keyframe switch occurs, column 2 is last mode,
 %           column 3 is new mode (redundant, but just to be explicit)
 %       1 indicates mode where cable is taut, trajectory is for load
 %       2 indicates mode where cable is slack, trajectory is for quadrotor
-%   tDesN: (m+1)x1 vector, time arrival at keyframes, could have changed if position of T =
-%       0 didn't match time 
 
 
 
-function [xTL, xTQ, modes] = findTrajLoad1D(r, n, m, d, tDes, posDes, TDes, g, len, mL, mQ)
+function [xTL, xTQ, modes, A_eq, b_eq] = findTrajLoad1D(r, n, m, d, tDes, posDes, TDes, g, len, mL, mQ)
 
 
 % check that we are dealing with a 1D problem
@@ -97,13 +96,13 @@ end
 
 %%%
 % construct equality constraints
-[A_eq, b_eq, modes] = findQuadConstraints(r, n, m, d, posDes, TDes, t0, t1, tDes, 1, g, len, mL, mQ);
+[A_eq, b_eq, modes] = findQuadEqConstraints(r, n, m, d, posDes, TDes, t0, t1, tDes, 1, g, len, mL, mQ);
 
 
 %%%
 % construct inequality constraints
-A_ineq = [];
-b_ineq = [];
+[A_ineq, b_ineq] = findQuadIneqConstraints(r, n, m, d, posDes, modes, TDes, t0, t1, tDes, 1, g, len, mL, mQ);
+
 
 
 %%%
@@ -128,13 +127,13 @@ xTL = [];
 for j = 0:m-1
 
     % if no switch occurs
-    if isempty(find(modes(:, 1) ==j)) || mode(find(modes(:, 1) == j), 2) == 2
+    if isempty(modes) ||  (isempty(find(modes(:, 1) ==j)) || mode(find(modes(:, 1) == j), 2) == 2)
         xTL = [xTL [xTQ(1:n, j+1);xTQ(n+1, j+1)-len]];
    
     % if switching from mode 1
-    elseif mode(find(modes(:, 1) == j), 2) == 1
+    else %mode(find(modes(:, 1) == j), 2) == 1,
         [stateEnd, ~] = evaluateTraj(tDes(j+1, 1), n, j, d, xTL(:, j), tDes, r-1, []);
- stateEnd
+
         xTL = [xTL [zeros(n-2, 1); -1/2*g*(tDes(j+2, 1)-tDes(j+1, 1))^2; stateEnd(2, 1)*(tDes(j+2, 1)-tDes(j+1, 1)); stateEnd(1, 1)]];
     end
  

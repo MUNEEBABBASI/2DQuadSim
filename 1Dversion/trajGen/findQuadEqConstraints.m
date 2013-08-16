@@ -1,10 +1,9 @@
 % 8/6/13
-% findQuadConstraints.m
+% findQuadEqConstraints.m
 % given the time, position/derivative, and tension constraints for a
 %   load, generate constraints for quadrotor
 %
-% Dependencies: findContConstraints.m, findFixedConstraints.m,
-%   findDerivativeCoeff.m, findCostMatrix.m
+% Dependencies: findDerivativeCoeff.m
 %
 % inputs:
 %   r: integer, derivative to minimize in cost function
@@ -31,7 +30,7 @@
 %       1 indicates mode where cable is taut, trajectory is for load
 %       2 indicates mode where cable is slack, trajectory is for quadrotor
 %   A_eq, b_eq: matrices for Ax=b formulation of constraints
-function [A_eq, b_eq, modes] = findQuadConstraints(r, n, m, dim, posDes, TDes, t0, t1, tDes, nonDim, g, len, mL, mQ)
+function [A_eq, b_eq, modes] = findQuadEqConstraints(r, n, m, dim, posDes, TDes, t0, t1, tDes, nonDim, g, len, mL, mQ)
 
 A_eq = [];
 b_eq = [];
@@ -101,9 +100,7 @@ for j = 0:m, %for each keyframe
             
             b_temp = 0;
         end
-        
-        A_temp
-        b_temp
+
         
         A_eq = [A_eq; A_temp];
         b_eq = [b_eq; b_temp];
@@ -169,8 +166,7 @@ for j = 0:m, %for each keyframe
             b_temp = 0;
         end
         
-        A_temp
-        b_temp
+
         
         A_eq = [A_eq; A_temp];
         b_eq = [b_eq; b_temp];
@@ -207,9 +203,7 @@ for j = 0:m, %for each keyframe
         end
         
         b_temp = -g*ones(2, 1); % mL(aL+g) = 0, aL = -g
-        
-        A_temp
-        b_temp
+
         
         A_eq = [A_eq; A_temp];
         b_eq = [b_eq; b_temp];
@@ -292,47 +286,44 @@ for j = 0:m, %for each keyframe
             
             %scale by time for nondimensionalization if nondimensionalized
             if nonDim,
-                A_temp(1, (j-1)*(n+1)+k+1) = tfin^(maxPower - k)*derCoeff(1, k+1) - tinit*(maxPower-k)*derCoeff(1, k+1);  
+
+                A_temp(1, (j-1)*(n+1)+k+1) = tfin^(maxPower - k)*derCoeff(1, k+1) - tinit^(maxPower-k)*derCoeff(1, k+1);  
             else
-                A_temp(1, (j-1)*(n+1)+k+1) = tfin^(maxPower - k)*derCoeff(1, k+1) - tinit*(maxPower-k)*derCoeff(1, k+1)+len;
+                A_temp(1, (j-1)*(n+1)+k+1) = tfin^(maxPower - k)*derCoeff(1, k+1) - tinit^(maxPower-k)*derCoeff(1, k+1)+len;
             end
 
 
-%             A_temp(1, (j-1)*(n+1)+k+1) = tfin^(maxPower - k)*derCoeff(1, k+1);
-%             b_temp = -1.9;
+        end
+        
+        maxPower2 = nnz(derCoeff(2, :))-1;
+        for k = 0:maxPower2,
+            
+            if nonDim,
+                tinit = t0;
+       
+            else
+                tinit = tDes(j, 1);
+ 
+            end
+
+            
+            %scale by time for nondimensionalization if nondimensionalized
+            if nonDim,
+                A_temp(1, (j-1)*(n+1)+k+1) = A_temp(1, (j-1)*(n+1)+k+1) - tinit^(maxPower2-k)*derCoeff(2, k+1)*(t1-t0);
+            
+            else
+                A_temp(1, (j-1)*(n+1)+k+1) = A_temp(1, (j-1)*(n+1)+k+1)- tinit^(maxPower2-k)*derCoeff(2, k+1)*(tDes(j+1, 1)-tDes(j, 1));
+            end
 
         end
-%         
-%         maxPower2 = nnz(derCoeff(2, :))-1;
-%         for k = 0:maxPower2,
-%             
-%             if nonDim,
-%                 tinit = t0;
-%        
-%             else
-%                 tinit = tDes(j, 1);
-%  
-%             end
-% 
-%             
-%             %scale by time for nondimensionalization if nondimensionalized
-%             if nonDim,
-%                 A_temp(1, (j-1)*(n+1)+k+1) = A_temp(1, (j-1)*(n+1)+k+1) - tinit^(maxPower2-k)*derCoeff(2, k+1)*(t1-t0);
-%             
-%             else
-%                 A_temp(1, (j-1)*(n+1)+k+1) = A_temp(1, (j-1)*(n+1)+k+1)- tinit^(maxPower2-k)*derCoeff(2, k+1)*(tDes(j+1, 1)-tDes(j, 1));
-%             end
-% 
-%         end
         
         
-        b_temp = -g/2*(tDes(j+1, 1)-tDes(j, 1))^2 + posDes(;
+         b_temp = -g/2*(tDes(j+1, 1)-tDes(j, 1))^2;
         
         if nonDim,
             b_temp = b_temp*(t1-t0)^2;
         end
-        A_temp
-        b_temp
+ 
         
         A_eq = [A_eq; A_temp];
         b_eq = [b_eq; b_temp];
@@ -344,7 +335,7 @@ for j = 0:m, %for each keyframe
         % find desired quad velocity right before the switch
         % vL*mL + vQ*mQ = (mL+mQ)*v
         % vQ = ((mL+mQ)*v-vL*mL)/mQ;
-        
+  
         A_temp = zeros(1, (n+1)*m);
         maxPower = nnz(derCoeff(2, :))-1;
 
@@ -358,29 +349,31 @@ for j = 0:m, %for each keyframe
                 tfin = tDes(j+1, 1);
             end
 
-%             
-%             %scale by time for nondimensionalization if nondimensionalized
-%             if nonDim,
-%                 A_temp(1, (j-1)*(n+1)+k+1) = tfin^(maxPower - k)*derCoeff(2, k+1)*1/(tDes(j+1, 1)-tDes(j, 1)) ...
-%                     + mL/mQ*tinit*(maxPower-k)*derCoeff(2, k+1)*1/(tDes(j+1, 1)-tDes(j, 1));
-%                 A_temp(1, j*(n+1)+k+1) = -(mQ+mL)/mQ*tinit^(maxPower-k)*derCoeff(2, k+1)*1/(tDes(j+2, 1)-tDes(j+1, 1));
-%             else
-%                 A_temp(1, (j-1)*(n+1)+k+1) = tfin^(maxPower - k)*derCoeff(2, k+1) ...
-%                     + mL/mQ*tinit*(maxPower-k)*derCoeff(2, k+1);
-%                 A_temp(1, j*(n+1)+k+1) = -(mQ+mL)/mQ*tinit^(maxPower-k)*derCoeff(2, k+1);
-%             end
-%             
-%             b_temp = mL/mQ*g*(tDes(j+1, 1)-tDes(j, 1));
-%             
-%             if nonDim,
-%                 b_temp = b_temp*(t1-t0);
-%             end
-                       A_temp(1, (j-1)*(n+1)+k+1) = tfin^(maxPower - k)*derCoeff(2, k+1)/(tDes(j+1, 1)-tDes(j, 1));
-                       b_temp = 1.24;
+            
+            %scale by time for nondimensionalization if nondimensionalized
+            if nonDim,
+                A_temp(1, (j-1)*(n+1)+k+1) = tfin^(maxPower - k)*derCoeff(2, k+1)*1/(tDes(j+1, 1)-tDes(j, 1)) ...
+                    + mL/mQ*tinit*(maxPower-k)*derCoeff(2, k+1)*1/(tDes(j+1, 1)-tDes(j, 1));
+                A_temp(1, j*(n+1)+k+1) = -(mQ+mL)/mQ*tinit^(maxPower-k)*derCoeff(2, k+1)*1/(tDes(j+2, 1)-tDes(j+1, 1));
+            else
+                A_temp(1, (j-1)*(n+1)+k+1) = tfin^(maxPower - k)*derCoeff(2, k+1) ...
+                    + mL/mQ*tinit*(maxPower-k)*derCoeff(2, k+1);
+                A_temp(1, j*(n+1)+k+1) = -(mQ+mL)/mQ*tinit^(maxPower-k)*derCoeff(2, k+1);
+            end
+
+
+
+%               A_temp(1, (j-1)*(n+1)+k+1) = tfin^(maxPower - k)*derCoeff(2, k+1)/(tDes(j+1, 1)-tDes(j, 1));
+%               b_temp = 1.24;
         end     
         
-        A_temp
-        b_temp
+        
+        b_temp = mL/mQ*g*(tDes(j+1, 1)-tDes(j, 1));
+        
+        if nonDim,
+            b_temp = b_temp*(t1-t0);
+        end
+
         
         A_eq = [A_eq; A_temp];
         b_eq = [b_eq; b_temp];        
@@ -458,7 +451,7 @@ for j = 0:m, %for each keyframe
         % enforce continuity condition
         
         if posDes(1, j+1) ~= Inf,
-            disp(['changing position constraint at keyframe ' str2int(i)])
+            disp(['changing position constraint at keyframe ' int2str(j)])
         end
         A_temp = zeros(1, (n+1)*m);
         maxPower = nnz(derCoeff(1,:))-1;
@@ -473,18 +466,15 @@ for j = 0:m, %for each keyframe
                 tfin = tDes(j+1, 1);
             end
             
-%             A_temp(1, (j-1)*(n+1)+k+1) = tfin^(maxPower - k)*derCoeff(1, k+1);
-%             A_temp(1, j*(n+1)+k+1) = -tinit^(maxPower - k)*derCoeff(1, k+1);
+             A_temp(1, (j-1)*(n+1)+k+1) = tfin^(maxPower - k)*derCoeff(1, k+1);
+             A_temp(1, j*(n+1)+k+1) = -tinit^(maxPower - k)*derCoeff(1, k+1);
 
 
-              A_temp(1, (j)*(n+1)+k+1) = tinit^(maxPower - k)*derCoeff(1, k+1);
-              b_temp = -1.9;
+       %       A_temp(1, (j)*(n+1)+k+1) = tinit^(maxPower - k)*derCoeff(1, k+1);
+        %      b_temp = -1.9;
         end
         
-        %b_temp = 0;
-        
-        A_temp
-        b_temp
+        b_temp = 0;
         
         A_eq = [A_eq; A_temp];
         b_eq = [b_eq; b_temp]; 
@@ -522,9 +512,7 @@ for j = 0:m, %for each keyframe
             b_temp = posDes(2, j+1, dim); 
 
         end
-        
-        A_temp
-        b_temp
+
         
         A_eq = [A_eq; A_temp];
         b_eq = [b_eq; b_temp]; 
@@ -751,12 +739,6 @@ for j = 0:m, %for each keyframe
    
 end
 
-
-A_eq
-b_eq
-
-rank(A_eq)
-size(A_eq)
 
 
 
