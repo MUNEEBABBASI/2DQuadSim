@@ -37,8 +37,9 @@ pos = zeros(numDer+1, d, length(t)); %holds position at time i for dimension d
 
 % evaluate the piece-wise polynominal at each point in time
 for i = 1:length(t),  
+    [~, derivativesX] = evaluateTraj(t(i, 1), n, m, d, xT, tDes, numDer, []);
     for k = 0:numDer,
-        pos(:, :, i) = evaluateTraj(t(i, 1), n, m, d, xT, tDes, numDer, []);
+        pos(:, :, i) = evaluateTraj(t(i, 1), n, m, d, xT, tDes, numDer, derivativesX);
     end
 end
 
@@ -48,11 +49,16 @@ end
 for i = 1:d,
     for k = 0:numDer,
         vals(:, 1) = pos(k+1, i, :);
-        figure()
+        
+        if k == 0,
+        figure(100)
+        else
+            figure();
+        end
         hold on;
         plot(t, vals);
         
-        if (k+1<kmax)
+        if (k+1<=kmax)
         plot(tDes, posDes(k+1, :, i), 'k^');
         end
         

@@ -52,7 +52,7 @@ for i = 1:m,
     Q = findCostMatrix(n, r, t0, t1);
     
     % scale for time nondimensionalization
-    Q = 1./((tDes(i+1, 1)-tDes(i, 1))^(2*r)).*Q;
+    Q = 1./((tDes(i+1, 1)-tDes(i, 1))^(2*r-1)).*Q;
       
     Q_joint = blkdiag(Q_joint, Q);
 end
@@ -84,7 +84,7 @@ for i = 1:m,
                 A(j+1+r, k+1) = 1/((tDes(i+1, 1)-tDes(i, 1))^j)*A(j+1+r, k+1);
         end
     end
-    
+
     A_joint = blkdiag(A_joint, A);
 end
 

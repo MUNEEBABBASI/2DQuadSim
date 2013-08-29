@@ -43,13 +43,13 @@ clc
 
 
 
-r = 6; %derivative to minimize in cost function
-n = 11; %order of desired trajectory
-m = 3; %number of pieces in trajectory
+r = 1; %derivative to minimize in cost function
+n = 3; %order of desired trajectory
+m = 2; %number of pieces in trajectory
 d = 1; %dimensions
 
 % specify the m+1 keyframes
-tDes = [0;1.5; 1.8; 3.7]; %specify desired arrival times at keyframes
+tDes = [0; 1; 2];%[0;1.2; 3; 5]; % %specify desired arrival times at keyframes
 % specify desired positions and/or derivatives at keyframes, 
 % Inf represents unconstrained values
 % r x (m+1) x d, where each row i is the value the (i-1)th derivative of keyframe j for dimensions k 
@@ -57,14 +57,16 @@ tDes = [0;1.5; 1.8; 3.7]; %specify desired arrival times at keyframes
 % posDes(:, :, 1) = [0 1 1 0; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0]; 
 % posDes(:, :, 2) = [0 3 2 2; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0];
 % posDes(:, :, 3) = [1 2 3 4; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0];
-posDes(:, :, 1) = [0 1 4 -2; 1 Inf Inf 0; 0 -2 Inf 0; 0 Inf Inf 0; 0 Inf 3000 0; 0 Inf Inf 0];
+
+posDes(:, :, 1) = [0 1 3; Inf Inf Inf; 0 Inf 0; 0 Inf 0; 0 Inf 0; 0 Inf 0]; 
+%posDes(:, :, 1) = [0 0 4 -2; 1 Inf Inf 0; 0 -2 Inf 0; 0 Inf Inf 0; 0 Inf 3000 0; 0 Inf Inf 0];
 [i, j, k] = size(posDes);
 l = length(tDes);
 
 
 
 % specify s corridor constraints
-ineqConst.numConst = 1; %integer, number of constraints 
+ineqConst.numConst = 0; %integer, number of constraints 
 ineqConst.start = 2; %sx1 matrix of keyframes where constraints begin
 ineqConst.nc = 20; %sx1 matrix of numbers of intermediate points
 ineqConst.delta = 0.05; %sx1 matrix of maximum distnaces
@@ -105,25 +107,81 @@ end
 % xT holds all coefficents for all trajectories
 % row i is the ith coefficient for the column jth trajectory in dimension k
 xT = zeros(n+1, m, d); 
-xT2 = zeros(n+1, m, d); 
+%xT2 = zeros(n+1, m, d); 
 for i = 1:d,
    xT(:, :, i) = findTraj(r, n, m, i, tDes, posDes);
-   xT2(:, :, i) = findTrajJoint(r, n, m, i, tDes, posDes);
+   %xT2(:, :, i) = findTrajJoint(r, n, m, i, tDes, posDes);
 end
 
 
 %xT3 = findTrajCorr(r, n, m, d, tDes, posDes, ineqConst);
 %xT3 = findTrajLoad(r, n, m, d, tDes, posDes, ineqConst);
 
+
+
+
+
+
+% %%%
+% % plot spline
+% pp = spline(tDes(1:m+1, 1)', [posDes(1, 1:m+1)]);
+% [breaks,coefs,l,k,d] = unmkpp(pp)
+% 
+% 
+% 
+% 
+% tPlot = 0:0.1:tDes(m+1, 1);
+%     this_der = pp;
+% 
+% for j = 1:3*r,
+%     figure()
+%     hold on;
+%     plot(tPlot, ppval(this_der,tPlot), '--');
+%     %plot(tPlot, ppval(this_derxT,tPlot));
+%     if j == 1,
+%         plot(tDes(1:m+1, 1), posDes(1, 1:m+1)', 'o');
+%     end
+%     %legend('spline', 'optimization')
+%     title(['derivative ' int2str(j-1)]);
+%     
+%     v = ppval(this_der, tDes(1:m+1, 1))
+% 
+%     
+%     p_der=fnder(this_der,1);
+% 
+%     
+%     this_der = p_der;
+% 
+%     
+% 
+%     
+% end
+
+
+
+
+%%%
+% plot QP traj
+dimLabels{1} = 'x (m)';
+dimLabels{2} = 'y (m)'; 
+dimLabels{3} = 'z (m)'; 
+plotTraj(0, tDes(m+1), xT, n, m, d, tDes, posDes, 0.01, dimLabels, [], 2*r);
+
+
+
+
+
 xT
-xT2
 
 for i = 1:m+1,
-[dxT, ~] = evaluateTraj(tDes(i, 1), n, m, d, xT, tDes, r, [])
+[dxT, ~] = evaluateTraj(tDes(i, 1), n, m, d, xT, tDes, 2*r, [])
+%[dxT2, ~] = evaluateTraj(tDes(i, 1), n, m, d, xT2, tDes, r, [])
+
+
 end
 
 
-% 
+
 % % %%% 
 % % % plot the trajectory
 % % 
@@ -134,10 +192,16 @@ end
 % plotDim = []; %[1 2]; %if you want to plot two dimensions against each other, specify here 
 %     % nxm matrix, creates n plots of column 1 vs. column 2
 %     
-% plotTraj(0, tDes(m+1), xT, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim, r);
-% plotTraj(0, tDes(m+1), xT2, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim, r);
-% %plotTraj(0, tDes(m+1), xT3, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim, r);
-% 
+% plotTraj(0, tDes(m+1), xT, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim, 2*r);
+
+
+%plotTraj(0, tDes(m+1), xT2, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim, r);
+%plotTraj(0, tDes(m+1), xT3, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim, r);
+
+
+
+
+
 
 
 

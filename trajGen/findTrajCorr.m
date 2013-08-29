@@ -55,11 +55,13 @@ Q_opt = [];
 
 for dim = 1:d,
     
-    Q_joint = zeros(m*(n+1));
+    Q_joint = [];
     for i = 1:m,
         Q = findCostMatrix(n, r, t0, t1); % find cost matrix for each segment
+        Q = 1./((tDes(i+1, 1)-tDes(i, 1))^(2*r-1)).*Q;
         
-        Q_joint(2*r*(i-1)+1:2*r*i, (n+1)*(i-1)+1:(n+1)*i) = 1./((tDes(i+1, 1)-tDes(i, 1))^(2*r)).*Q; %put in block diagonal matrix
+        Q_joint = blkdiag(Q_joint, Q);
+        %Q_joint(2*r*(i-1)+1:2*r*i, (n+1)*(i-1)+1:(n+1)*i) = 1./((tDes(i+1, 1)-tDes(i, 1))^(2*r-1)).*Q; %put in block diagonal matrix
     end
     
     % put each dimension's Q_joint into a block diagonal matrix

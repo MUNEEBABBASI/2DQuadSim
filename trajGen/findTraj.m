@@ -36,32 +36,32 @@ t1 = 1;
 %%%
 % construct cost matrix Q
 
-Q_joint = zeros(m*(n+1));
+%Q_joint = zeros(m*(n+1));
+Q_joint = [];
 for i = 1:m,
     Q = findCostMatrix(n, r, t0, t1); % find cost matrix for each segment
+    Q = 1./((tDes(i+1, 1)-tDes(i, 1))^(2*r-1)).*Q;% multiply by time factor to nondimensionalize
     
-    Q_joint(2*r*(i-1)+1:2*r*i, (n+1)*(i-1)+1:(n+1)*i) = 1./((tDes(i+1, 1)-tDes(i, 1))^(2*r)).*Q; %put in block diagonal matrix
-        % multiply by time factor to nondimensionalize
+    Q_joint = blkdiag(Q_joint, Q);%put in block diagonal matrix
 end
 
 
 
 %%%
 % construct equality constraints 
-[A_fixed, b_fixed] = findFixedConstraints(r, n, m, dim, posDes, t0, t1, tDes, 1);
+[A_fixed, b_fixed] = findFixedConstraints(3, n, m, dim, posDes, t0, t1, tDes, 1);
 [A_cont, b_cont] = findContConstraints(r, n, m, dim, posDes, t0, t1, tDes, 1);
 
 % put each A_eq for each dimension into block diagonal matrix
 A_eq = [A_fixed; A_cont];
 b_eq = [b_fixed; b_cont];
 
-
-
+size(b_eq)
 
 %%%
 % find optimal trajectory through quadratic programming
-xT_all = quadprog(Q_joint,[],[],[],A_eq,b_eq);
-
+[xT_all, fval] = quadprog(Q_joint,[],[],[],A_eq,b_eq);
+fval
 
 
 %%%

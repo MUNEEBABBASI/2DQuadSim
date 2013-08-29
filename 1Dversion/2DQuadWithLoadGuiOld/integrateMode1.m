@@ -27,19 +27,16 @@ function [t, x1, te, ye, ie] = integrateMode1(tspan, options1, x10, g, mL, mQ, J
     %   x1dot: nx1 vector, state dx/dt at time t
     function x1dot = mode1(t, x1) 
         
+ 
         % x1 = [xL vL phiL phidotL phiQ phidotQ]', note xL and vL are vectors in R^2
         yL = x1(1, 1); zL = x1(2, 1); vyL = x1(3, 1); vzL = x1(4, 1); phiL = x1(5, 1); phidotL = x1(6, 1); ...
             phiQ = x1(7, 1); phidotQ = x1(8, 1);
-        
-        %find desired trajectory and its higher derivatives 
-        [xT, dxT, d2xT, d3xT, d4xT, d5xT, d6xT] = desiredTraj(t, g, mQ, JQ); 
 
+        
+        
         
         %calculate desired control inputs
         [f, M, ~, ~, ~] = calculateInputs1(t, x1, g, mL, mQ, JQ, l, kpx, kdx, kpL, kdL, kpQ, kdQ);
-       
-       
-
         
         
 
@@ -54,6 +51,7 @@ function [t, x1, te, ye, ie] = integrateMode1(tspan, options1, x10, g, mL, mQ, J
         x1dot(6, 1) = f*sin(angleDiff(phiQ, phiL))/mQ/l;
         x1dot(7, 1) = phidotQ;
         x1dot(8, 1) = M/JQ;
+        
 
         
     end

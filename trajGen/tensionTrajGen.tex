@@ -1,0 +1,490 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+
+\usepackage{graphicx}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{latexsym}
+\usepackage{graphicx}
+\usepackage{algorithm} 
+\usepackage{algorithmic} 
+\usepackage{setspace}
+\usepackage{subfig}
+
+\begin{document}
+
+\centering
+Trajectory Generation with Tension constraints \\
+August 22, 2013
+
+\raggedright
+
+\begin{table} [h!]
+\footnotesize
+\begin{tabular}{ c c }
+	$r$ & derivative to minimize in cost function \\
+		& implies $r$ initial conditions at each keyframe (position and $r-1$ derivatives, indexed from 0 (constant term) \\
+	$n$ & order of desired trajectory, minimum order is $2r-1$ \\
+		&  implies $n+1$ coefficients, indexed from 0 (constant term) \\
+	$d$ & number of dimensions to optimize, indexed from 1 \\
+	 	& for example, $d=3$ when optimizing $[x y z]$ position of a trajectory,  \\
+	$m$ & number of pieces in trajectory \\
+		& implies $m+1$ keyframes in trajectory, indexed from 1 \\
+	$t_{des}$ & vertical vector of desired arrival times at keyframes, indexed from 0 \\
+	$p_{des}$ & matrix of desired positions, each row represents a derivative, each column represents a keyframe \\
+		&  Inf represents unconstrained 
+\end{tabular}
+%\caption{Variables used}
+\label{tab: vars}
+\end{table}
+
+
+
+
+%%%%%%%
+\newpage
+\small
+
+
+
+%%
+\section{Spline Interpolation}
+
+To analytically solve for the piecewise cubic spline $X(t)$ of $m$ pieces going through positions $p_{des} =  [X(t_0) \ \ X(t_1) \ \ X(t_2) \ \ ... \ \ X(t_m)]^T$:
+\begin{align*}
+X(t) &= 
+\begin{cases}
+    X_1 (t) = c_{1, 3} t^3 + c_{1, 2} t^2 + c_{1, 1} t + c_{1, 0}, & t_0 \le t < t_1 \\
+    X_2 (t) = c_{2, 3} t^3 + c_{2, 2} t^2 + c_{2, 1} t + ... + c_{2, 0}, & t_1 \le t < t_2 \\
+    ... \\
+    X_m (t) = c_{m, 3} t^3 + c_{m, 2} t^2 + c_{m, 1} t + ... + c_{m, 0}, & t_{m-1} \le t < t_m \\
+\end{cases}
+\end{align*}
+
+We can set up a system of $4m$ equations to solve for each of the $4m$ coefficients. 
+
+\mbox{} \newline
+$2m$ Position Constraints: 
+\begin{align*}
+X_1(t_0) &= X(t_0) \\
+X_1(t_1) &= X(t_1) \\
+X_2(t_1) &= X(t_1) \\
+X_2(t_2) &= X(t_2) \\
+... & \\
+X_m(t_{m-1}) &= X(t_{m-1}) \\
+X_m(t_{m}) &= X(t_{m}) 
+\end{align*}
+
+\mbox{} \newline
+$m-1$ Velocity Constraints: 
+\begin{align*}
+\dot{X}_1(t_1) &= \dot{X}_2(t_1) \\
+\dot{X}_2(t_2) &= \dot{X}_3(t_2) \\
+... & \\
+\dot{X}_{m-1}(t_{m-1}) &= \dot{X}_m(t_{m-1})
+\end{align*}
+
+\mbox{} \newline
+$m-1$ Acceleration Constraints: 
+\begin{align*}
+\ddot{X}_1(t_1) &= \ddot{X}_2(t_1) \\
+\ddot{X}_2(t_2) &= \ddot{X}_3(t_2) \\
+... & \\
+\ddot{X}_{m-1}(t_{m-1}) &= \ddot{X}_m(t_{m-1})
+\end{align*}
+
+\mbox{} \newline
+$2$ Endpoint Constraints (for example, velocity):
+\begin{align*}
+\dot{X}_1(t_0) &= \dot{X}(t_0) \\
+\dot{X}_{m}(t_{m}) &= \dot{X}(t_m)
+\end{align*}
+
+The resulting $X(t)$ corresponds to the solution to the optimization problem of finding $X = [c_{1, 3} \ \ c_{1, 2} \ \ c_{1, 1} \ \ c_{1, 0} \ \ ... \ \ c_{m, 0} \ \ ]^T$ that minimizes the cost functional $J = \int_{t_0}^{t_1} \|  \frac{d^{2} X(t) }{dt} \|^2 dt $ subject to $3m+1$ equality constraints $Ax = b$, where the equality constraints come from position constraints, endpoint constraints, and velocity continuity constraints. 
+
+\mbox{} \newline
+In the general case, the minimum-order of the piece-wise polynomial to minimize the cost functional $J = \int_{t_0}^{t_1} \|  \frac{d^{(r)} X(t) }{dt} \|^2 dt $ is $n = 2r-1$. To analytically solve for the coefficients $X = [c_{1, n} \ \ c_{1, n-1} \ \ c_{1, n-2} \ \ ... \ \ c_{1, 0} \ \ ]^T$, we need $(n+1)m$ constraints. These constraints come from:
+
+\mbox{} \newline
+$2m$ Position Constraints \newline
+$(m-1)(r-1)$ Constraints for continuity of derivatives 1 to $r-1$ \newline
+$2(r-1)$ Endpoint Constraints, for derivatives 1 to $r-1$ \newline
+
+This gives a total of $2m+(m-1)(r-1)+2(r-1)$ = $2m+(m-1)(\frac{n+1}{2}-1) + 2(\frac{n+1}{2}-1)$ = $\frac{mn}{2}+\frac{m}{2}+m+\frac{n}{2}-\frac{1}{2}$ constraints. We thus need $\left( (n+1)m \right) - \left( \frac{mn}{2}+\frac{m}{2}+m+\frac{n}{2}-\frac{1}{2} \right)$ = $(\frac{n-1}{2})(m-1) = (r-1)(m-1)$ more constraints. This corresponds to constraining derivatives at intermediate points to be continuous up until the $2(r-1)$ derivative. 
+
+\mbox{} \newline
+To solve for the minimum-order piecewise polynomial that of minimizes the cost functional of the $r$th derivative, we solve for coefficients using the constraints:
+
+\mbox{} \newline
+$2m$ Position Constraints \newline
+$2(m-1)(r-1)$ Constraints for continuity of derivatives 1 to $2(r-1)$ \newline
+$2(r-1)$ Endpoint Constraints, for derivatives 1 to $r-1$ \newline
+
+
+
+
+
+%%%
+\newpage
+\section{Trajectory Generation} 
+We aim to design a 1-dimensional desired trajectory for a load with keyframe positions $p_{L, des} = [X_L(t_0) \ \ X_L(t_1) \ \ X_L(t_2) \ \ ... \ \ X_L(t_m)]^T$ at times $t_{des} = [t_0 \ \ t_1 \ \ t_2 \ \ ... \ \ t_m]^T$ with tensions $T_{des} = [T_0 \ \ T_1 \ \ T_2 \ \ ... \ \ T_m]^T$. For $m$ keyframes, we want a piecewise trajectory $X_L(t)$:
+%%
+\begin{align*}
+X_L(t) &= 
+\begin{cases}
+    X_{L,1} (t) = c_{1, n} t^n + c_{1, n-1} t^{n-1} + c_{1, n-2} t^{n-2} + ... + c_{1, 0}, & t_0 \le t < t_1 \\
+    X_{L,2} (t) = c_{2, n} t^n + c_{2, n-1} t^{n-1} + c_{2, n-2} t^{n-2} + ... + c_{2, 0}, & t_1 \le t < t_2 \\
+    ... \\
+    X_{L,m} (t) = c_{m, n} t^n + c_{m, n-1} t^{n-1} + c_{m, n-2} t^{n-2} + ... + c_{m, 0}, & t_{m-1} \le t < t_m \\
+\end{cases}
+\end{align*}
+
+We can solve for this by first finding a piecewise trajectory for the quadrotor, $X(t)$:
+%%
+\begin{align*}
+X(t) &= 
+\begin{cases}
+    X_{1} (t) = c_{1, n} t^n + c_{1, n-1} t^{n-1} + c_{1, n-2} t^{n-2} + ... + c_{1, 0}, & t_0 \le t < t_1 \\
+    X_{2} (t) = c_{2, n} t^n + c_{2, n-1} t^{n-1} + c_{2, n-2} t^{n-2} + ... + c_{2, 0}, & t_1 \le t < t_2 \\
+    ... \\
+    X_{m} (t) = c_{m, n} t^n + c_{m, n-1} t^{n-1} + c_{m, n-2} t^{n-2} + ... + c_{m, 0}, & t_{m-1} \le t < t_m \\
+\end{cases}
+\end{align*}
+
+The quadrotor and load states are related by:
+\begin{align*}
+X(t) &= X_{L}(t)+l \\
+X^{(i)}(t) &= X^{(i)}_L (t) 
+\end{align*}
+
+For continuity, these relations hold at all keyframes, regardless of $T_{des}$. This implies that the new position constraints for $X(t)$ are $p_{des} = [X(t_0) \ \ X(t_1) \ \ X(t_2) \ \ ... \ \ X(t_m)]^T$ = $p_{L, des} = [X_L(t_0)+l \ \ X_L(t_1)+l \ \ X_L(t_2)+l \ \ ... \ \ X(t_m)+l]^T$. 
+
+\mbox{}\newline
+The vector $T_{des}$ is defined such that values are either $\infty$ or $0$, indicating a non-zero or zero tension value, respectively.  For trajectories $X_{L, i}(t)$ where $T_i > 0$, we want to minimize the 6th derivative of $X_{L, i}(t)$. For trajectory pieces $X_{L, i}(t)$ where $T_i = 0$, the quadrotor trajectory is independent of the load trajectory and we want to minimize the 4th derivative. 
+
+
+\mbox{}\newline
+Let $x(t)$ be the non-dimensionalized quadrotor trajectory:
+%%
+\begin{align*}
+x(\tau) &= 
+\begin{cases}
+    x_1 (\tau) = c_{1, n} \tau^n + c_{1, n-1} \tau^{n-1} + ... c_{1, 1} \tau + c_{1, 0}, & t_0 \le t < t_1, \tau = \frac{t-t_0}{t_1-t_0}  \\
+    x_2 (\tau) = c_{2, n} \tau^n + c_{2, n-1} \tau^{n-1} + ... c_{2, 1} \tau + c_{2, 0}, & t_1 \le t < t_2, \tau = \frac{t-t_1}{t_2-t_1}  \\
+    ... \\
+    x_m (\tau) = c_{m, n} \tau^n + c_{m, n-1} \tau^{n-1} + ... c_{m, 1} \tau + c_{m, 0}, & t_{m-1} \le t < t_m, \tau = \frac{t-t_{m-1}}{t_m-t_{m-1}} \\
+\end{cases},  0 \le \tau < 1
+\end{align*} 
+%%
+Assume there is only one keyframe $s$ where $T_s = 0$. Let the state vector $x = [x_I \ \ x_{II} \ \ x_{III}]^T$, where $x_I = [c_{1, n} \ \ c_{1, n-1} \ \ ... \ \ c_{s, 0} ]^T$, $x_{II} = [c_{s+1, n} \ \ c_{s+1, n-1} \ \ ... \ \ c_{s+1, 0}]^T$, $x_{III} = [c_{s+2, n} \ \ c_{s+2, n-1} \ \ ... \ \ c_{s+2, 0} ]^T$, and $x = [c_{1, n} \ \ c_{1, n-1} \ \ ... \ \ c_{m, 1} \ \ ... \ \ c_{m, 0} ]^T$, $x_k = [c_{k, n} \ \ c_{k, n-1} \ \ ... \ \ c_{k, 0} ]^T$. The cost function to minimize is then:
+%%
+\begin{align*}
+J &= \int_{t_0}^{t_m} \|  \frac{d^{6} X_I(t) }{dt} \|^2 + \|  \frac{d^{4} X_{II}(t) }{dt} \|^2 + \|  \frac{d^{6} X_{III}(t) }{dt} \|^2 dt \\
+&= \sum_{k=1}^{s} \int_{t_{k-1}}^{t_k} \|  \frac{d^{6} X_k (t) }{dt} \|^2 dt +\sum_{k=s+1}^{s+1} \int_{t_{k-1}}^{t_k} \|  \frac{d^{4} X_k (t) }{dt} \|^2 dt +\sum_{k=s+2}^{m} \int_{t_{k-1}}^{t_k} \|  \frac{d^{6} X_k (t) }{dt} \|^2 dt  \\
+&= \sum_{k=1}^{s} \int_{0}^{1} \frac{t_k-t_{k-1}}{(t_k-t_{k-1})^{11}} \|  \frac{d^{6} x_k (\tau) }{d\tau} \|^2 d\tau + \\
+&  \sum_{k=s+1}^{s+1} \int_{0}^{1} \frac{t_k-t_{k-1}}{(t_k-t_{k-1})^{7}} \|  \frac{d^{4} x_k (\tau) }{d\tau} \|^2 d\tau + \sum_{k=s+2}^{m} \int_{0}^{1} \frac{t_k-t_{k-1}}{(t_k-t_{k-1})^{11}} \|  \frac{d^{6} x_k (\tau) }{d\tau} \|^2 d\tau  \\
+%%
+&=  \sum_{k=1}^{s} x_k^T \frac{1}{(t_k-t_{k-1})^{11}} Q_{(0, 1)} x_k + \sum_{k=s+1}^{s+1} x_k^T \frac{1}{(t_k-t_{k-1})^{7}} Q_{(0, 1)} x_k  + \sum_{k=s+2}^{m} x_k^T \frac{1}{(t_k-t_{k-1})^{11}} Q_{(0, 1)} x_k \\
+&= x^T Q x \\
+\text{subject to: } A x &=b
+%%
+\end{align*}
+
+
+
+
+
+%%%
+\mbox{} \newline
+\mbox{} \newline
+TO FIND Q: \newline
+When $x' = [c_0 \ \ c_1 \ \ ... \ \ c_{n-1} \ \ c_n]^T$, we can find $Q'_{(0, 1)}$ with: 
+%%
+\begin{align}
+\label{eqn: Q}  Q'[i, j]_{(t_0, t_1)} &= 
+\begin{cases}
+    \prod_{k = 0}^{r-1} {(i-k)(j-k)} \frac{ t_1^{i+j-2r+1} - t_0^{i_j-2r+1} }{i+j-2r+1}, & i \ge r \land j \ge r \\
+    0, & i < r \lor j < r 
+\end{cases}, i = 0...n, j = 0...n
+\end{align}
+%%
+Since our $x_k = [c_{k, n} \ \ c_{k, n-1} \ \ ... \ \ c_{k, 1} \ \ c_{k, 0}]^T$, reflecting $Q'$ horizontally and vertically will give us the desired $Q$ for the form of $x_k$. We can then create the block diagonal matrix:
+\begin{align}
+\label{eqn: Qkeyframes} Q &= 
+\begin{bmatrix}
+  \frac{1}{(t_1-t_{0})^{2r-1}} Q_{(0, 1)} & 0 & 0 & ... & 0 \\
+  0 & \frac{1}{(t_2-t_{1})^{2r-1}} Q_{(0, 1)} & 0 & ... & 0 \\
+  & & ... & &  \\
+  0 & ... & 0 & \frac{1}{(t_{m-1}-t_{m-2})^{2r-1}} Q_{(0, 1)} & 0 \\
+  0 & ... & 0 & 0 & \frac{1}{(t_m-t_{m-1})^{2r-1}} Q_{(0, 1)} \\ 
+ \end{bmatrix},
+\end{align}
+%%
+where $r = 6$ if $k \ne s+1$ and $r = 4$ if $k=s+1$. 
+
+
+
+%%%
+\mbox{} \newline
+\mbox{} \newline
+TO FIND $A_{EQ}$: \newline
+
+\mbox{} \newline
+%%%
+At keyframes $0$ and $m$, we have a full set of constraints for position and derivatives 1-5. At $t_s$ and $t_{s+1}$, where $T_{s} = 0$, $\ddot{X} = -g$, $X^{(3)} = X^{(4)} = X^{(5)} = 0$. At all other points, the keyframe positions are constrained.While $X(t_i)$ is specified for $i \ne s+1$, $X(t_{s+1})$ is calculated from free fall conditions of the load. The equation for free fall of the load is:
+\begin{align*}
+X_L(t_{s+1}) &= -\frac{g}{2}(t_{s+1}-t_s)^2+\dot{X}_L(t_s)(t_{s+1}-t_s) + X_L(t_s) 
+\end{align*}
+%%
+Translating this to the quadrotor equation: 
+\begin{align*}
+X(t_{s+1}) &= X_L(t_{s+1}) + l \\
+&= -\frac{g}{2}(t_{s+1}-t_s)^2+\dot{X}_L(t_s)(t_{s+1}-t_s) + X_L(t_s) + l \\
+\text{From $X = X_L + l$ and $\dot{X} = \dot{X}_L$ }& \\
+&= -\frac{g}{2}(t_{s+1}-t_s)^2+\dot{X}(t_s)(t_{s+1}-t_s) + X(t_s)
+\end{align*}
+%%
+Nondimensionalizing with:
+\begin{align*}
+\tau &= \frac{t-t_i}{t_f-t_i}, t = \tau(t_f-t_i)+t_i \\
+t_{s+1}-t_s &= \tau_1(t_{s+1}-t_s)+t_i - ( \tau_0(t_{s+1}-t_s)+t_i ) \\
+&= (\tau_1 - \tau_0)(t_{s+1}-t_s) \\
+X(t_{s+1}) = x_{s+1}(\tau_1)&= -\frac{g}{2}(\tau_1 - \tau_0)^2 (t_{s+1}-t_s)^2+\dot{X}(t_s)(\tau_1 - \tau_0)(t_{s+1}-t_s) + X(t_s) \\
+&= -\frac{g}{2}(\tau_1 - \tau_0)^2 (t_{s+1}-t_s)^2+\frac{ \dot{x}_{s+1}(\tau_0) } { t_{s+1}-t_s } (\tau_1 - \tau_0)(t_{s+1}-t_s) + x_{s+1}(\tau_0) \\
+&=  -\frac{g}{2}(\tau_1 - \tau_0)^2 (t_{s+1}-t_s)^2+ \dot{x}_{s+1}(\tau_0)  (\tau_1 - \tau_0)+ x_{s+1}(\tau_0) \\
+\end{align*}
+
+At keyframe $t_{s+1}$ when the quad and load collide, there is a change in load velocity from the collision. Assuming a completely inelastic collision: 
+%%
+\begin{align*}
+(\dot{X}^- - \dot{X}_L^-) &= e ( \dot{X}^+ + \dot{X}_L^+)\\
+m_L \dot{X}_L^+ + m \dot{X}^+ &= m_L \dot{X}_L^- + m \dot{X}^- \\
+\text{For $e = 0$, } & \\
+\dot{X}^- &= \dot{X}_L^- \\
+m_L \dot{X}_L^+ + m \dot{X}^+ &= (m_L+m) \dot{X}^- \\
+\text{If $m >> m_L$, } & \\
+ \dot{X}^+ &= \dot{X}^-
+\end{align*}
+%%
+We want the quadrotor velocity at $t_{s+1}$ to be continuous and can be chosen independently of the load velocity. 
+
+
+
+There $26+2m$ constraints - 6 from each endpoint, $2(m-1)$ additional position constraints, $(4)(4)$ constraints to account for constraints on derivatives 2-5 at $t_{s}$ and $t_{s+1}$.  They are: 
+%%%
+\begin{align}
+\nonumber A_{endpoint} x &= b_{endpoint} \\
+\label{eqn: endpoint} \begin{bmatrix}
+%constraints for xi
+x_1(\tau_0) \\
+\dot{x}_1 (\tau_0) \\
+\ddot{x}_1 (\tau_0) \\
+x^{(3)}_1 (\tau_0) \\
+x^{(4)}_1 (\tau_0) \\
+x^{(5)}_1 (\tau_0) \\
+x_1 (\tau_1) \\
+x_2 (\tau_0) \\
+x_2 (\tau_1) \\
+x_3 (\tau_0) \\ 
+... \\
+x_{s} (\tau_0) \\
+x_{s} (\tau_1) \\
+\ddot{x}_{s} (\tau_1) \\
+x^{(3)}_{s} (\tau_1) \\
+x^{(4)}_{s} (\tau_1) \\
+x^{(5)}_{s} (\tau_1) \\
+%%
+%%%
+% constraints for xii
+x_{s+1} (\tau_0) \\
+\ddot{x}_{s+1} (\tau_0) \\
+x^{(3)}_{s+1} (\tau_0) \\
+x^{(4)}_{s+1} (\tau_0) \\
+x^{(5)}_{s+1} (\tau_0) \\
+x_{s+1} (\tau_1) - \dot{x}_{s+1}{\tau_0}(\tau_1-\tau_0) - x_{s+1}(\tau_0) \\
+\ddot{x}_{s+1} (\tau_1) \\
+x^{(3)}_{s+1} (\tau_1) \\
+x^{(4)}_{s+1} (\tau_1) \\
+x^{(5)}_{s+1} (\tau_1) \\
+%%%
+%%%
+% constraints for xiii
+x_{s+2} (\tau_0) - \dot{x}_{s+1}{\tau_0}(\tau_1-\tau_0) - x_{s+1}(\tau_0)\\
+\ddot{x}_{s+2} (\tau_0) \\
+x^{(3)}_{s+2} (\tau_0) \\
+x^{(4)}_{s+2} (\tau_0) \\
+x^{(5)}_{s+2} (\tau_0)  \\
+x_{s+2} (\tau_1) \\
+x_{s+3} (\tau_0) \\
+... \\
+x_{m} (\tau_0) \\
+x_{m} (\tau_1) \\
+\dot{x}_{m} (\tau_1) \\
+\ddot{x}_{m} (\tau_1) \\
+x^{(3)}_{m} (\tau_1) \\
+x^{(4)}_{m} (\tau_1) \\
+x^{(5)}_{m} (\tau_1) \\
+ \end{bmatrix}
+ &= 
+ \begin{bmatrix}
+ % xi
+  X (t_0) \\
+  (t_1-t_0) \dot{X} (t_0) \\
+  (t_1-t_0)^{(2)}  X^{(2)} (t_0) \\
+    (t_1-t_0)^{(3)}  X^{(3)} (t_0) \\
+      (t_1-t_0)^{(4)}  X^{(4)} (t_0) \\
+  (t_1-t_0)^{(5)}  X^{(5)} (t_0) \\
+    X (t_1) \\
+     X (t_1) \\
+     X (t_2) \\
+X (t_2) \\
+  ... \\
+  X(t_{s-1}) \\
+       X (t_s) \\
+ -g (t_s-t_{s-1})^{(2)}  \\
+ 0 \\
+ 0 \\
+ 0 \\
+  %%
+ %%
+ %xii
+         X (t_{s}) \\
+ -g (t_{s+1}-t_{s})^{(2)}  \\
+ 0 \\
+ 0 \\
+ 0 \\
+  -\frac{g}{2} (\tau_1-\tau_0)^2 (t_{s+1}-t_s)^2 \\        %X (t_{s+1}) \\
+ -g (t_{s+1}-t_{s})^{(2)}  \\
+ 0 \\
+ 0 \\
+ 0 \\
+   %%
+ %%
+ % xiii
+  -\frac{g}{2} (\tau_1-\tau_0)^2 (t_{s+1}-t_s)^2 \\  %          X (t_{s+1}) \\
+ -g (t_{s+2}-t_{s-1})^{(2)}  \\
+ 0 \\
+ 0 \\
+ 0 \\
+X(t_{s+2}) \\
+X(t_{s+2}) \\
+... \\
+    X(t_{m-1}) \\
+    X(t_m) \\
+  (t_m-t_{m-1}) \dot{X} (t_m) \\
+  (t_m-t_{m-1})^{(2)}  X^{(2)} (t_m) \\
+     (t_m-t_{m-1})^{(3)}  X^{(3)} (t_m) \\
+    (t_m-t_{m-1})^{(4)}  X^{(4)} (t_m) \\
+   (t_m-t_{m-1})^{(5)}  X^{(5)} (t_m) \\ 
+ \end{bmatrix} 
+\end{align}
+
+
+%%
+We also need continuity of derivatives lower than 6 at all intermediate keyframes, which gives an additional $5(m-3)+2$ constraints - $5(m-3)$ continuity constraints at each keyframe $i$ such that $i \ne 0, m, s s+1$ and 2 for velocity continuity at $t_{s}$ and $t_{s+1}$. Explicitly: 
+ \begin{align*}
+ A_{cont} x &= b_{cont} \\
+ \begin{bmatrix}
+ %% xi continuity 
+  \frac{1}{(t_1-t_0)} \dot{x}_1 (\tau_1) - \frac{1}{(t_2-t_1)} \dot{x}_2(\tau_0) \\
+  ... \\
+  \frac{1}{(t_1-t_0)^{(5)}} x^{(5)}_1 (\tau_1) - \frac{1}{(t_2-t_1)^{(5)}} x^{(5)}_2 (\tau_0) \\
+  ... \\
+  \frac{1}{(t_{s-1}-t_{s-2})^{(5)}} x^{(5)}_{s-1} (\tau_1) - \frac{1}{(t_s-t_{s-1})^{(5)}} x^{(5)}_s (\tau_0) \\
+  %%%
+  %%%
+  %xii velocity constraints
+ \frac{1}{(t_{s}-t_{s-1})} \dot{x}_{s} (\tau_1) -  \frac{1}{(t_{s+1}-t_{s})}  \dot{x}_{s+1} (\tau_0) \\
+  \frac{1}{(t_{s+1}-t_{s})} \dot{x}_{s+1} (\tau_1) -  \frac{1}{(t_{s+2}-t_{s+1})}  \dot{x}_{s+2} (\tau_0) \\
+  %%%
+  %%%
+  % xiii
+  \frac{1}{(t_{s+2}-t_{s+1})} \dot{x}_{s+2} (\tau_1) - \frac{1}{(t_{s+3}-t_{s+2})} \dot{x}_{s+3}(\tau_0) \\
+  ... \\
+  \frac{1}{(t_{s+2}-t_{s+1})^{(5)}} x^{(5)}_{s+2]} (\tau_1) - \frac{1}{(t_{s+3}-t_{s+2})^{(5)}} x^{(5)}_{s+3} (\tau_0) \\
+  ... \\
+  \frac{1}{(t_{m-1}-t_{m-2})^{(5)}} x^{(5)}_{m-1} (\tau_1) - \frac{1}{(t_m-t_{m-1})^{(5)}} x^{(5)}_m (\tau_0) \\
+ \end{bmatrix} 
+ &= 0
+ \end{align*}
+ 
+ 
+ 
+ 
+The full set of $7m+13$ constraints, $Ax = b$, are:
+\begin{align}
+\nonumber Ax &= b \\
+\label{eqn: Akeyframes} 
+\begin{bmatrix}
+A_{endpoint} \\
+A_{cont} \\
+ \end{bmatrix}
+ x 
+& = 
+ \begin{bmatrix}
+b_{endpoint} \\
+0 \\
+ \end{bmatrix} 
+\end{align}
+
+Note that for $m$ pieces, we have $12m$ coefficients. Thus, we are missing $5m-13$ constraints for a fully constrained system.
+
+
+
+
+%%%
+\mbox{} \newline
+\mbox{} \newline
+TO FIND $A_{INEQ}$:
+ 
+We need 3 sets of inequality constraints. In general, we choose $N_c$ intermediate points between $t_f$ and $t_i$, located at times $t_c = t_i+\frac{k}{N_c+1}$ for $k = 1, 2, ..., N_c$ and evaluate the inequality constraints at these points. Note that the inequality constraints are not evaluated at trajectory endpoints. 
+
+\mbox{} \newline
+When the rope is taut, tension at $t_c$ is always greater than 0, or $T_i(t_c) > 0$ for all $i \ne s+1$:
+\begin{align*}
+T &> 0 \\
+-T &< 0 \\
+-(m_L (\ddot{X}_L(t)+g) &\le -\epsilon \\
+-(m_L (\frac{ \ddot{x}(t_c) }{(t_f - t_i)^2}+g) &\le -\epsilon \\
+-\ddot{x}(t_c) &\le - (\frac{ \epsilon }{m_L} + g ) (t_f-t_i)^2 \\
+\end{align*}
+ 
+ 
+ \mbox{} \newline
+During this free-fall phase, the position of the load $X_L(t_c)$ can be explicitly calculated as a function of time and the quadrotor state at $X(t_s)$:
+  \begin{align*}
+X_L(t_c) &= -\frac{g}{2} (t_c-t_i)^2 + \dot{X}_L (t_i) (t_c-t_i) + X_L(t_i) \\
+&= -\frac{g}{2} (t_c-t_i)^2 + \dot{X} (t_i) (t_c-t_i) + X(t_i) - l \\
+\tau = \frac{t-t_i}{t_f-t_i}, & t = \tau (t_f-t_i) + t_i \\
+t_c &= t_i + \frac{p}{N_c+1} (t_f-t_i) \\
+&= (\tau_0 (t_f-t_i) + t_i) + \frac{p}{N_c+1} \left( (\tau_1 (t_f-t_i) + t_i) - (\tau_0 (t_f-t_i) + t_i) \right) \\
+&= \tau_0 (t_f-t_i) + t_i + \frac{p}{N_c+1} (t_f-t_i) (\tau_1-\tau_0) \\
+t_c - t_i &= \tau_0 (t_f-t_i) + \frac{p}{N_c+1} (t_f-t_i) (\tau_1-\tau_0) \\
+X_L(\tau_c) &=  -\frac{g}{2} (t_c-t_i)^2 + \dot{X} (t_i) (t_c-t_i) + X(t_i) - l \\
+&=  -\frac{g}{2} ( \tau_0 (t_f-t_i) + \frac{p}{N_c+1} (t_f-t_i) (\tau_1-\tau_0) )^2 + \frac{ \dot{x} (\tau_0) }{t_f-t_i} ( \tau_0 (t_f-t_i) + \frac{p}{N_c+1} (t_f-t_i) (\tau_1-\tau_0) ) + x(\tau_0) - l \\
+&=  -\frac{g}{2} \tau_c^2 (t_f-t_i)^2 + \dot{x} (\tau_0) \tau_c + x(\tau_0) - l \\
+ \end{align*}
+ 
+  When the rope is slack, the quad and load shouldn't collide with each other, giving the constraint:
+   \begin{align*}
+ X(t_c) - X_L(t_c) &> 0 \\
+ X_L(t_c) -X(t_c) &\le - \epsilon \\
+ - X(t_c) & \le - \epsilon -  X_L(t_c) \\
+  & \le - \epsilon + \frac{g}{2} \tau_c^2 (t_f-t_i)^2 - \dot{x} (\tau_0) \tau_c - x(\tau_0) + l \\
+  - x(\tau_c) +  \dot{x} (\tau_0) \tau_c +  x(\tau_0) & \le - \epsilon + \frac{g}{2} \tau_c^2 (t_f-t_i)^2 + l
+ \end{align*}
+ 
+  In addition, the rope should remain slack:
+ \begin{align*}
+ X(t_c) - X_L(t_c) &< l \\
+ X(t_c) - X_L(t_c) &\le l - \epsilon \\
+  X(t_c) & \le l - \epsilon +  X_L(t_c) \\
+  & \le l - \epsilon -\frac{g}{2} \tau_c^2 (t_f-t_i)^2 + \dot{x} (\tau_0) \tau_c + x(\tau_0) - l \\
+  x(\tau_c) -  \dot{x} (\tau_0) \tau_c -  x(\tau_0) & \le - \epsilon -\frac{g}{2} \tau_c^2 (t_f-t_i)^2
+ \end{align*}
+ 
+
+
+\end{document}

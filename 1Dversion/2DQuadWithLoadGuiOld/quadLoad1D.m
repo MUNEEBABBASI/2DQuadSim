@@ -14,10 +14,6 @@ close all
 clc
 
 
-
-    
-    
-
 %%%
 % constants
 g = 9.81; %m/s/s
@@ -54,17 +50,17 @@ kd_phi = 7;
 %%% 
 % initial conditions 
 tstart = 0;
-tend = 5; %total time of simulation, s
+tend = 3; %total time of simulation, s
 [xT, dxT, d2xT, d3xT, d4xT, d5xT, d6xT] = desiredTraj(0, g, mQ, JQ);
 [p_nom, dp_nom, d2p_nom, d3p_nom, d4p_nom, ...
     phiL_nom, dphiL_nom, d2phiL_nom, d3phiL_nom, d4phiL_nom, ...
     f_nom, phiQ_nom, dphiQ_nom, d2phiQ_nom] = calculateDerivatives(0, g, mL, mQ, JQ, l);
 
-xL0 = [0 0]; %xT'; %initial position of load, m
+xL0 = [0 -1]; %xT'; %initial position of load, m
 vL0 = [0 0]; %dxT'; %initial velocity of quad, m/s
 %xQ0 = [0 0]; 
 %vQ0 = [0 0];
-xQ0 = [0 xL0(1, 2)+l];
+xQ0 = [0 xL0(1, 2)-l];
 vQ0 = [0 vL0(1, 2)];
 phiQ0 = 0; %phiQ_nom; % 0; %initial orientation of load, radians
 phidotQ0 = 0; %dphiQ_nom; %0; %initial angular velocity of quad, radians/s
@@ -140,11 +136,6 @@ while tstart < tend && tout(length(tout))<tend,
         
         % only add the event if an event occured (te > 0)
         if te > 0,
-            te
-            ye
-            ie
- 
-            
             teout = [teout; te];
             yeout = [yeout; [ye zeros(1, 2)]];
             ieout = [ieout; ie];
@@ -188,13 +179,6 @@ while tstart < tend && tout(length(tout))<tend,
 
         % only add the event if an event occured (te > 0)
         if te > 0,
-            
-            te
-            ye
-            ie
-            x2
-            yeout 
-            
             teout = [teout; te];
             yeout = [yeout; ye];
             ieout = [ieout; ie];
@@ -214,7 +198,7 @@ while tstart < tend && tout(length(tout))<tend,
                 
                 % otherwise, a collison occured so end the program
                 disp('quad and load collision!')
-                break;
+                %break;
             end
         end
         
@@ -475,13 +459,11 @@ title('tension over time');
 %%%%%
 % event for when string goes from taut to slack
 function [value, isterminal, direction] = slack(t, x1)
+    [xT, dxT, d2xT, d3xT, d4xT, d5xT, d6xT] = desiredTraj(t, g, mQ, JQ);
 
-     
-    [xT, dxT, d2xT, d3xT, d4xT, d5xT, d6xT] = desiredTraj(t, g, mQ, JQ, 1);
-
-    value = mL * ( d2xT(2, 1) + g ); %when tension goes to 0, T = || mL (d/dt vL + ge3) ||
+    value = mL * ( d2xT(2, 1) + g ) - 0.001; %when tension goes to 0, T = || mL (d/dt vL + ge3) ||
     isterminal = 1;
-    direction = -1;
+    direction = 0;
 end
 
 
@@ -489,10 +471,9 @@ end
 %%%%%
 % event for when string goes from slack to taut
 function [value, isterminal, direction] = taut(t, x2)
-
     
  value = [ ...
-        x2(2, 1)- x2(6, 1); ... %when load and quad collide
+        1; ...x2(2, 1)- x2(6, 1); ... %when load and quad collide
         pdist([x2(1, 1), x2(2, 1); x2(5, 1), x2(6, 1)]) - l; ... %when string is at length l
         ];
     isterminal = [1; 1];

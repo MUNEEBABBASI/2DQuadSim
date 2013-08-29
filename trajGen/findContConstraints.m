@@ -56,7 +56,7 @@ for j = 0:m, %for each keyframe
                     A_temp(1, j*(n+1)+k+1) = -tinit^(maxPower - k)*derCoeff(i+1, k+1);
                     
                     % if a derivative is nondimensionalized, scale the constraint
-                    if nonDim && i > 0,
+                    if nonDim,
                         A_temp(1, (j-1)*(n+1)+k+1) = 1/((tDes(j+1, 1)-tDes(j, 1))^i)*A_temp(1, (j-1)*(n+1)+k+1);
                         A_temp(1, j*(n+1)+k+1) = 1/((tDes(j+2, 1)-tDes(j+1, 1))^i)*A_temp(1, j*(n+1)+k+1);
                     end

@@ -123,17 +123,17 @@ We can write the cost function $J$ in terms of the non-dimsionalized trajectory 
 %%
 \begin{align*}
 J &= \int_{t_0}^{t_1} \|  \frac{d^{r} X(t) }{dt} \|^2 dt  \\
-&= \int_{0}^{1} \|  \frac{1}{(t_1-t_0)^r} \frac{d^{r} x(\tau) }{d\tau} \|^2 d \tau  \\
-&=  \frac{1}{(t_1-t_0)^{2r}} \int_{0}^{1} \| \frac{d^{r} x(\tau) }{d\tau} \|^2 d \tau \\
-&= \frac{1}{(t_1-t_0)^{2r}} x^T Q_{(0, 1)} x \\
-&= x^T \left( \frac{1}{(t_1-t_0)^{2r}} Q_{(0, 1)}\right) x
+&= \int_{0}^{1} \|  \frac{1}{(t_1-t_0)^r} \frac{d^{r} x(\tau) }{d\tau} \|^2 d (\tau (t_1-t_0)+t_0) \\
+&=  \frac{t_1-t_0}{(t_1-t_0)^{2r}} \int_{0}^{1} \| \frac{d^{r} x(\tau) }{d\tau} \|^2 d \tau \\
+&= \frac{1}{(t_1-t_0)^{2r-1}} x^T Q_{(0, 1)} x \\
+&= x^T \left( \frac{1}{(t_1-t_0)^{2r-1}} Q_{(0, 1)}\right) x
 \end{align*}
 %%
 %Minimizing $\int_{t_0}^{t_1} \|  \frac{d^{r} x(t) }{dt} \|^2 dt$ equates to minimizing $\int_{0}^{1} \| \frac{d^{r} x(\tau) }{d\tau} \|^2 d \tau$, since $\frac{1}{(t_1-t_0)^{2k}}$ is just a constant. 
 
 Thus, we want to minimize the cost function: 
 \begin{align*}
-J &= x^T \left( \frac{1}{(t_1-t_0)^{2r}} Q_{(0, 1)}\right) x \\
+J &= x^T \left( \frac{1}{(t_1-t_0)^{2r-1}} Q_{(0, 1)}\right) x \\
 \text{subject to: } A x &= b
 %%
 \end{align*}
@@ -289,8 +289,8 @@ We want to minimize:
 \begin{align*}
 J &= \int_{t_0}^{t_m} \|  \frac{d^{r} X(t) }{dt} \|^2 dt \\
 &= \sum_{k=1}^{m} \int_{t_{k-1}}^{t_k} \|  \frac{d^{r} X_k (t) }{dt} \|^2 dt  \\
-&= \sum_{k=1}^{m} \int_{0}^{1} \frac{1}{(t_k-t_{k-1})^{2r}} \|  \frac{d^{r} x_k (\tau) }{d\tau} \|^2 d\tau  \\
-&=  \sum_{k=1}^{m} x_k^T \frac{1}{(t_k-t_{k-1})^{2r}} Q_{(0, 1)} x_k \\
+&= \sum_{k=1}^{m} \int_{0}^{1} \frac{t_k-t_{k-1}}{(t_k-t_{k-1})^{2r}} \|  \frac{d^{r} x_k (\tau) }{d\tau} \|^2 d\tau  \\
+&=  \sum_{k=1}^{m} x_k^T \frac{1}{(t_k-t_{k-1})^{2r-1}} Q_{(0, 1)} x_k \\
 &= x^T Q x \\
 \text{subject to: } A x &=b
 %%
@@ -309,11 +309,11 @@ Recall that for each $x'_k = [c_{k, 0} \ \ c_{k, 1} \ \ ... \ \ c_{k, n-1} \ \ c
 \begin{align}
 \label{eqn: Qkeyframes} Q &= 
 \begin{bmatrix}
-  \frac{1}{(t_1-t_{0})^{2r}} Q_{(0, 1)} & 0 & 0 & ... & 0 \\
-  0 & \frac{1}{(t_2-t_{1})^{2r}} Q_{(0, 1)} & 0 & ... & 0 \\
+  \frac{1}{(t_1-t_{0})^{2r-1}} Q_{(0, 1)} & 0 & 0 & ... & 0 \\
+  0 & \frac{1}{(t_2-t_{1})^{2r-1}} Q_{(0, 1)} & 0 & ... & 0 \\
   & & ... & &  \\
-  0 & ... & 0 & \frac{1}{(t_{m-1}-t_{m-2})^{2r}} Q_{(0, 1)} & 0 \\
-  0 & ... & 0 & 0 & \frac{1}{(t_m-t_{m-1})^{2r}} Q_{(0, 1)} \\ 
+  0 & ... & 0 & \frac{1}{(t_{m-1}-t_{m-2})^{2r-1}} Q_{(0, 1)} & 0 \\
+  0 & ... & 0 & 0 & \frac{1}{(t_m-t_{m-1})^{2r-1}} Q_{(0, 1)} \\ 
  \end{bmatrix}
 \end{align}
 
@@ -856,9 +856,8 @@ Let $x_k = [c_{k, n} \ \ c_{k, n-1} \ \ ... \ \ c_{k, 1} \ \ c_{k, 0}]^T$ and $x
 \mbox{} \newline
 We want to minimize:
 \begin{align*}
-J &=  \sum_{k=1}^{m} x_k^T \frac{1}{(t_k-t_{k-1})^{2r}} Q_{(0, 1)} x_k \\
-&= x^T Q x \\
-\text{subject to: } A x &=b
+J &=  \sum_{k=1}^{m} x_k^T \frac{1}{(t_k-t_{k-1})^{2r-1}} Q_{(0, 1)} x_k \\
+&= x^T Q x
 %%
 \end{align*}
 

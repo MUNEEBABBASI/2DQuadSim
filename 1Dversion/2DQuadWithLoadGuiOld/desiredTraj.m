@@ -238,21 +238,17 @@ global s
 % set up problem
 r = 6; %derivative to minimize in cost function
 n = 11; %order of desired trajectory
-m = 5; %number of pieces in trajectory
+m = 2; %number of pieces in trajectory
 d = 2; %dimensions
 
 % specify the m+1 keyframes
-tDes = [0; 1;2;3; 4; 5];%[0;1.2; 3; 5]; % %specify desired arrival times at keyframes
-TDes = [Inf; Inf; 0; Inf; Inf; Inf];
+tDes = [0; 2; 2.6993]; %specify desired arrival times at keyframes
+TDes = [Inf; 0; Inf]; %specify keyframes where you want tension to be 0
 % specify desired positions and/or derivatives at keyframes, 
 % Inf represents unconstrained values
 % r x (m+1) x d, where each row i is the value the (i-1)th derivative of keyframe j for dimensions k 
 posDes = zeros(r, m+1, d);
-% posDes(:, :, 1) = [0 1 1 0; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0]; 
-% posDes(:, :, 2) = [0 3 2 2; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0];
-% posDes(:, :, 3) = [1 2 3 4; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0];
-
-posDes(:, :, 2) = [0 1 3 Inf 3 0; 0 Inf Inf Inf Inf 0; 0 Inf -g -g Inf 0; 0 Inf 0 0 Inf 0; 0 Inf 0 0 Inf 0; 0 Inf 0 0 Inf 0];
+posDes(:, :, 2) = [-1 0 -1; 0 2 0; 0 -g 0; 0 0 0; 0 0 0; 0 0 0];
 [i, j, k] = size(posDes);
 p = length(tDes);
 
@@ -307,7 +303,7 @@ if(isempty(traj))
     % row i is the ith coefficient for the column jth trajectory in dimension k
     dtemp = 1;
     
-    [traj.xT(:, :, 2), traj.xTQ(:, :, 2), traj.modes(:, :, 2)] = findTrajLoad1D(r, n, m, dtemp, tDes, posDes(:, :, 2), TDes, s.g, s.l, s.mL, s.mQ);
+    [traj.xT(:, :, 2), traj.xTQ(:, :, 2), traj.modes(:, :, 2), traj.mNew(2, 1)] = findTrajLoad1D(r, n, m, dtemp, tDes, posDes(:, :, 2), TDes, s.g, s.l, s.mL, s.mQ);
     
     
     % look at l
@@ -343,13 +339,13 @@ if(isempty(traj))
     plotDim = [];
     %plotDim = [1 2]; %if you want to plot two dimensions against each other, specify here
     % nxm matrix, creates n plots of column 1 vs. column 2
-   
-    plotTraj(0, tDes(m+1, 1), traj.xT(:, :, 2), n, m, dtemp, tDes, posDes(:, :, 2), 0.01, dimLabels, plotDim, 2);
-    plotTraj(0, tDes(m+1, 1), traj.xTQ(:, :, 2), n, m, dtemp, tDes, posDes(:, :, 2), 0.01, dimLabels, plotDim, 2);
+    
+    plotTraj(traj.xT(:, :, 2), n, 2, dtemp, tDes, posDes(:, :, 2), 0.01, dimLabels, plotDim);
+    plotTraj(traj.xTQ(:, :, 2), n, 2, dtemp, tDes, posDes(:, :, 2), 0.01, dimLabels, plotDim);
     
     
-    [~, traj.derivativesX] = evaluateTraj(t, n, m, d, traj.xT, tDes, r, []);
-    [~, traj.derivativesXQ] = evaluateTraj(t, n, m, d, traj.xTQ, tDes, r, []);
+    [~, traj.derivativesX] = evaluateTraj(t, n, 2, d, traj.xT, tDes, r, []);
+    [~, traj.derivativesXQ] = evaluateTraj(t, n, 2, d, traj.xTQ, tDes, r, []);
 
 end
 

@@ -48,13 +48,17 @@ for j = 0:m, %for each keyframe
                     end
                     
                     A_temp(1, j*(n+1)+k+1) = tinit^(maxPower - k)*derCoeff(i+1, k+1);
+                    
+                    if nonDim,
+                        A_temp(1, j*(n+1)+k+1) = 1/((tDes(j+2, 1)-tDes(j+1, 1))^i)*A_temp(1, j*(n+1)+k+1);
+                    end
                 end
                 
                 b_temp = posDes(i+1, j+1, dim); 
                 
                 %scale by time for nondimensionalization if nondimensionalized
                 if nonDim,
-                    b_temp = ((tDes(j+2, 1)-tDes(j+1, 1))^i)*b_temp;
+                   % b_temp = ((tDes(j+2, 1)-tDes(j+1, 1))^i)*b_temp;
                 end
                 
             elseif (j == m), % add one constraint to end of last piece
@@ -69,13 +73,18 @@ for j = 0:m, %for each keyframe
                     end
                     
                     A_temp(1, (j-1)*(n+1)+k+1) = tfin^(maxPower - k)*derCoeff(i+1, k+1);
+                    
+                    if nonDim,
+                        A_temp(1, (j-1)*(n+1)+k+1) = 1/((tDes(j+1, 1)-tDes(j, 1))^i)*A_temp(1, (j-1)*(n+1)+k+1);
+                    end
                 end
                 
                 b_temp = posDes(i+1, j+1, dim);
                 
                 %scale by time for nondimensionalization if nondimensionalized
                 if nonDim,
-                    b_temp = ((tDes(j+1, 1)-tDes(j, 1))^i)*b_temp;
+                    %b_temp = ((tDes(j+1, 1)-tDes(j, 1))^i)*b_temp;
+                    
                 end
                 
             else % else, add two constraints
@@ -93,14 +102,19 @@ for j = 0:m, %for each keyframe
                     
                     A_temp(1, (j-1)*(n+1)+k+1) = tfin^(maxPower - k)*derCoeff(i+1, k+1);
                     A_temp(2, j*(n+1)+k+1) = tinit^(maxPower - k)*derCoeff(i+1, k+1);
+                    
+                    if nonDim,
+                    A_temp(1, (j-1)*(n+1)+k+1) = 1/((tDes(j+1, 1)-tDes(j, 1))^i)*A_temp(1, (j-1)*(n+1)+k+1);
+                    A_temp(2, j*(n+1)+k+1) = 1/((tDes(j+2, 1)-tDes(j+1, 1))^i)*A_temp(2, j*(n+1)+k+1);
+                    end
                 end
                 
                 b_temp = posDes(i+1, j+1, dim)*ones(2, 1);
                 
                 %scale by time for nondimensionalization if nondimensionalized
                 if nonDim,
-                    b_temp(1, 1) = ((tDes(j+1, 1)-tDes(j, 1))^i)*b_temp(1, 1);
-                    b_temp(2, 1) = ((tDes(j+2, 1)-tDes(j+1, 1))^i)*b_temp(2, 1);
+                    %b_temp(1, 1) = ((tDes(j+1, 1)-tDes(j, 1))^i)*b_temp(1, 1);
+                    %b_temp(2, 1) = ((tDes(j+2, 1)-tDes(j+1, 1))^i)*b_temp(2, 1);
                 end
                 
             end

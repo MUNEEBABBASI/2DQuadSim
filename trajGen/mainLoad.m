@@ -1,7 +1,6 @@
-% 8/6/13
-% mainLoad.m
+% 7/31/13
+% desiredTraj.m
 % generates an optimal trajectory through a set of keyframes
-% allows for specficiation of points where the cable load becomes slack
 % an implementation of techniques described in "Minimum Snap Trajectory Generation 
 % and Control for Quadrotors", Mellinger and Kumar 
 %
@@ -32,21 +31,45 @@ l = 1; %length of cable, m
 
 %%%
 % set up problem
+% r = 6; %derivative to minimize in cost function
+% n = 11; %order of desired trajectory
+% m = 3; %number of pieces in trajectory
+% d = 2; %dimensions
+% 
+% % specify the m+1 keyframes
+% tDes = [0; 2; 4; 6]; %specify desired arrival times at keyframes
+% % specify desired positions and/or derivatives at keyframes, 
+% % Inf represents unconstrained values
+% % r x (m+1) x d, where each row i is the value the (i-1)th derivative of keyframe j for dimensions k 
+% posDes = zeros(r, m+1, d);
+% posDes(:, :, 1) = [0 1 1 0; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0]; 
+% posDes(:, :, 2) = [0 3 2 2; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0];
+% posDes(:, :, 3) = [1 2 3 4; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0];
+% [i, j, k] = size(posDes);
+% l = length(tDes);
+
+
+
 r = 6; %derivative to minimize in cost function
 n = 11; %order of desired trajectory
-m = 3; %number of pieces in trajectory
+m = 5; %number of pieces in trajectory
 d = 1; %dimensions
 
 % specify the m+1 keyframes
-tDes = [0; 1; 1.4515]; %specify desired arrival times at keyframes
-TDes = [Inf; 0; Inf]; %specify keyframes where you want tension to be 0
+tDes = [0; 1;2;3; 4; 5];%[0;1.2; 3; 5]; % %specify desired arrival times at keyframes
+TDes = [Inf; Inf; 0; Inf; Inf; Inf];
 % specify desired positions and/or derivatives at keyframes, 
 % Inf represents unconstrained values
 % r x (m+1) x d, where each row i is the value the (i-1)th derivative of keyframe j for dimensions k 
-posDes = zeros(r, m+1, d);
-posDes(:, :, 1) = [-1 0 -1; 0 Inf 0; 0 -g*tDes(2, 1)^2 0; 0 0 0; 0 0 0; 0 0 0];
+% posDes = zeros(r, m+1, d);
+% posDes(:, :, 1) = [0 1 1 0; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0]; 
+% posDes(:, :, 2) = [0 3 2 2; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0];
+% posDes(:, :, 3) = [1 2 3 4; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0];
+
+posDes(:, :, 1) = [0 1 3 Inf 4 0; 0 Inf Inf Inf Inf 0; 0 Inf -g -g Inf 0; 0 Inf 0 0 Inf 0; 0 Inf 0 0 Inf 0; 0 Inf 0 0 Inf 0];
 [i, j, k] = size(posDes);
 p = length(tDes);
+
 
 
 % specify s corridor constraints
@@ -73,15 +96,13 @@ if (j < m+1 || p < m+1), % must specify m+1 keyframes for m pieces of trajectory
     error('minimum number of keyframes not specified');
 end
 
-if (ismember(Inf, posDes(:, 1, :)) || ismember(Inf, posDes(:, m+1, :)) )
-    error('endpoints must be fully constrained');
-end
+% if (ismember(Inf, posDes(:, 1, :)) || ismember(Inf, posDes(:, m+1, :)) )
+%     error('endpoints must be fully constrained');
+% end
 
 if (k < d)
     error('not enough dimensions specified');
 end
-
-
 
 
 
@@ -99,19 +120,21 @@ xT2 = zeros(n+1, m, d);
 
 
 %xT3 = findTrajCorr(r, n, m, d, tDes, posDes, ineqConst);
-[xTL, xTQ, mode, mNew] = findTrajLoad1D(r, n, m, d, tDes, posDes, TDes, g, l, mL, mQ)
+[xTL, xTQ, mode] = findTrajLoad1D(r, n, m, d, tDes, posDes, TDes, g, l, mL, mQ)
 
 
 % look at l
-t = 0:0.01:tDes(m+1); %construct t vector 
+t = 0:0.001:tDes(m+1); %tDes(m+1); %construct t vector 
 len = zeros(1, length(t));
 der2 = zeros(1, length(t));
+    [dxTL, derivativesXL] = evaluateTraj(t(i), n, m, d, xTL, tDes, 2, []);
+    [dxTQ, derivativesXQ] = evaluateTraj(t(i), n, m, d, xTQ, tDes, 2, []);
 for i = 1:length(t),
-    [dxTL, ~] = evaluateTraj(t(i), n, m, d, xTL, tDes, 2, []);
-    [dxTQ, ~] = evaluateTraj(t(i), n, m, d, xTQ, tDes, 2, []);
-    len(1, i) = dxTQ(1, 1) - dxTL(1, 1);
+    [dxTL, ~] = evaluateTraj(t(i), n, m, d, xTL, tDes, 2, derivativesXL);
+    [dxTQ, ~] = evaluateTraj(t(i), n, m, d, xTQ, tDes, 2, derivativesXQ);
+    len(1, i) = abs(dxTQ(1, 1) - dxTL(1, 1));
     
-    der2(1, i) = dxTL(2, 1);
+    der2(1, i) = dxTL(3, 1);
 end
 
 figure()
@@ -123,8 +146,22 @@ xlabel('time');
 figure()
 plot(t, mL*(der2+g));
 title('tension');
-ylabel('len (m)');
+ylabel('force (N)');
 xlabel('time');
+
+
+% % 
+% % disp('continuity checks')
+% % %check for continuity
+% % for i = 0:m
+% %     i
+% %     tDes(i+1)
+% % [contL, ~] = evaluateTraj(tDes(i+1, 1), n, m, d, xTL, tDes, 5, [])
+% % 
+% % [contQ, ~] = evaluateTraj(tDes(i+1, 1), n, m, d, xTQ, tDes, 5, [])
+% % end
+% 
+% 
 
 
 %%% 
@@ -136,8 +173,10 @@ plotDim = [];
 %plotDim = [1 2]; %if you want to plot two dimensions against each other, specify here 
     % nxm matrix, creates n plots of column 1 vs. column 2
     
-plotTraj(xTL, n, 2, d, tDes, posDes, 0.01, dimLabels, plotDim);
-plotTraj(xTQ, n, 2, d, tDes, posDes, 0.01, dimLabels, plotDim);
+plotTraj(0, tDes(m+1), xTL, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim, 0);
+plotTraj(0, tDes(m+1), xTQ, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim, 2*r);
+
+
 
 
 

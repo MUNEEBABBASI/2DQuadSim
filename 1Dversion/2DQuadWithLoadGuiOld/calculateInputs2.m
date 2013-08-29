@@ -19,17 +19,17 @@ function [f, M, phiQ_des, phiddotQ_des] = calculateInputs2(t, x2, g, mQ, JQ, kp,
         phiQ = x2(9, 1); phidotQ = x2(10, 1);
         
         % control laws
-        [xT dxT d2xT d3xT d4xT] = desiredTraj(t, g, mQ, JQ, 2);
+        [xTL dxTL d2xTL d3xTL d4xTL] = desiredTraj(t, g, mQ, JQ, 1)
+        [xT dxT d2xT d3xT d4xT] = desiredTraj(t, g, mQ, JQ, 2)
 
         % find f input
         F1 =  mQ*g.*[0; 1] + mQ.*d2xT;
         F = -kp*([yQ; zQ] - xT) - kd*([vyQ; vzQ] - dxT) + F1;
-
         
-        f = - F(1, 1)*sin(phiQ) + F(2, 1)*cos(phiQ);
+        [yQ; zQ] - xT
+        [vyQ; vzQ] - dxT
+        f = - F(1, 1)*sin(phiQ) + F(2, 1)*cos(phiQ)
         phiQ_des = atan2(-F(1, 1), F(2, 1));
-        
-
         
         %calculate nominal f and phiQ_des values
         F_nom = mQ*d2xT + mQ.*g.*[0; 1];
@@ -44,8 +44,8 @@ function [f, M, phiQ_des, phiddotQ_des] = calculateInputs2(t, x2, g, mQ, JQ, kp,
         M_des = JQ*phiddotQ_des;
         M = JQ* (-kp_phi*(phiQ-phiQ_des)-kd_phi*(phidotQ-phidotQ_des)) + M_des;
 
-
         M = 0;
+
 
     % takes difference of two angles, keeping it between -pi and pi
     function diff = angleDiff(x1, x2)
