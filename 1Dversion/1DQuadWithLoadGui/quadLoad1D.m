@@ -42,7 +42,7 @@ s.l = l;
 %%% 
 % initial conditions 
 tstart = 0;
-tend = 5; %total time of simulation, s
+tend = 1; %total time of simulation, s
 [xT, dxT, d2xT] = desiredTraj(0, g, mQ, JQ);
 
 
@@ -108,6 +108,7 @@ while tstart < tend && tout(length(tout))<tend,
         
         utemp = zeros(nt, 1);
         for tempTime = 1:nt,
+            [xT, dxT, d2xT] = desiredTraj(tout(tempTime), g, mQ, JQ, 1); 
             utemp(tempTime, 1) = (mL+mQ)*(d2xT+g);
         end
         uout = [uout; utemp(2:nt, 1)];
@@ -145,6 +146,7 @@ while tstart < tend && tout(length(tout))<tend,
         
         utemp = zeros(nt, 1);
         for tempTime = 1:nt,
+            [xT, dxT, d2xT] = desiredTraj(tout(tempTime), g, mQ, JQ, 2); 
             utemp(tempTime, 1) = mQ*(d2xT+g);
         end
         uout = [uout; utemp(2:nt, 1)];
@@ -162,7 +164,7 @@ while tstart < tend && tout(length(tout))<tend,
             
                     
             % if the event wasn't a collision
-            if ((x2(nt, 2)-x2(nt, 1))>0)
+            if ((x2(nt, 3)-x2(nt, 1))>0)
                 
                 % set new intial conditions and flip mode
                 currentMode = 1;
@@ -297,17 +299,8 @@ plot(tout, dxTraj(:, 1), 'b--');
 xlabel('time (s)');
 ylabel('velocity (m/s)');
 title('load velocity over time');
-legend('x velocity', 'z velocity', 'desired xdot', 'desired zdot');
-% 
-% % plot load angle over time (0 when rope is slack)
-% figure()
-% hold on;
-% plot(tout, loadphi(:, 1)'./pi*180, 'b');
-% plot(tout, loadphi(:, 2)'./pi*180, 'r');
-% xlabel('time (s)');
-% ylabel('angle (degrees)');
-% title('load angle over time');
-% legend('phiL', 'phiLdot');
+legend('x velocity', 'desired xdot');
+
 
 
 
@@ -391,8 +384,8 @@ function [value, isterminal, direction] = taut(t, x2)
 
     
  value = [ ...
-        x2(1, 1)- x2(2, 1); ... %when load and quad collide
-        x2(2, 1)- x2(1, 1) - l; ... %when string is at length l
+        x2(3, 1)- x2(1, 1); ... %when load and quad collide
+        x2(3, 1)- x2(1, 1) - l; ... %when string is at length l
         ];
     isterminal = [1; 1];
     direction = [0; 1];

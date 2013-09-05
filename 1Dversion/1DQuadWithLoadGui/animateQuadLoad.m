@@ -194,7 +194,7 @@ plot(0, s.xTraj(:, 1), 'r--');
 line([0 0], [s.xQ(t, 1) s.xL(t, 1)], 'Color', 'k', 'LineStyle', '--');
 s.limits = [min([s.xQ(:, 1); s.xL(:, 1); 0])-0.5 ...
     max([s.xQ(:, 1); s.xL(:, 1); 0])+0.5];
-
+s.limits
 if (length(traj.tDes) > 0),
     plot(0, traj.posDes(1, :, 1), 'k^');
 end
@@ -202,7 +202,7 @@ end
 %legend('load pos', 'desired load pos', 'desired y', 'desired z', 'Location', 'SouthEastOutside');
 ylabel('z (m)');
 xlabel('y (m)');
-set(gca, 'XLim', s.limits, 'YLim', s.limits);
+set(gca, 'XLim', [-(s.limits(1, 2)-s.limits(1, 1))/2 (s.limits(1, 2)-s.limits(1, 1))/2], 'YLim', s.limits);
 
 
 
@@ -505,8 +505,7 @@ while (get(hObject,'Value') && stop==0)
       %plot past positions
       plot(0, s.xL(1:t, 1), 'r');
       plot(0, s.xQ(1:t, 1), 'k');      
-      set(gca, 'XLim', s.limits, 'YLim', s.limits);
-      %set(gca, 'XLim', [-0.5 3.5], 'YLim', [-0.5 3.5]);
+      set(gca, 'XLim', [-(s.limits(1, 2)-s.limits(1, 1))/2 (s.limits(1, 2)-s.limits(1, 1))/2], 'YLim', s.limits);
       ylabel('z (m)');
       xlabel('y (m)');
 

@@ -1,0 +1,303 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+
+\usepackage{graphicx}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{latexsym}
+\usepackage{graphicx}
+\usepackage{algorithm} 
+\usepackage{algorithmic} 
+\usepackage{setspace}
+\usepackage{subfig}
+
+\begin{document}
+
+\centering
+Quadrotor with a Cable-Suspended Load in 1-Dimension \\
+September 5, 2013
+
+\raggedright
+
+\begin{table} [h!]
+\footnotesize
+\begin{tabular}{ c c }
+	$m_Q, m_L \in \mathbb{R}$ & Mass of quadrotor, load \\
+	$f \in \mathbb{R}$ & Magnitude of thrust for quadrotor \\
+	$l \in \mathbb{R}$ & Length of suspension cable \\
+	$T \in \mathbb{R}$ & Magnitude of tension in cable \\
+	${x}_Q, \mathbf{x}_L \in {R}^2$ & Position of center of mass of quadrotor, load \\
+	${v}_Q, \mathbf{v}_L \in {R}^2$ & Velocity of center of mass of quadrotor, load \\
+\end{tabular}
+%\caption{Variables used}
+\label{tab: vars}
+\end{table}
+
+
+
+
+%%%%%%%
+\newpage
+\small
+
+\section{Equations of Motion} 
+% Define the hybrid system
+%%%%%
+\[
+    \Sigma : 
+\begin{cases}
+    \mathbf{\dot{x}}_1 = f_1(\mathbf{x}_1) + g_1(\mathbf{x}_1) \mathbf{u}_1, & \mathbf{x}_1 \not\in \mathcal{S}_1 \\
+    \mathbf{x}_2^+ = \Delta_1(\mathbf{x}_1^-), & \mathbf{x}_1^- \in \mathcal{S}_1 \\
+    \mathbf{\dot{x}}_2 = f_2(\mathbf{x}_2) + g_2(\mathbf{x}_2) \mathbf{u}_2, & \mathbf{x}_2 \not\in \mathcal{S}_2 \\
+    \mathbf{x}_1^+ = \Delta_2(\mathbf{x}_2^-), & \mathbf{x}_2^- \in \mathcal{S}_2 
+\end{cases}
+\]
+
+\[
+ \Sigma :
+\begin{cases}
+%\mathbf{x}_1 &= [\mathbf{x}_L \ \ \mathbf{v}_L \ \ \phi_L \ \ \dot{\phi}_L \ \  \phi_Q \ \ \dot{\phi}_Q]^T \\
+\dot{\mathbf{x}}_1 = 
+\begin{bmatrix}
+       \dot{x}_L \\ \dot{v}_L
+\end{bmatrix}
+= 
+\begin{bmatrix}
+       0 & 1 \\
+       0 & 0 
+\end{bmatrix}
+\begin{bmatrix} 
+	x_L \\ v_L 
+\end{bmatrix}
++ 
+\begin{bmatrix}
+	0 \\ 
+       \frac{1}{m_L+m_Q}
+\end{bmatrix}
+f 
++
+\begin{bmatrix}
+	0 \\ 
+       -g
+\end{bmatrix},
+& 
+\mathbf{x}_1 \not\in \{ \mathbf{x}_1 \ | \  T \equiv \| m_L(\dot{v}_L + g) \| = 0 \} \\
+%%
+\mathbf{x}_2^+ = 
+\begin{bmatrix}
+      {x}_L^+ \\ {v}_L^+ \\ {x}_Q^+ \\ {v}_Q^+ \\
+\end{bmatrix}
+= 
+\begin{bmatrix}
+       {x}_L^- \\ {v}_L^- \\ {x}_L^- + l \\ {v}_L^- + l \\
+\end{bmatrix} , 
+&  
+\mathbf{x}_1^- \in \{ \mathbf{x}_1 \ | \  T = 0 \} \\
+%%
+\dot{\mathbf{x}}_2 = 
+\begin{bmatrix}
+       \dot{{x}}_L \\ \dot{{v}}_L \\ \dot{{x}}_Q \\ \dot{{v}}_Q \\
+\end{bmatrix}
+= 
+\begin{bmatrix}
+       0 & 1 & 0 & 0 \\
+       0 & 0 & 0 & 0 \\
+       0 & 0 & 0 & 1 \\
+       0 & 0 & 0 & 0 \\
+\end{bmatrix}
+\begin{bmatrix}
+       x_L \\ {{v}}_L \\ {{x}}_Q \\ {{v}}_Q \\
+\end{bmatrix}
++ 
+\begin{bmatrix}
+      0 \\
+      0 \\
+      0 \\
+      \frac{1}{m_Q}
+\end{bmatrix}
+f
++ 
+\begin{bmatrix}
+       0 \\
+       -g \\
+       0 \\
+       -g \\
+\end{bmatrix},
+& 
+\mathbf{x}_2 \not\in \{ \mathbf{x}_2 \ | \  \| {x}_Q - {x}_L \| = L \} \\
+%%
+\mathbf{x}_1^+ = 
+\begin{bmatrix}
+       {x}_L^+ \\ {v}_L^+ \\ 
+\end{bmatrix}
+= 
+\begin{bmatrix}
+       x_L^- \\
+       v_Q^- \\
+\end{bmatrix} , 
+&  
+\mathbf{x}_2^- \in \{ \mathbf{x}_2 \ | \  \| {x}_Q -  {x}_L \| = L \}
+\end{cases}
+\]
+
+
+
+
+
+%%%%%%
+\newpage
+%%%
+\subsection{When cable is taut}
+
+Assume that the quadrotor is moving in the $y-z$ plane, where its only degree of freedom is in the $z$ direction.  \\
+Constraint: ${x}_Q = {x}_L + l$ \\
+
+
+\begin{align*}
+\sum \mathbf{F} &= m \ddot{x} \\
+-m_Q g - T + f &= m_Q \dot{v}_Q \\
+-m_L g + T &= m_L \dot{v}_L
+\end{align*}
+
+Solving for $\dot{v}_L$ in terms of only $f$:
+\begin{align*}
+T &= - m_Q \dot{v}_Q - m_Q g + f \\
+m_L \dot{v}_L &= -m_L g +(- m_Q \dot{v}_Q - m_Q g + f ) \\
+\text{Differentiating the constraint gives: } & \\
+\dot{x}_Q = v_Q &= \dot{x}_L = v_L \\
+\dot{v}_Q &= \dot{v}_L \\
+(m_L+m_Q) \dot{v}_L &= -(m_L+m_Q) g + f \\
+\dot{v}_L &= -g +\frac{f}{m_L+m_Q}
+\end{align*} 
+
+This gives our equations of motion: 
+\begin{align*}
+\dot{x}_L &= v_L \\
+\dot{v}_L &= -g +\frac{f}{m_L+m_Q}
+\end{align*} 
+
+Note that the system transitions to $\mathbf{x}_2$ when the tension is 0. The tension force in the cable can be explicitly from the equation of motion:
+\begin{align*}
+-m_L g + T &= m_L \dot{v}_L \\
+T &= m_L (\dot{v}_L + g)
+\end{align*}
+
+Note that this force will always go from positive to negative at the transition. 
+
+
+
+
+
+
+
+%%%%%
+\newpage
+\subsection{When cable is slack}
+
+Assume that the quadrotor is moving in the $y-z$ plane, where its only degree of freedom is in the $z$ direction.  \\
+No constraints. Load is in free fall while quad is controlled by its input force $f$. 
+
+\mbox{} \newline
+\begin{align*}
+\sum \mathbf{F} &= m \ddot{x} \\
+-m_Q g + f &= m_Q \dot{v}_Q \\
+-m_L g &= m_L \dot{v}_L
+\end{align*}
+
+Solving for $\dot{v}_L$ and $\dot{v}_Q$ in terms of only $f$:
+\begin{align*}
+\dot{v}_L &= -g \\
+\dot{v}_Q &= -g + \frac{f}{m_Q} \\
+\end{align*} 
+
+This makes our equations of motion: 
+\begin{align*}
+\dot{x}_L &= v_L \\
+\dot{v}_L &= -g \\ 
+\dot{x}_Q &= v_Q \\
+\dot{v}_Q &= -g + \frac{f}{m_Q} \\
+\end{align*} 
+
+
+Note that the system transitions to $\mathbf{x}_2$ when the quad and load are at a distance $l$ apart again, with the load falling away from the quad. In other words, we transition when: 
+\begin{align*}
+(x_Q - x_L) - l &= 0
+\end{align*}
+
+Note that this force will always go from negative to positive at the transition. 
+
+
+
+
+
+
+%%%%%%%
+\newpage
+\section{Differential Flatness} 
+% Decouple equations
+%%%%%
+\subsection{$\mathbf{x}_1$ system:} 
+
+Recall the equation of motion: 
+%%
+\begin{align*}
+\dot{x}_L &= v_L \\
+\dot{v}_L &= -g +\frac{f}{m_L+m_Q}
+\end{align*}
+
+
+
+
+Choose flat output $\mathbf{y} = [{x}_L]$  \\
+
+\mbox{} \newline
+Derive $\dot{x}_L = v_{L}$, $\ddot{x}_L = \dot{v}_{L}$ from differentiation of $x_L$ \\
+We can simply find the nominal input force $f$ from the equation of motion:
+\begin{align*}
+f &= (m_L+m_Q) \dot{v}_L + g
+\end{align*}
+
+
+
+
+
+
+
+%%%%%%%
+\subsection{$\mathbf{x}_2$ system:}
+
+Recall the equations of motion:
+%%%%%
+\begin{align*}
+\dot{x}_L &= v_L \\
+\dot{v}_L &= -g \\ 
+\dot{x}_Q &= v_Q \\
+\dot{v}_Q &= -g + \frac{f}{m_Q} \\
+\end{align*}
+
+
+Flat output $\mathbf{y} = [{x}_Q]$  \\
+
+\mbox{} \newline
+${x}_L$ and ${v}_L$ are known from initial conditions because load is in free fall:
+
+\begin{align*}
+v_L(t) &= -gt + v_L(t_0) \\
+x_L(t) &= -gt^2 + v_L(t_0)t + x_L(t_0) 
+\end{align*}
+
+Derive $\dot{x}_Q = v_{Q}$, $\ddot{x}_Q = \dot{v}_{Q}$, and all higher derivatives from differentiation of $x_Q$ \\
+We can simply derive the input $f$ from the equation of motion:
+\begin{align*}
+f = m_Q (\dot{v}_Q + g)
+\end{align*}
+
+
+
+
+
+
+
+\end{document}
