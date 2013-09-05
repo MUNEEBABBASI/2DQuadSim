@@ -97,6 +97,7 @@ set(handles.slider1, 'Value', 3);
 axes(handles.axes2)
 hold on
 box on
+grid on
 plot(s.time,s.xL(:, 1),'r');
 plot(s.time,s.xTraj(:, 1),'r--');
 %s.limits2 = get(handles.axes2,'YLim');
@@ -108,6 +109,7 @@ ylabel('load pos (m)');
 axes(handles.axes3)
 hold on
 box on
+grid on
 plot(s.time,s.vL(:, 1),'r');
 plot(s.time,s.dxTraj(:, 1),'r--');
 %s.limits3 = get(handles.axes3, 'YLim');
@@ -121,6 +123,7 @@ ylabel('load vel (m/s)');
 axes(handles.axes5)
 hold on
 box on
+grid on 
 plot(s.time,s.xQ(:, 1),'r');
 plot(s.time,s.xTraj(:, 1)+s.l,'r--');
 %s.limits5 = get(handles.axes5, 'YLim');
@@ -132,6 +135,7 @@ ylabel('quad pos (m)');
 axes(handles.axes6)
 hold on
 box on
+grid on
 plot(s.time,s.vQ(:, 1),'r');
 plot(s.time,s.dxTraj(:, 1),'r--');
 %s.limits6 = get(handles.axes6, 'YLim');
@@ -145,6 +149,7 @@ ylabel('quad vel (m/s)');
 axes(handles.axes8)
 hold on
 box on
+grid on
 plot(s.time,s.u(:, 1),'r');
 %s.limits8 = get(handles.axes8, 'YLim');
 %s.line8 = line([s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)],[-100,100]);
@@ -164,6 +169,7 @@ end
 axes(handles.axes10)
 hold on
 box on
+grid on
 plot(s.time,T,'r');
 %s.limits10 = get(handles.axes9, 'YLim');
 %s.line10 = line([s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)],[-100,100]);
@@ -183,18 +189,25 @@ global traj
     
 axes(handles.axes1)
 t = s.currentTimeIndex;
-plot(0, s.xL(t, 1), 'ro', 'Markersize', 10, 'MarkerFaceColor', 'r');
+plot(0, s.xL(t, 1), 'ro', 'Markersize', 12, 'MarkerFaceColor', 'r');
 hold on
 grid on
 box on
 line([-s.quadLength s.quadLength], ...
     [s.xQ(t, 1) s.xQ(t, 1)], ...
-    'Color', 'k');
+    'Color', 'k', 'LineWidth', 1.2);
 plot(0, s.xTraj(:, 1), 'r--');
-line([0 0], [s.xQ(t, 1) s.xL(t, 1)], 'Color', 'k', 'LineStyle', '--');
+
+if (s.modes(t, 1) == 2) 
+    color = 'b';
+else
+    color = 'k';
+end
+
+line([0 0], [s.xQ(t, 1) s.xL(t, 1)], 'Color', color, 'LineStyle', '--', 'LineWidth', 1.5);
 s.limits = [min([s.xQ(:, 1); s.xL(:, 1); 0])-0.5 ...
     max([s.xQ(:, 1); s.xL(:, 1); 0])+0.5];
-s.limits
+
 if (length(traj.tDes) > 0),
     plot(0, traj.posDes(1, :, 1), 'k^');
 end
@@ -239,6 +252,7 @@ switch get(handles.popupmenu1,'Value')
         hold off
         plot(s.time,s.xL(:, 1),'r');
         hold on
+        grid on
         box on
         plot(s.time,s.xTraj(:, 1),'r--');
         %limitsTemp = get(handles.axes2, 'YLim');
@@ -252,6 +266,7 @@ switch get(handles.popupmenu1,'Value')
         plot(s.time,s.xL(:, 1) - s.xTraj(:, 1),'r');
         hold on
         box on
+        grid on
         %limitsTemp = get(handles.axes7, 'YLim');
         %set(s.line2, 'XData', [s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)]);
         %ylim(limitsTemp);
@@ -293,6 +308,7 @@ switch get(handles.popupmenu2,'Value')
         plot(s.time,s.vL(:, 1),'r');
         hold on
         box on
+        grid on
         plot(s.time,s.dxTraj(:, 1),'r--');
         legend('actual x', 'desired x', 'Location', 'SouthEastOutside');
         %limitsTemp = get(handles.axes7, 'YLim');  
@@ -305,6 +321,7 @@ switch get(handles.popupmenu2,'Value')
         plot(s.time,s.vL(:, 1) - s.dxTraj(:, 1),'r');
         hold on
         box on
+        grid on
         legend('x error', 'Location', 'SouthEastOutside');
         %limitsTemp = get(handles.axes3, 'YLim');
         %set(s.line4, 'XData', [s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)]);
@@ -345,6 +362,7 @@ switch get(handles.popupmenu4,'Value')
         plot(s.time,s.xQ(:, 1),'r');
         hold on
         box on
+        grid on
         plot(s.time,s.xTraj(:, 1)+s.l,'r--');
         %limitsTemp = get(handles.axes5, 'YLim');
         %set(s.line5, 'XData', [s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)]);
@@ -358,6 +376,7 @@ switch get(handles.popupmenu4,'Value')
         plot(s.time,s.xQ(:, 1) - (s.xTraj(:, 1)+s.l),'r');
         hold on
         box on
+        grid on
         %limitsTemp = get(handles.axes5, 'YLim');
        % set(s.line5, 'XData', [s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)]);
        % ylim(limitsTemp);
@@ -424,6 +443,7 @@ switch get(handles.popupmenu7,'Value')
         plot(s.time,s.vQ(:, 1),'r');
         hold on
         box on
+        grid on
         plot(s.time,s.dxTraj(:, 1),'r--');
         %limitsTemp = get(handles.axes6, 'YLim');
         %set(s.line6, 'XData', [s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)]);
@@ -437,6 +457,7 @@ switch get(handles.popupmenu7,'Value')
         plot(s.time,s.vQ(:, 1) - s.dxTraj(:, 1),'r');
         hold on
         box on
+        grid on
         %limitsTemp = get(handles.axes6, 'YLim');
         %set(s.line6, 'XData', [s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)]);
         %ylim(limitsTemp);
@@ -487,15 +508,21 @@ while (get(hObject,'Value') && stop==0)
       %%%
       % 2D plot
       hold off
-      plot(0, s.xL(t, 1), 'ro', 'Markersize', 10, 'MarkerFaceColor', 'r');
+      plot(0, s.xL(t, 1), 'ro', 'Markersize', 12, 'MarkerFaceColor', 'r');
       hold on
       grid on
       box on
       line([-s.quadLength s.quadLength], ...
         [s.xQ(t, 1) s.xQ(t, 1)], ...
-        'Color', 'k');
+        'Color', 'k', 'LineWidth', 1.2);
       plot(0, s.xTraj(:, 1), 'r--');
-      line([0 0], [s.xQ(t, 1) s.xL(t, 1)], 'Color', 'k', 'LineStyle', '--');
+      
+      if (s.modes(t, 1) == 2)
+          color = 'b';
+      else
+          color = 'k';
+      end
+      line([0 0], [s.xQ(t, 1) s.xL(t, 1)], 'Color', color, 'LineStyle', '--', 'LineWidth', 1.5);
 
       
       if (length(traj.tDes) > 0),

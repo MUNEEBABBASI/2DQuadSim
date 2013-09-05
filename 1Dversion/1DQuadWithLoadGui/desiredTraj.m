@@ -260,7 +260,7 @@ d = 1; %dimensions
 
 
 % specify the m+1 keyframes
-tDes = [0; 0.8];%[0;1.2; 3; 5]; % %specify desired arrival times at keyframes
+tDes = [0; 0.4];%[0;1.2; 3; 5]; % %specify desired arrival times at keyframes
 TDes = [Inf; Inf];
 % specify desired positions and/or derivatives at keyframes, 
 % Inf represents unconstrained values
@@ -270,7 +270,7 @@ posDes = zeros(r, m+1, d);
 % posDes(:, :, 2) = [0 3 2 2; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0];
 % posDes(:, :, 3) = [1 2 3 4; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0];
 
-posDes(:, :, 1) = [0 1; 0 0; 0 0; 0 0; 0 0; 0 0];
+posDes(:, :, 1) = [0 -1; 0 0; 0 0; 0 0; 0 0; 0 0];
 [i, j, k] = size(posDes);
 p = length(tDes);
 
