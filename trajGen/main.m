@@ -43,13 +43,13 @@ clc
 
 
 
-r = 1; %derivative to minimize in cost function
-n = 3; %order of desired trajectory
+r = 4; %derivative to minimize in cost function
+n = 7; %order of desired trajectory
 m = 2; %number of pieces in trajectory
 d = 1; %dimensions
 
 % specify the m+1 keyframes
-tDes = [0; 1; 2];%[0;1.2; 3; 5]; % %specify desired arrival times at keyframes
+tDes = [0; 1.5; 5];%[0;1.2; 3; 5]; % %specify desired arrival times at keyframes
 % specify desired positions and/or derivatives at keyframes, 
 % Inf represents unconstrained values
 % r x (m+1) x d, where each row i is the value the (i-1)th derivative of keyframe j for dimensions k 
@@ -58,8 +58,8 @@ tDes = [0; 1; 2];%[0;1.2; 3; 5]; % %specify desired arrival times at keyframes
 % posDes(:, :, 2) = [0 3 2 2; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0];
 % posDes(:, :, 3) = [1 2 3 4; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0];
 
-posDes(:, :, 1) = [0 1 3; Inf Inf Inf; 0 Inf 0; 0 Inf 0; 0 Inf 0; 0 Inf 0]; 
-%posDes(:, :, 1) = [0 0 4 -2; 1 Inf Inf 0; 0 -2 Inf 0; 0 Inf Inf 0; 0 Inf 3000 0; 0 Inf Inf 0];
+%posDes(:, :, 1) = [0 1 3; Inf Inf Inf; 0 Inf 0; 0 Inf 0; 0 Inf 0; 0 Inf 0]; 
+posDes(:, :, 1) = [-0.1653 0.2194 0.3734; 0 Inf 0; 0 Inf 0; 0 Inf 0; 0 Inf 0];
 [i, j, k] = size(posDes);
 l = length(tDes);
 
@@ -107,14 +107,15 @@ end
 % xT holds all coefficents for all trajectories
 % row i is the ith coefficient for the column jth trajectory in dimension k
 xT = zeros(n+1, m, d); 
+posDes_opt = zeros(r, m+1, d); 
 %xT2 = zeros(n+1, m, d); 
 for i = 1:d,
    xT(:, :, i) = findTraj(r, n, m, i, tDes, posDes);
-   %xT2(:, :, i) = findTrajJoint(r, n, m, i, tDes, posDes);
+   [xT2(:, :, i), posDes_opt(:, :, i)] = findTrajJoint(r, n, m, i, tDes, posDes);
 end
 
 
-%xT3 = findTrajCorr(r, n, m, d, tDes, posDes, ineqConst);
+xT3 = findTrajCorr(r, n, m, d, tDes, posDes, ineqConst);
 %xT3 = findTrajLoad(r, n, m, d, tDes, posDes, ineqConst);
 
 
@@ -172,13 +173,15 @@ plotTraj(0, tDes(m+1), xT, n, m, d, tDes, posDes, 0.01, dimLabels, [], 2*r);
 
 
 xT
+xT2
+xT3
 
-for i = 1:m+1,
-[dxT, ~] = evaluateTraj(tDes(i, 1), n, m, d, xT, tDes, 2*r, [])
-%[dxT2, ~] = evaluateTraj(tDes(i, 1), n, m, d, xT2, tDes, r, [])
-
-
-end
+% for i = 1:m+1,
+% [dxT, ~] = evaluateTraj(tDes(i, 1), n, m, d, xT, tDes, 2*r, [])
+% %[dxT2, ~] = evaluateTraj(tDes(i, 1), n, m, d, xT2, tDes, r, [])
+% 
+% 
+% end
 
 
 

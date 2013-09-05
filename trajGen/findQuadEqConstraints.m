@@ -110,6 +110,7 @@ for j = 0:m, %for each keyframe
         
         % add velocity if it's specified
         if posDes(2, j+1) ~= Inf,
+
             A_temp = zeros(2, (n+1)*m);
             maxPower = nnz(derCoeff(2, :))-1;
             
@@ -327,85 +328,70 @@ for j = 0:m, %for each keyframe
         b_eq = [b_eq; b_temp];
         
                
-        % if velocity specified, add the constraint         
-        if posDes(2, j+1) ~= Inf,
-            A_temp = zeros(1, (n+1)*m);
-            maxPower = nnz(derCoeff(2, :))-1;
-            
-            for k = 0:maxPower,
-                
-                if nonDim,
-                    tfin = t1;
-                else
-                    tfin = tDes(j+1, 1);
-                end
-                
-                A_temp(1, (j-1)*(n+1)+k+1) = tfin^(maxPower - k)*derCoeff(2, k+1);
-                
-                
-                %scale by time for nondimensionalization if nondimensionalized
-                if nonDim,
-                    A_temp(1, (j-1)*(n+1)+k+1) = 1/((tDes(j+1, 1)-tDes(j, 1)))*A_temp(1, (j-1)*(n+1)+k+1);
-                end
-            end
-            
-            b_temp = posDes(2, j+1); %vQ = vL
-            
-   
-        A_eq = [A_eq; A_temp];
-        b_eq = [b_eq; b_temp];
-        
-        end
-        
-        %otherwise, the continuity constraint will be added later
-        
-        
-        
-%         % find desired quad velocity right before the switch
-%         % vL*mL + vQ*mQ = (mL+mQ)*v
-%         % vQ = ((mL+mQ)*v-vL*mL)/mQ;
-%   
-%         A_temp = zeros(1, (n+1)*m);
-%         maxPower = nnz(derCoeff(2, :))-1;
-% 
-%         for k = 0:maxPower,
+%         % if velocity specified, add the constraint         
+%         if posDes(2, j+1) ~= Inf,
+%             A_temp = zeros(1, (n+1)*m);
+%             maxPower = nnz(derCoeff(2, :))-1;
 %             
-%             if nonDim,
-%                 tinit = t0;
-%                 tfin = t1;
-%             else
-%                 tinit = tDes(j, 1);
-%                 tfin = tDes(j+1, 1);
+%             for k = 0:maxPower,
+%                 
+%                 if nonDim,
+%                     tfin = t1;
+%                 else
+%                     tfin = tDes(j+1, 1);
+%                 end
+%                 
+%                 A_temp(1, (j-1)*(n+1)+k+1) = tfin^(maxPower - k)*derCoeff(2, k+1);
+%                 
+%                 
+%                 %scale by time for nondimensionalization if nondimensionalized
+%                 if nonDim,
+%                     A_temp(1, (j-1)*(n+1)+k+1) = 1/((tDes(j+1, 1)-tDes(j, 1)))*A_temp(1, (j-1)*(n+1)+k+1);
+%                 end
 %             end
-% 
 %             
-%             %scale by time for nondimensionalization if nondimensionalized
-%             if nonDim,
-%                 A_temp(1, (j-1)*(n+1)+k+1) = tfin^(maxPower - k)*derCoeff(2, k+1)*1/(tDes(j+1, 1)-tDes(j, 1)) ...
-%                     + mL/mQ*tinit*(maxPower-k)*derCoeff(2, k+1)*1/(tDes(j+1, 1)-tDes(j, 1));
-%                 A_temp(1, j*(n+1)+k+1) = -(mQ+mL)/mQ*tinit^(maxPower-k)*derCoeff(2, k+1)*1/(tDes(j+2, 1)-tDes(j+1, 1));
-%             else
-%                 A_temp(1, (j-1)*(n+1)+k+1) = tfin^(maxPower - k)*derCoeff(2, k+1) ...
-%                     + mL/mQ*tinit*(maxPower-k)*derCoeff(2, k+1);
-%                 A_temp(1, j*(n+1)+k+1) = -(mQ+mL)/mQ*tinit^(maxPower-k)*derCoeff(2, k+1);
-%             end
-% 
-% 
-% 
-% %               A_temp(1, (j-1)*(n+1)+k+1) = tfin^(maxPower - k)*derCoeff(2, k+1)/(tDes(j+1, 1)-tDes(j, 1));
-% %               b_temp = 1.24;
-%         end     
-%         
-%         
-%         b_temp = mL/mQ*g*(tDes(j+1, 1)-tDes(j, 1));
-%         
-%         if nonDim,
-%             b_temp = b_temp*(t1-t0);
-%         end
-% 
-%         
+%             b_temp = posDes(2, j+1); %vQ = vL
+%             
+%    
 %         A_eq = [A_eq; A_temp];
-%         b_eq = [b_eq; b_temp];        
+%         b_eq = [b_eq; b_temp];
+%         
+%         end
+        
+
+        
+        % find desired quad velocity right before the switch
+        % we want this to match the load velocity for a smooth transition 
+
+        A_temp = zeros(1, (n+1)*m);
+        maxPower = nnz(derCoeff(2, :))-1;
+
+        for k = 0:maxPower,
+            
+            if nonDim,
+                tinit = t0;
+                tfin = t1;
+            else
+                tinit = tDes(j, 1);
+                tfin = tDes(j+1, 1);
+            end
+
+
+            A_temp(1, (j-1)*(n+1)+k+1) = tfin^(maxPower - k)*derCoeff(2, k+1)-tinit^(maxPower - k)*derCoeff(2, k+1);
+
+
+        end     
+        
+        
+        b_temp = -g*(tDes(j+1, 1)-tDes(j, 1));
+        
+        if nonDim,
+            b_temp = b_temp*(tDes(j+1, 1)-tDes(j, 1));
+        end
+
+        
+        A_eq = [A_eq; A_temp];
+        b_eq = [b_eq; b_temp];        
         
         
         
@@ -500,9 +486,6 @@ for j = 0:m, %for each keyframe
              A_temp(1, (j-1)*(n+1)+k+1) = tfin^(maxPower - k)*derCoeff(1, k+1);
              A_temp(1, j*(n+1)+k+1) = -tinit^(maxPower - k)*derCoeff(1, k+1);
 
-
-       %       A_temp(1, (j)*(n+1)+k+1) = tinit^(maxPower - k)*derCoeff(1, k+1);
-        %      b_temp = -1.9;
         end
         
         b_temp = 0;
@@ -516,32 +499,8 @@ for j = 0:m, %for each keyframe
         % velocity constraint 
 
         
-        % fixed constraint
-        if posDes(2, j+1) ~= Inf,
-            A_temp = zeros(1, (n+1)*m);
-            maxPower = nnz(derCoeff(2, :))-1;
-            for k = 0:maxPower,
-                
-                if nonDim,
-                    tinit = t0;
-                else
-                    tinit = tDes(j+1, 1);
-                end
-                
-                A_temp(1, j*(n+1)+k+1) = tinit^(maxPower - k)*derCoeff(2, k+1);
-                
-                %scale by time for nondimensionalization if nondimensionalized
-                if nonDim,
-                    A_temp(1, j*(n+1)+k+1) = 1/((tDes(j+2, 1)-tDes(j+1, 1)))*A_temp(1, j*(n+1)+k+1);
-                end
+        % add continuity constraint
 
-            end
-            
-            
-            b_temp = posDes(2, j+1, dim); 
-
-        % otherwise, add continuity constraint
-        else
                         A_temp = zeros(1, (n+1)*m);
             maxPower = nnz(derCoeff(2,:))-1;
             
@@ -567,7 +526,6 @@ for j = 0:m, %for each keyframe
             end
             
             b_temp = 0;
-        end
 
         
         A_eq = [A_eq; A_temp];

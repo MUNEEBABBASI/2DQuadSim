@@ -21,7 +21,7 @@
 
 
 
-function [xT] = findTrajJoint(r, n, m, dim, tDes, posDes)
+function [xT, posDes_opt] = findTrajJoint(r, n, m, dim, tDes, posDes)
 
 % we want to find the optimal derivatives at each keyframe
 % the original cost function is J = x'Qx

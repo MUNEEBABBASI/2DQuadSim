@@ -107,8 +107,8 @@ size(A_eq)
 [A_ineq, b_ineq] = findQuadIneqConstraints(r, n, m, d, posDes, modes, TDes, t0, t1, tDes, 1, g, len, mL, mQ);
 
 %size(A_ineq)
-%A_ineq = [];
-%b_ineq = [];
+A_ineq = [];
+b_ineq = [];
 
 %%%
 % optimize trajectory

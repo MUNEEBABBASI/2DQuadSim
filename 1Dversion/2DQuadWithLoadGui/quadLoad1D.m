@@ -105,8 +105,8 @@ modeout = currentMode;
 teout = [];
 yeout = [];
 ieout = [];
-uout = []; %record outputs, [f M]
-desout = []; %record desired states [xQ vQ phiQdes phiLdes]
+uout = zeros(1, 2); %record outputs, [f M]
+desout = zeros(1, 7); %record desired states [xQ vQ phiQdes phiLdes]
 
 % integrate
 while tstart < tend && tout(length(tout))<tend,
@@ -134,17 +134,14 @@ while tstart < tend && tout(length(tout))<tend,
                 x1(tempTime, 3)-l*dp_des(1, 1) x1(tempTime, 4)-l*dp_des(2, 1) ...
                 phiQ_des phiL_des d2phiQ_nom ];
         end
-        uout = [uout; utemp];
-        desout = [desout; destemp];
+        uout = [uout; utemp(2:nt, :)];
+        desout = [desout; destemp(2:nt, :)];
         
+
         
         % only add the event if an event occured (te > 0)
         if te > 0,
-            te
-            ye
-            ie
- 
-            
+
             teout = [teout; te];
             yeout = [yeout; [ye zeros(1, 2)]];
             ieout = [ieout; ie];
@@ -183,17 +180,15 @@ while tstart < tend && tout(length(tout))<tend,
                 0 0 ...
                 phiQ_des 0 phiddotQ_des ];
         end
-        uout = [uout; utemp];
-        desout = [desout; destemp];
+        uout = [uout; utemp(2:nt, :)];
+        desout = [desout; destemp(2:nt, :)];
+        
+
+        
 
         % only add the event if an event occured (te > 0)
         if te > 0,
-            
-            te
-            ye
-            ie
-            x2
-            yeout 
+
             
             teout = [teout; te];
             yeout = [yeout; ye];
@@ -315,7 +310,7 @@ end
 putvar(xTraj, dxTraj, d2xTraj, d3xTraj, d4xTraj, d5xTraj, d6xTraj)
 
 %call animation
-%animateQuadLoad
+animateQuadLoad
 
 
 

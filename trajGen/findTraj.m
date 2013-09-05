@@ -49,7 +49,7 @@ end
 
 %%%
 % construct equality constraints 
-[A_fixed, b_fixed] = findFixedConstraints(3, n, m, dim, posDes, t0, t1, tDes, 1);
+[A_fixed, b_fixed] = findFixedConstraints(r, n, m, dim, posDes, t0, t1, tDes, 1);
 [A_cont, b_cont] = findContConstraints(r, n, m, dim, posDes, t0, t1, tDes, 1);
 
 % put each A_eq for each dimension into block diagonal matrix

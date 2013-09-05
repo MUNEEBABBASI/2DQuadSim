@@ -248,27 +248,41 @@ X(t_{s+1}) &= X_L(t_{s+1}) + l \\
 %%
 Nondimensionalizing with:
 \begin{align*}
-\tau &= \frac{t-t_i}{t_f-t_i}, t = \tau(t_f-t_i)+t_i \\
-t_{s+1}-t_s &= \tau_1(t_{s+1}-t_s)+t_i - ( \tau_0(t_{s+1}-t_s)+t_i ) \\
-&= (\tau_1 - \tau_0)(t_{s+1}-t_s) \\
-X(t_{s+1}) = x_{s+1}(\tau_1)&= -\frac{g}{2}(\tau_1 - \tau_0)^2 (t_{s+1}-t_s)^2+\dot{X}(t_s)(\tau_1 - \tau_0)(t_{s+1}-t_s) + X(t_s) \\
-&= -\frac{g}{2}(\tau_1 - \tau_0)^2 (t_{s+1}-t_s)^2+\frac{ \dot{x}_{s+1}(\tau_0) } { t_{s+1}-t_s } (\tau_1 - \tau_0)(t_{s+1}-t_s) + x_{s+1}(\tau_0) \\
-&=  -\frac{g}{2}(\tau_1 - \tau_0)^2 (t_{s+1}-t_s)^2+ \dot{x}_{s+1}(\tau_0)  (\tau_1 - \tau_0)+ x_{s+1}(\tau_0) \\
+%\tau &= \frac{t-t_i}{t_f-t_i}, t = \tau(t_f-t_i)+t_i \\
+%t_{s+1}-t_s &= \tau_1(t_{s+1}-t_s)+t_i - ( \tau_0(t_{s+1}-t_s)+t_i ) \\
+%&= (\tau_1 - \tau_0)(t_{s+1}-t_s) \\
+%X(t_{s+1}) = x_{s+1}(\tau_1)&= -\frac{g}{2}(\tau_1 - \tau_0)^2 (t_{s+1}-t_s)^2+\dot{X}(t_s)(\tau_1 - \tau_0)(t_{s+1}-t_s) + X(t_s) \\
+%&= -\frac{g}{2}(\tau_1 - \tau_0)^2 (t_{s+1}-t_s)^2+\frac{ \dot{x}_{s+1}(\tau_0) } { t_{s+1}-t_s } (\tau_1 - \tau_0)(t_{s+1}-t_s) + x_{s+1}(\tau_0) \\
+%&=  -\frac{g}{2}(\tau_1 - \tau_0)^2 (t_{s+1}-t_s)^2+ \dot{x}_{s+1}(\tau_0)  (\tau_1 - \tau_0)+ x_{s+1}(\tau_0) \\
+X(t_{s+1}) = x_{s+1}(\tau_1)&= -\frac{g}{2} (t_{s+1}-t_s)^2+\dot{X}(t_s)(t_{s+1}-t_s) + X(t_s) \\
+&= -\frac{g}{2} (t_{s+1}-t_s)^2+\frac{ \dot{x}_{s+1}(\tau_0) } { t_{s+1}-t_s } (t_{s+1}-t_s) + x_{s+1}(\tau_0) \\
+&=  -\frac{g}{2} (t_{s+1}-t_s)^2+ \dot{x}_{s+1}(\tau_0) + x_{s+1}(\tau_0) \\
 \end{align*}
 
 At keyframe $t_{s+1}$ when the quad and load collide, there is a change in load velocity from the collision. Assuming a completely inelastic collision: 
 %%
 \begin{align*}
-(\dot{X}^- - \dot{X}_L^-) &= e ( \dot{X}^+ + \dot{X}_L^+)\\
+(\dot{X}^+ - \dot{X}_L^+) &= e ( \dot{X}^- + \dot{X}_L^-)\\
 m_L \dot{X}_L^+ + m \dot{X}^+ &= m_L \dot{X}_L^- + m \dot{X}^- \\
 \text{For $e = 0$, } & \\
-\dot{X}^- &= \dot{X}_L^- \\
-m_L \dot{X}_L^+ + m \dot{X}^+ &= (m_L+m) \dot{X}^- \\
-\text{If $m >> m_L$, } & \\
+\dot{X}^+ &= \dot{X}_L^+ \\
+m_L \dot{X}_L^- + m \dot{X}^- &= (m_L+m) \dot{X}^+ \\
+\text{If $m >> m_L$, } (m_L+m) \approx m, m_L \approx 0 & \\
  \dot{X}^+ &= \dot{X}^-
 \end{align*}
 %%
-We want the quadrotor velocity at $t_{s+1}$ to be continuous and can be chosen independently of the load velocity. 
+%We want the quadrotor velocity at $t_{s+1}$ to be continuous and can be chosen independently of the load velocity. 
+We want the quadrotor velocity at $t_{s+1}$ to be continuous and also match the load velocity at that time for a smooth transition. At the end of free-fall, the load velocity is: 
+\begin{align*}
+\dot{X}_L(t_{s+1}) &= -g (t_{s+1}-t_s)+\dot{X}_L(t_s) \\
+\frac{ \dot{x}_{L, s+1} (\tau_1) }{t_{s+1}-t_s} &= - g (t_{s+1}-t_s)+\frac{ \dot{x}_{L, s+1}(\tau_0) }{ t_{s+1}-t_s } \\
+ \dot{x}_{L, s+1}(\tau_1)  &= - g (t_{s+1}-t_s)^2 +  \dot{x}_{L, s+1}(\tau_0) \\
+ &= - g (t_{s+1}-t_s)^2 +  \dot{x}_{s+1}(\tau_0) \\
+ \text{We thus want to set } & \\
+\dot{x}_{s+1}(\tau_1) = \dot{x}_{s+2}(\tau_0) &=   \dot{x}_{L, s+1} (\tau_1) = - g (t_{s+1}-t_s)^2 +  \dot{x}_{L, s+1} (\tau_0) \\
+\dot{x}_{s+1} (\tau_1) - \dot{x}_{s+1} (\tau_0) &=    - g (t_{s+1}-t_s)^2  \\
+\dot{x}_{s+2}(\tau_0) - \dot{x}_{s+1} (\tau_0) &=  - g (t_{s+1}-t_s)^2  \\
+\end{align*}
 
 
 

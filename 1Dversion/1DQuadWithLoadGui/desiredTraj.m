@@ -16,7 +16,7 @@
 
 %%%%%
 % Specify the position and derivatives of the desired trajectory
-function [xT, dxT, d2xT, d3xT, d4xT, d5xT, d6xT] = desiredTraj(t, g, mQ, JQ, varargin)
+function [xT, dxT, d2xT] = desiredTraj(t, g, mQ, JQ, varargin)
 
 whichTraj = 1;
 if (nargin > 4)
@@ -239,7 +239,7 @@ global s
 r = 6; %derivative to minimize in cost function
 n = 11; %order of desired trajectory
 m = 1; %number of pieces in trajectory
-d = 2; %dimensions
+d = 1; %dimensions
 
 % % specify the m+1 keyframes
 % tDes = [0; 1;2;3; 4; 5];%[0;1.2; 3; 5]; % %specify desired arrival times at keyframes
@@ -260,7 +260,7 @@ d = 2; %dimensions
 
 
 % specify the m+1 keyframes
-tDes = [0; 1];%[0;1.2; 3; 5]; % %specify desired arrival times at keyframes
+tDes = [0; 5];%[0;1.2; 3; 5]; % %specify desired arrival times at keyframes
 TDes = [Inf; Inf];
 % specify desired positions and/or derivatives at keyframes, 
 % Inf represents unconstrained values
@@ -270,16 +270,10 @@ posDes = zeros(r, m+1, d);
 % posDes(:, :, 2) = [0 3 2 2; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0];
 % posDes(:, :, 3) = [1 2 3 4; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0];
 
-posDes(:, :, 2) = [0 -1; 0 0; 0 0; 0 0; 0 0; 0 0];
+posDes(:, :, 1) = [0 -1; 0 0; 0 0; 0 0; 0 0; 0 0];
 [i, j, k] = size(posDes);
 p = length(tDes);
 
-% specify s corridor constraints
-ineqConst.numConst = 0; %integer, number of constraints 
-ineqConst.start = 2; %sx1 matrix of keyframes where constraints begin
-ineqConst.nc = 20; %sx1 matrix of numbers of intermediate points
-ineqConst.delta = 0.05; %sx1 matrix of maximum distnaces
-ineqConst.dim = [1 2]; %sxd matrix of dimensions that each constraint applies to
 
 
 %%%
@@ -324,7 +318,7 @@ if(isempty(traj))
     % row i is the ith coefficient for the column jth trajectory in dimension k
     dtemp = 1;
     
-    [traj.xT(:, :, 2), traj.xTQ(:, :, 2), traj.modes(:, :, 2)] = findTrajLoad1D(r, n, m, dtemp, tDes, posDes(:, :, 2), TDes, s.g, s.l, s.mL, s.mQ);
+    [traj.xT, traj.xTQ, traj.modes] = findTrajLoad1D(r, n, m, dtemp, tDes, posDes, TDes, s.g, s.l, s.mL, s.mQ);
     
     
     % look at l
@@ -332,8 +326,8 @@ if(isempty(traj))
     len = zeros(1, length(ttemp));
     der2 = zeros(1, length(ttemp));
     for i = 1:length(ttemp),
-        [dxTL, ~] = evaluateTraj(ttemp(i), n, m, dtemp, traj.xT(:, :, 2), tDes, 2, []);
-        [dxTQ, ~] = evaluateTraj(ttemp(i), n, m, dtemp, traj.xTQ(:, :, 2), tDes, 2, []);
+        [dxTL, ~] = evaluateTraj(ttemp(i), n, m, dtemp, traj.xT, tDes, 2, []);
+        [dxTQ, ~] = evaluateTraj(ttemp(i), n, m, dtemp, traj.xTQ, tDes, 2, []);
         len(1, i) = dxTQ(1, 1) - dxTL(1, 1);
         
         der2(1, i) = dxTL(2, 1);
@@ -356,17 +350,17 @@ if(isempty(traj))
     % plot the trajectory
     
     % create legend labels for dimensions, must correspond to order of m
-    dimLabels{3} = 'z (m)';
+    dimLabels{3} = 'x (m)';
     plotDim = [];
     %plotDim = [1 2]; %if you want to plot two dimensions against each other, specify here
     % nxm matrix, creates n plots of column 1 vs. column 2
    
-    plotTraj(0, tDes(m+1, 1), traj.xT(:, :, 2), n, m, dtemp, tDes, posDes(:, :, 2), 0.01, dimLabels, plotDim, 2);
-    plotTraj(0, tDes(m+1, 1), traj.xTQ(:, :, 2), n, m, dtemp, tDes, posDes(:, :, 2), 0.01, dimLabels, plotDim, 2);
+    plotTraj(0, tDes(m+1, 1), traj.xT, n, m, dtemp, tDes, posDes, 0.01, dimLabels, plotDim, 2);
+    plotTraj(0, tDes(m+1, 1), traj.xTQ, n, m, dtemp, tDes, posDes, 0.01, dimLabels, plotDim, 2);
     
     
-    [~, traj.derivativesX] = evaluateTraj(t, n, m, d, traj.xT, tDes, r, []);
-    [~, traj.derivativesXQ] = evaluateTraj(t, n, m, d, traj.xTQ, tDes, r, []);
+    [~, traj.derivativesX] = evaluateTraj(t, n, m, d, traj.xT, tDes, 2, []);
+    [~, traj.derivativesXQ] = evaluateTraj(t, n, m, d, traj.xTQ, tDes, 2, []);
 
 end
 
@@ -374,10 +368,10 @@ end
 
 if whichTraj == 1,
     % evaluate load
-    [xEval, ~] = evaluateTraj(t, n, m, d, traj.xT, tDes, r, traj.derivativesX);
+    [xEval, ~] = evaluateTraj(t, n, m, d, traj.xT, tDes, 2, traj.derivativesX);
 elseif whichTraj == 2,
     % evaluate trajectory at the desired time
-    [xEval, ~] = evaluateTraj(t, n, m, d, traj.xTQ, tDes, r, traj.derivativesXQ);
+    [xEval, ~] = evaluateTraj(t, n, m, d, traj.xTQ, tDes, 2, traj.derivativesXQ);
 end
     
 
@@ -385,15 +379,10 @@ end
 xT = xEval(1, :)';
 dxT = xEval(2, :)';
 d2xT = xEval(3, :)';
-d3xT = xEval(4, :)';
-d4xT = xEval(5, :)';
-d5xT = xEval(6, :)';
-d6xT = xEval(7, :)';
 
 % save important properties
 traj.posDes = posDes;
 traj.tDes = tDes;
-traj.ineqConst = ineqConst;
 traj.r = r;
 traj.n = n;
 traj.m = m;

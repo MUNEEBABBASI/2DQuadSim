@@ -52,12 +52,12 @@ l = 1; %length of cable, m
 
 r = 6; %derivative to minimize in cost function
 n = 11; %order of desired trajectory
-m = 5; %number of pieces in trajectory
+m = 3; %number of pieces in trajectory
 d = 1; %dimensions
 
 % specify the m+1 keyframes
-tDes = [0; 1;2;3; 4; 5];%[0;1.2; 3; 5]; % %specify desired arrival times at keyframes
-TDes = [Inf; Inf; 0; Inf; Inf; Inf];
+tDes = [0; 1; 2; 3];%[0;1.2; 3; 5]; % %specify desired arrival times at keyframes
+TDes = [Inf; 0; Inf; Inf];
 % specify desired positions and/or derivatives at keyframes, 
 % Inf represents unconstrained values
 % r x (m+1) x d, where each row i is the value the (i-1)th derivative of keyframe j for dimensions k 
@@ -66,7 +66,7 @@ TDes = [Inf; Inf; 0; Inf; Inf; Inf];
 % posDes(:, :, 2) = [0 3 2 2; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0];
 % posDes(:, :, 3) = [1 2 3 4; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0];
 
-posDes(:, :, 1) = [0 1 3 Inf 4 0; 0 Inf Inf Inf Inf 0; 0 Inf -g -g Inf 0; 0 Inf 0 0 Inf 0; 0 Inf 0 0 Inf 0; 0 Inf 0 0 Inf 0];
+posDes(:, :, 1) = [0 0 Inf 0.5*-9.81*(tDes(3)-tDes(1)); 0 -1 Inf 0; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0];
 [i, j, k] = size(posDes);
 p = length(tDes);
 
@@ -173,7 +173,7 @@ plotDim = [];
 %plotDim = [1 2]; %if you want to plot two dimensions against each other, specify here 
     % nxm matrix, creates n plots of column 1 vs. column 2
     
-plotTraj(0, tDes(m+1), xTL, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim, 0);
+plotTraj(0, tDes(m+1), xTL, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim, 1);
 plotTraj(0, tDes(m+1), xTQ, n, m, d, tDes, posDes, 0.01, dimLabels, plotDim, 2*r);
 
 

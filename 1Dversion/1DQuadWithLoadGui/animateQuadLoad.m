@@ -76,21 +76,12 @@ s.quadLength = 0.5;
 s.modes = evalin('base', 'modeout');
 s.xQ = evalin('base','quadx');
 s.vQ = evalin('base','quadv');
-s.phiQ = evalin('base', 'quadphi(:, 1)');
-s.phidotQ = evalin('base', 'quadphi(:, 2)');
-s.xL = evalin('base', 'xout(:, 1:2)');
-s.vL = evalin('base', 'xout(:, 3:4)');
-s.phiL = evalin('base','loadphi(:, 1)');
-s.phidotL = evalin('base', 'loadphi(:, 2)');
+s.xL = evalin('base', 'xout(:, 1)');
+s.vL = evalin('base', 'xout(:, 2)');
 s.u = evalin('base', 'uout');
-s.des = evalin('base', 'desout');
 s.xTraj = evalin('base', 'xTraj');
 s.dxTraj = evalin('base', 'dxTraj');
 s.d2xTraj = evalin('base', 'd2xTraj');
-s.d3xTraj = evalin('base', 'd3xTraj');
-s.d4xTraj = evalin('base', 'd4xTraj');
-s.d5xTraj = evalin('base', 'd5xTraj');
-s.d6xTraj = evalin('base', 'd6xTraj');
 
 % set slider properties
 sliderMin = 1;
@@ -107,79 +98,47 @@ axes(handles.axes2)
 hold on
 box on
 plot(s.time,s.xL(:, 1),'r');
-plot(s.time,s.xL(:, 2),'b');
 plot(s.time,s.xTraj(:, 1),'r--');
-plot(s.time,s.xTraj(:, 2),'b--');
 %s.limits2 = get(handles.axes2,'YLim');
 %s.line2 = line([s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)],[-100,100]);
 %ylim(s.limits2);
-legend('actual y', 'actual z', 'desired y', 'desired z', 'Location', 'SouthEastOutside');
+legend('actual x', 'desired x', 'Location', 'SouthEastOutside');
 ylabel('load pos (m)');
 
 axes(handles.axes3)
 hold on
 box on
 plot(s.time,s.vL(:, 1),'r');
-plot(s.time,s.vL(:, 2),'b');
 plot(s.time,s.dxTraj(:, 1),'r--');
-plot(s.time,s.dxTraj(:, 2),'b--');
 %s.limits3 = get(handles.axes3, 'YLim');
 %s.line3 = line([s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)],[-100,100]);
 %ylim(s.limits3);
-legend('actual ydot', 'actual zdot', 'desired ydot', 'desired zdot', 'Location', 'SouthEastOutside');
+legend('actual xdot', 'desired xdot', 'Location', 'SouthEastOutside');
 ylabel('load vel (m/s)');
 
-axes(handles.axes4)
-hold on
-box on
-plot(s.time,s.phiL.*180./pi,'r');
-plot(s.time,s.phidotL.*180./pi,'b');
-size(s.time)
-size(s.des(:, 4))
-plot(s.time,s.des(:, 4).*180./pi,'r--');
-%s.limits4 = get(handles.axes4, 'YLim');
-%s.line4 = line([s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)],[-100,100]);
-%ylim(s.limits4);
-legend('phiL', 'phidotL', 'phiL des', 'Location', 'SouthEastOutside');
-ylabel('load angle (deg, s)');
+
 
 axes(handles.axes5)
 hold on
 box on
 plot(s.time,s.xQ(:, 1),'r');
-plot(s.time,s.xQ(:, 2),'b');
-plot(s.time,s.des(:, 1),'r--');
-plot(s.time,s.des(:, 2),'b--');
+plot(s.time,s.xTraj(:, 1)+s.l,'r--');
 %s.limits5 = get(handles.axes5, 'YLim');
 %s.line5 = line([s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)],[-100,100]);
 %ylim(s.limits5);
-legend('actual y', 'actual z', 'desired y', 'desired z', 'Location', 'SouthEastOutside');
+legend('actual x', 'desired x', 'Location', 'SouthEastOutside');
 ylabel('quad pos (m)');
 
 axes(handles.axes6)
 hold on
 box on
 plot(s.time,s.vQ(:, 1),'r');
-plot(s.time,s.vQ(:, 2),'b');
-plot(s.time,s.des(:, 3),'r--');
-plot(s.time,s.des(:, 4),'b--');
+plot(s.time,s.dxTraj(:, 1),'r--');
 %s.limits6 = get(handles.axes6, 'YLim');
 %s.line6 = line([s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)],[-100,100]);
 %ylim(s.limits6);
-legend('actual ydot', 'actual zdot', 'desired ydot', 'desired zdot', 'Location', 'SouthEastOutside');
+legend('actual xdot', 'desired xdot', 'Location', 'SouthEastOutside');
 ylabel('quad vel (m/s)');
-
-axes(handles.axes7)
-hold on
-box on
-plot(s.time,s.phiQ.*180./pi,'r');
-plot(s.time,s.phidotQ.*180./pi,'b');
-plot(s.time,s.des(:, 3).*180./pi,'r--');
-%s.limits7 = get(handles.axes7, 'YLim');
-%s.line7 = line([s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)],[-100,100]);
-%ylim(s.limits7);
-legend('phiQ', 'phidotQ', 'phiQ des', 'Location', 'SouthEastOutside');
-ylabel('quad angle (deg, s)');
 
 
 % plot inputs
@@ -192,14 +151,6 @@ plot(s.time,s.u(:, 1),'r');
 %ylim(s.limits8);
 ylabel('f');
 
-axes(handles.axes9)
-hold on
-box on
-plot(s.time,s.u(:, 2),'r');
-%s.limits9 = get(handles.axes9, 'YLim');
-%s.line9 = line([s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)],[-100,100]);
-%ylim(s.limits9);
-ylabel('M');
 
 
 
@@ -207,7 +158,7 @@ ylabel('M');
 figure()
 T = zeros(length(s.d2xTraj(:, 1)), 1);
 for i = 1:length(s.d2xTraj(:, 1))
-    T(i, 1) = s.mL.* norm ( [s.d2xTraj(i, 1); s.d2xTraj(i, 2)] + [0; s.g]);
+    T(i, 1) = s.mL.* (s.d2xTraj(i, 1)+s.g);
 end
 
 axes(handles.axes10)
@@ -219,7 +170,7 @@ plot(s.time,T,'r');
 %ylim(s.limits10);
 ylabel('tension');
 
-linkaxes([handles.axes2, handles.axes3, handles.axes4, handles.axes5, handles.axes6, handles.axes7, handles.axes8, handles.axes9, handles.axes10], 'x');
+linkaxes([handles.axes2, handles.axes3, handles.axes5, handles.axes6, handles.axes8, handles.axes10], 'x');
 
 
 
@@ -232,47 +183,27 @@ global traj
     
 axes(handles.axes1)
 t = s.currentTimeIndex;
-plot(s.xL(t, 1), s.xL(t, 2), 'ro', 'Markersize', 10, 'MarkerFaceColor', 'r');
+plot(0, s.xL(t, 1), 'ro', 'Markersize', 10, 'MarkerFaceColor', 'r');
 hold on
 grid on
 box on
-line([s.xQ(t, 1)-s.quadLength/2*cos(s.phiQ(t, 1)) s.xQ(t, 1)+s.quadLength/2*cos(s.phiQ(t, 1))], ...
-    [s.xQ(t, 2)-s.quadLength/2*sin(s.phiQ(t, 1)) s.xQ(t, 2)+s.quadLength/2*sin(s.phiQ(t, 1))], 'Color', 'k');
-%plot(s.xQ(t, 1), s.xQ(t, 2), 'k+', 'Markersize', 12);
-plot(s.xTraj(:, 1), s.xTraj(:, 2), 'r--');
-line([s.xQ(t, 1) s.xL(t, 1)], [s.xQ(t, 2) s.xL(t, 2)], 'Color', 'k', 'LineStyle', '--');
-s.limits = [min([s.xQ(:, 1); s.xQ(:, 2); s.xL(:, 1); s.xL(:, 2)])-0.5 ...
-    max([s.xQ(:, 1); s.xQ(:, 2); s.xL(:, 1); s.xL(:, 2)])+0.5];
+line([-s.quadLength s.quadLength], ...
+    [s.xQ(t, 1) s.xQ(t, 1)], ...
+    'Color', 'k');
+plot(0, s.xTraj(:, 1), 'r--');
+line([0 0], [s.xQ(t, 1) s.xL(t, 1)], 'Color', 'k', 'LineStyle', '--');
+s.limits = [min([s.xQ(:, 1); s.xL(:, 1); 0])-0.5 ...
+    max([s.xQ(:, 1); s.xL(:, 1); 0])+0.5];
 
 if (length(traj.tDes) > 0),
-plot(traj.posDes(1, :, 1), traj.posDes(1, :, 2), '^');
+    plot(0, traj.posDes(1, :, 1), 'k^');
 end
     
 %legend('load pos', 'desired load pos', 'desired y', 'desired z', 'Location', 'SouthEastOutside');
-zlabel('z (m)');
-ylabel('y (m)');
-xlabel('x (m)');
+ylabel('z (m)');
+xlabel('y (m)');
 set(gca, 'XLim', s.limits, 'YLim', s.limits);
-%set(gca,'xlim',[-1 1], 'ylim',ylimits, 'zlim', ylimits);
 
-
-% %%%% 
-% % plot in 3D
-% % draw the quad rotor and load
-% axes(handles.axes1)
-% t = s.currentTimeIndex;
-% plot3(0, s.xL(t, 1), s.xL(t, 2), 'ro', 'Markersize', 10, 'MarkerFaceColor', 'r');
-% hold on
-% grid on
-% plot3(0, s.xTraj(t, 1),s.xTraj(t, 2),'r--');
-% plot3(0, s.xQ(t, 1), s.xQ(t, 2), 'k+', 'Markersize', 12);
-% line([0 0], [s.xQ(t, 1) s.xL(t, 1)], [s.xQ(t, 2) s.xL(t, 2)], 'Color', 'k', 'LineStyle', '--');
-% %legend('load pos', 'desired load pos', 'desired y', 'desired z', 'Location', 'SouthEastOutside');
-% zlabel('z (m)');
-% ylabel('y (m)');
-% xlabel('x (m)');
-% set(gca, 'YLim', s.limits, 'ZLim', s.limits)
-% %set(gca,'xlim',[-1 1], 'ylim',ylimits, 'zlim', ylimits);
 
 
 
@@ -309,13 +240,11 @@ switch get(handles.popupmenu1,'Value')
         plot(s.time,s.xL(:, 1),'r');
         hold on
         box on
-        plot(s.time,s.xL(:, 2),'b');
         plot(s.time,s.xTraj(:, 1),'r--');
-        plot(s.time,s.xTraj(:, 2),'b--');
         %limitsTemp = get(handles.axes2, 'YLim');
         %set(s.line2, 'XData', [s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)]);
         %ylim(limitsTemp);
-        legend('actual y', 'actual z', 'desired y', 'desired z', 'Location', 'SouthEastOutside');
+        legend('actual x', 'desired x', 'Location', 'SouthEastOutside');
         ylabel('load pos (m)');
     case 2
         axes(handles.axes2)
@@ -323,11 +252,10 @@ switch get(handles.popupmenu1,'Value')
         plot(s.time,s.xL(:, 1) - s.xTraj(:, 1),'r');
         hold on
         box on
-        plot(s.time,s.xL(:, 2) - s.xTraj(:, 2),'b');
         %limitsTemp = get(handles.axes7, 'YLim');
         %set(s.line2, 'XData', [s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)]);
         %ylim(limitsTemp);
-        legend('y error', 'z error', 'Location', 'SouthEastOutside');
+        legend('x error', 'Location', 'SouthEastOutside');
         ylabel('pos errors (m)')
     otherwise
 end
@@ -365,10 +293,8 @@ switch get(handles.popupmenu2,'Value')
         plot(s.time,s.vL(:, 1),'r');
         hold on
         box on
-        plot(s.time,s.vL(:, 2),'b');
         plot(s.time,s.dxTraj(:, 1),'r--');
-        plot(s.time,s.dxTraj(:, 2),'b--');
-        legend('actual y', 'actual z', 'desired y', 'desired z', 'Location', 'SouthEastOutside');
+        legend('actual x', 'desired x', 'Location', 'SouthEastOutside');
         %limitsTemp = get(handles.axes7, 'YLim');  
         %set(s.line3, 'XData', [s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)]);
         %ylim(limitsTemp);
@@ -379,8 +305,7 @@ switch get(handles.popupmenu2,'Value')
         plot(s.time,s.vL(:, 1) - s.dxTraj(:, 1),'r');
         hold on
         box on
-        plot(s.time,s.vL(:, 2) - s.dxTraj(:, 2),'b');
-        legend('y error', 'z error', 'Location', 'SouthEastOutside');
+        legend('x error', 'Location', 'SouthEastOutside');
         %limitsTemp = get(handles.axes3, 'YLim');
         %set(s.line4, 'XData', [s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)]);
         %ylim(limitsTemp);
@@ -401,58 +326,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on selection change in popupmenu3.
-function popupmenu3_Callback(hObject, eventdata, handles)
-% hObject    handle to popupmenu3 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns popupmenu3 contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from popupmenu3
-
-global s
-
-switch get(handles.popupmenu3,'Value')
-    case 1     
-        axes(handles.axes4)
-        hold off
-        plot(s.time,s.phiL.*180./pi,'r');
-        hold on
-        box on
-        plot(s.time,s.phidotL.*180./pi,'b');
-        plot(s.time,s.des(:, 6).*180./pi,'r--');
-        %limitsTemp = get(handles.axes4, 'YLim');
-        %set(s.line4, 'XData', [s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)]);
-        %ylim(limitsTemp);
-        legend('phiL', 'phidotL', 'phiL des', 'Location', 'SouthEastOutside');
-        ylabel('load angle (deg, s)');
-    case 2       
-        axes(handles.axes4)
-        hold off
-        plot(s.time,(s.phiL-s.des(:, 6)).*180./pi,'r');
-        hold on
-        box on
-        %limitsTemp = get(handles.axes4, 'YLim');
-        %set(s.line4, 'XData', [s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)]);
-        %ylim(limitsTemp);
-        legend('phiL error', 'Location', 'SouthEastOutside');
-        ylabel('load angle err (deg)');
-    otherwise
-end
-
-
-% --- Executes during object creation, after setting all properties.
-function popupmenu3_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to popupmenu3 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
 
 % --- Executes on selection change in popupmenu4.
 function popupmenu4_Callback(hObject, eventdata, handles)
@@ -472,26 +345,23 @@ switch get(handles.popupmenu4,'Value')
         plot(s.time,s.xQ(:, 1),'r');
         hold on
         box on
-        plot(s.time,s.xQ(:, 2),'b');
-        plot(s.time,s.des(:, 1),'r--');
-        plot(s.time,s.des(:, 2),'b--');
+        plot(s.time,s.xTraj(:, 1)+s.l,'r--');
         %limitsTemp = get(handles.axes5, 'YLim');
         %set(s.line5, 'XData', [s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)]);
         %ylim(limitsTemp);
-        legend('actual y', 'actual z', 'desired y', 'desired z', 'Location', 'SouthEastOutside');
+        legend('actual x', 'desired x', 'Location', 'SouthEastOutside');
         ylabel('quad pos (m)');
 
     case 2
         axes(handles.axes5)
         hold off
-        plot(s.time,s.xQ(:, 1) - s.des(:, 1),'r');
+        plot(s.time,s.xQ(:, 1) - (s.xTraj(:, 1)+s.l),'r');
         hold on
         box on
-        plot(s.time,s.xQ(:, 2) - s.des(:, 2),'b');
         %limitsTemp = get(handles.axes5, 'YLim');
        % set(s.line5, 'XData', [s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)]);
        % ylim(limitsTemp);
-        legend('y error', 'z error', 'Location', 'SouthEastOutside');
+        legend('x error', 'Location', 'SouthEastOutside');
         ylabel('pos errors (m)')
     otherwise
 end
@@ -509,57 +379,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% % --- Executes on selection change in popupmenu5.
-% function popupmenu5_Callback(hObject, eventdata, handles)
-% % hObject    handle to popupmenu5 (see GCBO)
-% % eventdata  reserved - to be defined in a future version of MATLAB
-% % handles    structure with handles and user data (see GUIDATA)
-% 
-% % Hints: contents = cellstr(get(hObject,'String')) returns popupmenu5 contents as cell array
-% %        contents{get(hObject,'Value')} returns selected item from popupmenu5
-% 
-% global s
-% 
-% switch get(handles.popupmenu5,'Value')
-%     case 1
-%         axes(handles.axes5)
-%         hold off
-%         plot(s.time,s.xQ(:, 1),'r');
-%         hold on
-%         plot(s.time,s.xQ(:, 2),'b');
-%         plot(s.time,s.des(:, 1),'r--');
-%         plot(s.time,s.des(:, 2),'b--');
-%         limitsTemp = get(handles.axes5, 'YLim');
-%         %set(s.line5, 'XData', [s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)]);
-%         ylim(limitsTemp);
-%         legend('actual y', 'actual z', 'desired y', 'desired z', 'Location', 'SouthEastOutside');
-%         ylabel('quad pos (m)');
-% 
-%     case 2
-%         axes(handles.axes5)
-%         hold off
-%         plot(s.time,s.xQ(:, 1) - s.des(:, 1),'r');
-%         hold on
-%         plot(s.time,s.xQ(:, 2) - s.des(:, 2),'b');
-%         limitsTemp = get(handles.axes5, 'YLim');
-%        % set(s.line5, 'XData', [s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)]);
-%         ylim(limitsTemp);
-%         legend('y error', 'z error', 'Location', 'SouthEastOutside');
-%         ylabel('pos errors (m)')
-%     otherwise
-% end
-% 
-% % --- Executes during object creation, after setting all properties.
-% function popupmenu5_CreateFcn(hObject, eventdata, handles)
-% % hObject    handle to popupmenu5 (see GCBO)
-% % eventdata  reserved - to be defined in a future version of MATLAB
-% % handles    empty - handles not created until after all CreateFcns called
-% 
-% % Hint: popupmenu controls usually have a white background on Windows.
-% %       See ISPC and COMPUTER.
-% if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-%     set(hObject,'BackgroundColor','white');
-% end
 
 
 
@@ -585,57 +404,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on selection change in popupmenu6.
-function popupmenu6_Callback(hObject, eventdata, handles)
-% hObject    handle to popupmenu6 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns popupmenu6 contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from popupmenu6
-
-global s
-
-switch get(handles.popupmenu6,'Value')
-    case 1     
-        axes(handles.axes7)
-        hold off
-        plot(s.time,s.phiQ.*180./pi,'r');
-        hold on
-        box on
-        plot(s.time,s.phidotQ.*180./pi,'b');
-        plot(s.time,s.des(:, 5).*180./pi,'r--');
-        %limitsTemp = get(handles.axes7, 'YLim');
-        %set(s.line7, 'XData', [s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)]);
-        %ylim(limitsTemp);
-        legend('phiQ', 'phidotQ', 'phiQ des', 'Location', 'SouthEastOutside');
-        ylabel('quad angle (deg, s)');
-    case 2       
-        axes(handles.axes7)
-        hold off
-        plot(s.time,(s.phiQ-s.des(:, 5)).*180./pi,'r');
-        hold on
-        box on
-       % limitsTemp = get(handles.axes7, 'YLim');
-       % set(s.line7, 'XData', [s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)]);
-       % ylim(limitsTemp);
-        legend('phiQ error', 'Location', 'SouthEastOutside');
-        ylabel('quad angle err (deg)');
-    otherwise
-end
-
-
-% --- Executes during object creation, after setting all properties.
-function popupmenu6_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to popupmenu6 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
 
 
 % --- Executes on selection change in popupmenu7.
@@ -656,26 +424,23 @@ switch get(handles.popupmenu7,'Value')
         plot(s.time,s.vQ(:, 1),'r');
         hold on
         box on
-        plot(s.time,s.vQ(:, 2),'b');
-        plot(s.time,s.des(:, 3),'r--');
-        plot(s.time,s.des(:, 4),'b--');
+        plot(s.time,s.dxTraj(:, 1),'r--');
         %limitsTemp = get(handles.axes6, 'YLim');
         %set(s.line6, 'XData', [s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)]);
         %ylim(limitsTemp);
-        legend('actual ydot', 'actual zdot', 'desired ydot', 'desired zdot', 'Location', 'SouthEastOutside');
+        legend('actual xdot', 'desired xdot', 'Location', 'SouthEastOutside');
         ylabel('quad vel (m/s)');
 
     case 2
         axes(handles.axes6)
         hold off
-        plot(s.time,s.vQ(:, 1) - s.des(:, 3),'r');
+        plot(s.time,s.vQ(:, 1) - s.dxTraj(:, 1),'r');
         hold on
         box on
-        plot(s.time,s.vQ(:, 2) - s.des(:, 4),'b');
         %limitsTemp = get(handles.axes6, 'YLim');
         %set(s.line6, 'XData', [s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)]);
         %ylim(limitsTemp);
-        legend('ydot error', 'zdot error', 'Location', 'SouthEastOutside');
+        legend('xdot error', 'Location', 'SouthEastOutside');
         ylabel('vel errors (m/s)')
     otherwise
 end
@@ -722,62 +487,37 @@ while (get(hObject,'Value') && stop==0)
       %%%
       % 2D plot
       hold off
-      plot(s.xL(t, 1), s.xL(t, 2), 'ro', 'Markersize', 10, 'MarkerFaceColor', 'r');
+      plot(0, s.xL(t, 1), 'ro', 'Markersize', 10, 'MarkerFaceColor', 'r');
       hold on
       grid on
       box on
-      %plot(s.xQ(t, 1), s.xQ(t, 2), 'k+', 'Markersize', 12);
-      line([s.xQ(t, 1)-s.quadLength/2*cos(s.phiQ(t, 1)) s.xQ(t, 1)+s.quadLength/2*cos(s.phiQ(t, 1))], ...
-            [s.xQ(t, 2)-s.quadLength/2*sin(s.phiQ(t, 1)) s.xQ(t, 2)+s.quadLength/2*sin(s.phiQ(t, 1))], 'Color', 'k');
-      line([s.xQ(t, 1) s.xL(t, 1)], [s.xQ(t, 2) s.xL(t, 2)], 'Color', 'k', 'LineStyle', '--');
-      plot(s.xTraj(:, 1), s.xTraj(:, 2), 'r--');
+      line([-s.quadLength s.quadLength], ...
+        [s.xQ(t, 1) s.xQ(t, 1)], ...
+        'Color', 'k');
+      plot(0, s.xTraj(:, 1), 'r--');
+      line([0 0], [s.xQ(t, 1) s.xL(t, 1)], 'Color', 'k', 'LineStyle', '--');
+
       
       if (length(traj.tDes) > 0),
-      plot(traj.posDes(1, :, 1), traj.posDes(1, :, 2), '^');
+        plot(0, traj.posDes(1, :, 1), 'k^');
       end
 
       %plot past positions
-      plot(s.xL(1:t, 1), s.xL(1:t, 2), 'r');
-      plot(s.xQ(1:t, 1), s.xQ(1:t, 2), 'k');      
+      plot(0, s.xL(1:t, 1), 'r');
+      plot(0, s.xQ(1:t, 1), 'k');      
       set(gca, 'XLim', s.limits, 'YLim', s.limits);
       %set(gca, 'XLim', [-0.5 3.5], 'YLim', [-0.5 3.5]);
-      zlabel('z (m)');
-      ylabel('y (m)');
-      xlabel('x (m)');
-      %pause(1/(10^(s.simSpeed*5)));     
+      ylabel('z (m)');
+      xlabel('y (m)');
+
+      pause(1/(10^(s.simSpeed*5)));     
       
-      
-      
-%       %%%
-%       % 3D plot
-%       %plot current position
-%       hold off
-%       plot3(0, s.xL(t, 1), s.xL(t, 2), 'ro', 'Markersize', 10, 'MarkerFaceColor', 'r');
-%       hold on
-%       grid on
-%       plot3(0, s.xTraj(t, 1),s.xTraj(t, 2),'r--');
-%       plot3(0, s.xQ(t, 1), s.xQ(t, 2), 'k+', 'Markersize', 12);
-%       line([0 0], [s.xQ(t, 1) s.xL(t, 1)], [s.xQ(t, 2) s.xL(t, 2)], 'Color', 'k', 'LineStyle', '--');
-%       
-%       %plot past positions
-%       plot3(zeros(length(s.time(1:t)), 1), s.xL(1:t, 1), s.xL(1:t, 2), 'r');
-%       plot3(zeros(length(s.time), 1), s.xTraj(:, 1), s.xTraj(:, 2), 'r--');
-%       plot3(zeros(length(s.time(1:t)), 1), s.xQ(1:t, 1), s.xQ(1:t, 2), 'k');      
-%       set(gca, 'YLim', s.limits, 'ZLim', s.limits);
-%       zlabel('z (m)');
-%       ylabel('y (m)');
-%       xlabel('x (m)');
-%       pause(1/(10^s.simSpeed*3))
+
       
       s.currentTimeIndex = t;
       set(handles.text2,'String',num2str(s.time(t)));
       set(handles.text1,'String',['Mode ' num2str(s.modes(t))]);
-%       set(s.line2, 'XData', [s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)]);
-%       set(s.line3, 'XData', [s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)]);
-%       set(s.line4, 'XData', [s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)]);
-%       set(s.line5, 'XData', [s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)]);
-%       set(s.line6, 'XData', [s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)]);
-%       set(s.line7, 'XData', [s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)]);
+
       guidata(hObject, handles);
     catch
         stop = 1;
@@ -810,14 +550,6 @@ if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColo
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
 
-
-% --- Executes during object creation, after setting all properties.
-function axes7_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to axes7 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: place code in OpeningFcn to populate axes7
 
 
 % --- Executes during object creation, after setting all properties.
