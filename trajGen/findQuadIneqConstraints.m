@@ -45,8 +45,8 @@ for j = 0:m-1,
         
         % constraint tension force to be greater than 0
         
-        epilson = 1e-3; % error
-        Nc = 20; %number of intermediate points
+        epilson = 1e-2; % error
+        Nc = 10; %number of intermediate points
         
         % at each sample point, the tension is greater than or
         %   equal to 0
@@ -76,6 +76,7 @@ for j = 0:m-1,
             end
             
             b_temp(p, 1) = (g-epilson/mL)*(tDes(j+2, 1)-tDes(j+1, 1))^2;
+            
         end
         
         
@@ -89,8 +90,8 @@ for j = 0:m-1,
         % constraint position of quad to be always greater than the load
         %   (no collisions) and less than the length of the rope
         epilson1 = 0.1;
-        epilson2 = 1e-3;
-        Nc = 20;
+        epilson2 = 1e-2;
+        Nc = 10;
         
         
         A_temp = zeros(2*Nc, (n+1)*m);
@@ -116,7 +117,7 @@ for j = 0:m-1,
             for k = 0:maxPower,
                 
                 A_temp(p, j*(n+1)+k+1) = -derCoeff(1, k+1)*tEval^(maxPower - k)+derCoeff(1, k+1)*tinit^(maxPower - k); % position of quad greater than load
-                A_temp(Nc+p, j*(n+1)+k+1) = derCoeff(1, k+1)*tEval^(maxPower - k)-derCoeff(1, k+1)*tinit^(maxPower - k); % quad-load is less than length of rope
+                A_temp(Nc+p, j*(n+1)+k+1) = derCoeff(1, k+1)*tEval^(maxPower - k)-derCoeff(1, k+1)*tinit^(maxPower - k); % quad-load is less than length of rope 
                 
             end
             
@@ -124,8 +125,8 @@ for j = 0:m-1,
             maxPower = nnz(derCoeff(2, :))-1;
             for k = 0:maxPower,
                 
-                A_temp(p, j*(n+1)+k+1) = A_temp(p, j*(n+1)+k+1)+derCoeff(2, k+1)*tinit^(maxPower - k)*tEval; % position of quad greater than load
-                A_temp(Nc+p, j*(n+1)+k+1) = A_temp(p, j*(n+1)+k+1)-derCoeff(2, k+1)*tinit^(maxPower - k)*tEval; % quad-load is less than length of rope
+                A_temp(p, j*(n+1)+k+1) = A_temp(p, j*(n+1)+k+1)+derCoeff(2, k+1)*tinit^(maxPower - k)*tEval; % position of quad greater than load  
+                A_temp(Nc+p, j*(n+1)+k+1) = A_temp(p, j*(n+1)+k+1)-derCoeff(2, k+1)*tinit^(maxPower - k)*tEval;% quad-load is less than length of rope
                 
             end
             

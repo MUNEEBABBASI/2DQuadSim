@@ -42,7 +42,7 @@ s.l = l;
 %%% 
 % initial conditions 
 tstart = 0;
-tend = 1; %total time of simulation, s
+tend = 2; %total time of simulation, s
 [xT, dxT, d2xT] = desiredTraj(0, g, mQ, JQ);
 
 
@@ -108,12 +108,13 @@ while tstart < tend && tout(length(tout))<tend,
         
         utemp = zeros(nt, 1);
         for tempTime = 1:nt,
-            [xT, dxT, d2xT] = desiredTraj(tout(tempTime), g, mQ, JQ, 1); 
+            [xT, dxT, d2xT] = desiredTraj(t(tempTime), g, mQ, JQ, 1); 
             utemp(tempTime, 1) = (mL+mQ)*(d2xT+g);
+          
         end
         uout = [uout; utemp(2:nt, 1)];
-        
 
+        
         
         % only add the event if an event occured (te > 0)
         if te > 0,
@@ -146,7 +147,7 @@ while tstart < tend && tout(length(tout))<tend,
         
         utemp = zeros(nt, 1);
         for tempTime = 1:nt,
-            [xT, dxT, d2xT] = desiredTraj(tout(tempTime), g, mQ, JQ, 2); 
+            [xT, dxT, d2xT] = desiredTraj(t(tempTime), g, mQ, JQ, 2); 
             utemp(tempTime, 1) = mQ*(d2xT+g);
         end
         uout = [uout; utemp(2:nt, 1)];
@@ -323,7 +324,7 @@ plot(tout, xout(:, 2)', 'r');
 xlabel('time (s)');
 ylabel('velocity (m/s)');
 title('velocity over time');
-legend('quad x', 'quad z', 'load x', 'load z')
+legend('quad x', 'load x')
 
 
 

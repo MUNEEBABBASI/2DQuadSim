@@ -38,6 +38,7 @@ b_eq = [];
 modes = [];
 tDesN = tDes;
 
+vCont = 0;
 
 derCoeff = findDerivativeCoeff(n, r);
 
@@ -100,7 +101,7 @@ for j = 0:m, %for each keyframe
             
             b_temp = 0;
         end
-
+        
         
         A_eq = [A_eq; A_temp];
         b_eq = [b_eq; b_temp];
@@ -110,7 +111,7 @@ for j = 0:m, %for each keyframe
         
         % add velocity if it's specified
         if posDes(2, j+1) ~= Inf,
-
+            
             A_temp = zeros(2, (n+1)*m);
             maxPower = nnz(derCoeff(2, :))-1;
             
@@ -167,7 +168,7 @@ for j = 0:m, %for each keyframe
             b_temp = 0;
         end
         
-
+        
         
         A_eq = [A_eq; A_temp];
         b_eq = [b_eq; b_temp];
@@ -204,7 +205,7 @@ for j = 0:m, %for each keyframe
         end
         
         b_temp = -g*ones(2, 1); % mL(aL+g) = 0, aL = -g
-
+        
         
         A_eq = [A_eq; A_temp];
         b_eq = [b_eq; b_temp];
@@ -253,119 +254,120 @@ for j = 0:m, %for each keyframe
         
         
         
-    % if end of free-fall period
-    % this can also never be 0
+        % if end of free-fall period
+        % this can also never be 0
     elseif j > 0 && TDes(j, 1) == 0,
         
         % log the switch back
         thisMode = [j 2 1];
         modes = [modes; thisMode];
-   
         
-        % conditions right before the switch
         
-        % find desired quad position at end of free-fall based on load
-        %   position
-        A_temp = zeros(1, (n+1)*m);
-        maxPower = nnz(derCoeff(1, :))-1;
-        maxPower2 = nnz(derCoeff(2, :))-1;
+                % conditions right before the switch
         
-        % x(tfinal)_Q = -g/2 (tfinal-tbegin)^2 + xdot(tinitial)_Q
-        %   (tfinal-tbegin) + (x(tbegin)_Q-l) + l
-        for k = 0:maxPower,
+                % find desired quad position at end of free-fall based on load
+                %   position
+                A_temp = zeros(1, (n+1)*m);
+                maxPower = nnz(derCoeff(1, :))-1;
+                maxPower2 = nnz(derCoeff(2, :))-1;
+        
+                % x(tfinal)_Q = -g/2 (tfinal-tbegin)^2 + xdot(tinitial)_Q
+                %   (tfinal-tbegin) + (x(tbegin)_Q-l) + l
+                for k = 0:maxPower,
+        
+                    if nonDim,
+                        tinit = t0;
+                        tfin = t1;
+                    else
+                        tinit = tDes(j, 1);
+                        tfin = tDes(j+1, 1);
+                    end
+        
+        
+                    %scale by time for nondimensionalization if nondimensionalized
+                    if nonDim,
+        
+                        A_temp(1, (j-1)*(n+1)+k+1) = tfin^(maxPower - k)*derCoeff(1, k+1) - tinit^(maxPower-k)*derCoeff(1, k+1);
+                    else
+                        A_temp(1, (j-1)*(n+1)+k+1) = tfin^(maxPower - k)*derCoeff(1, k+1) - tinit^(maxPower-k)*derCoeff(1, k+1)+len;
+                    end
+        
+        
+                end
+        
+                maxPower2 = nnz(derCoeff(2, :))-1;
+                for k = 0:maxPower2,
+        
+                    if nonDim,
+                        tinit = t0;
+        
+                    else
+                        tinit = tDes(j, 1);
+        
+                    end
+        
+        
+                    %scale by time for nondimensionalization if nondimensionalized
+                    if nonDim,
+                        A_temp(1, (j-1)*(n+1)+k+1) = A_temp(1, (j-1)*(n+1)+k+1) - tinit^(maxPower2-k)*derCoeff(2, k+1)*(t1-t0);
+        
+                    else
+                        A_temp(1, (j-1)*(n+1)+k+1) = A_temp(1, (j-1)*(n+1)+k+1)- tinit^(maxPower2-k)*derCoeff(2, k+1)*(tDes(j+1, 1)-tDes(j, 1));
+                    end
+        
+                end
+        
+        
+                 b_temp = -g/2*(tDes(j+1, 1)-tDes(j, 1))^2;
+        
+                if nonDim,
+                    b_temp = b_temp*(t1-t0)^2;
+                end
+        
+        
+                A_eq = [A_eq; A_temp];
+                b_eq = [b_eq; b_temp];
+        
+        
+        % if velocity specified, add the constraint
+        if vCont == 0
+        if posDes(2, j+1) ~= Inf,
+            A_temp = zeros(1, (n+1)*m);
+            maxPower = nnz(derCoeff(2, :))-1;
             
-            if nonDim,
-                tinit = t0;
-                tfin = t1;
-            else
-                tinit = tDes(j, 1);
-                tfin = tDes(j+1, 1);
+            for k = 0:maxPower,
+                
+                if nonDim,
+                    tfin = t1;
+                else
+                    tfin = tDes(j+1, 1);
+                end
+                
+                A_temp(1, (j-1)*(n+1)+k+1) = tfin^(maxPower - k)*derCoeff(2, k+1);
+                
+                
+                %scale by time for nondimensionalization if nondimensionalized
+                if nonDim,
+                    A_temp(1, (j-1)*(n+1)+k+1) = 1/((tDes(j+1, 1)-tDes(j, 1)))*A_temp(1, (j-1)*(n+1)+k+1);
+                end
             end
-
             
-            %scale by time for nondimensionalization if nondimensionalized
-            if nonDim,
-
-                A_temp(1, (j-1)*(n+1)+k+1) = tfin^(maxPower - k)*derCoeff(1, k+1) - tinit^(maxPower-k)*derCoeff(1, k+1);  
-            else
-                A_temp(1, (j-1)*(n+1)+k+1) = tfin^(maxPower - k)*derCoeff(1, k+1) - tinit^(maxPower-k)*derCoeff(1, k+1)+len;
-            end
-
-
+            b_temp = posDes(2, j+1); %vQ = vL
+            
+            
+            A_eq = [A_eq; A_temp];
+            b_eq = [b_eq; b_temp];
+            
         end
-        
-        maxPower2 = nnz(derCoeff(2, :))-1;
-        for k = 0:maxPower2,
-            
-            if nonDim,
-                tinit = t0;
-       
-            else
-                tinit = tDes(j, 1);
- 
-            end
-
-            
-            %scale by time for nondimensionalization if nondimensionalized
-            if nonDim,
-                A_temp(1, (j-1)*(n+1)+k+1) = A_temp(1, (j-1)*(n+1)+k+1) - tinit^(maxPower2-k)*derCoeff(2, k+1)*(t1-t0);
-            
-            else
-                A_temp(1, (j-1)*(n+1)+k+1) = A_temp(1, (j-1)*(n+1)+k+1)- tinit^(maxPower2-k)*derCoeff(2, k+1)*(tDes(j+1, 1)-tDes(j, 1));
-            end
-
-        end
-        
-        
-         b_temp = -g/2*(tDes(j+1, 1)-tDes(j, 1))^2;
-        
-        if nonDim,
-            b_temp = b_temp*(t1-t0)^2;
-        end
- 
-        
-        A_eq = [A_eq; A_temp];
-        b_eq = [b_eq; b_temp];
-        
-               
-%         % if velocity specified, add the constraint         
-%         if posDes(2, j+1) ~= Inf,
-%             A_temp = zeros(1, (n+1)*m);
-%             maxPower = nnz(derCoeff(2, :))-1;
-%             
-%             for k = 0:maxPower,
-%                 
-%                 if nonDim,
-%                     tfin = t1;
-%                 else
-%                     tfin = tDes(j+1, 1);
-%                 end
-%                 
-%                 A_temp(1, (j-1)*(n+1)+k+1) = tfin^(maxPower - k)*derCoeff(2, k+1);
-%                 
-%                 
-%                 %scale by time for nondimensionalization if nondimensionalized
-%                 if nonDim,
-%                     A_temp(1, (j-1)*(n+1)+k+1) = 1/((tDes(j+1, 1)-tDes(j, 1)))*A_temp(1, (j-1)*(n+1)+k+1);
-%                 end
-%             end
-%             
-%             b_temp = posDes(2, j+1); %vQ = vL
-%             
-%    
-%         A_eq = [A_eq; A_temp];
-%         b_eq = [b_eq; b_temp];
-%         
-%         end
-        
-
+        % otherwise add continuity later
+        else
         
         % find desired quad velocity right before the switch
-        % we want this to match the load velocity for a smooth transition 
-
+        % we want this to match the load velocity for a smooth transition
+        
         A_temp = zeros(1, (n+1)*m);
         maxPower = nnz(derCoeff(2, :))-1;
-
+        
         for k = 0:maxPower,
             
             if nonDim,
@@ -375,12 +377,12 @@ for j = 0:m, %for each keyframe
                 tinit = tDes(j, 1);
                 tfin = tDes(j+1, 1);
             end
-
-
+            
+            
             A_temp(1, (j-1)*(n+1)+k+1) = tfin^(maxPower - k)*derCoeff(2, k+1)-tinit^(maxPower - k)*derCoeff(2, k+1);
-
-
-        end     
+            
+            
+        end
         
         
         b_temp = -g*(tDes(j+1, 1)-tDes(j, 1));
@@ -388,15 +390,15 @@ for j = 0:m, %for each keyframe
         if nonDim,
             b_temp = b_temp*(tDes(j+1, 1)-tDes(j, 1));
         end
-
+        
         
         A_eq = [A_eq; A_temp];
-        b_eq = [b_eq; b_temp];        
+        b_eq = [b_eq; b_temp];
+        end
         
         
         
         
-
         % acceleration is -g
         A_temp = zeros(1, (n+1)*m);
         maxPower = nnz(derCoeff(3, :))-1;
@@ -428,7 +430,7 @@ for j = 0:m, %for each keyframe
         
         % all higher derivatives must be 0 for continuity
         for i = 3:r-1,
-
+            
             A_temp = zeros(1, (n+1)*m);
             maxPower = nnz(derCoeff(i+1, :))-1;
             
@@ -441,7 +443,7 @@ for j = 0:m, %for each keyframe
                 end
                 
                 A_temp(1, (j-1)*(n+1)+k+1) = tfin^(maxPower - k)*derCoeff(i+1, k+1);
-     
+                
                 
                 
                 %scale by time for nondimensionalization if nondimensionalized
@@ -454,7 +456,7 @@ for j = 0:m, %for each keyframe
             
             A_eq = [A_eq; A_temp];
             b_eq = [b_eq; b_temp];
-        end        
+        end
         
         
         
@@ -464,44 +466,48 @@ for j = 0:m, %for each keyframe
         if j < m,
             
             
-        % position 
-        % enforce continuity condition
-        
-        if posDes(1, j+1) ~= Inf,
-            disp(['changing position constraint at keyframe ' int2str(j)])
-        end
-        A_temp = zeros(1, (n+1)*m);
-        maxPower = nnz(derCoeff(1,:))-1;
-        
-        for k = 0:maxPower,
+            % position
+            % enforce continuity condition
             
-            if nonDim,
-                tinit = t0;
-                tfin = t1;
-            else
-                tinit = tDes(j+1, 1);
-                tfin = tDes(j+1, 1);
+            if posDes(1, j+1) ~= Inf,
+                disp(['changing position constraint at keyframe ' int2str(j)])
+            end
+            A_temp = zeros(1, (n+1)*m);
+            maxPower = nnz(derCoeff(1,:))-1;
+            
+            for k = 0:maxPower,
+                
+                if nonDim,
+                    tinit = t0;
+                    tfin = t1;
+                else
+                    tinit = tDes(j+1, 1);
+                    tfin = tDes(j+1, 1);
+                end
+                
+                A_temp(1, (j-1)*(n+1)+k+1) = tfin^(maxPower - k)*derCoeff(1, k+1);
+                A_temp(1, j*(n+1)+k+1) = -tinit^(maxPower - k)*derCoeff(1, k+1);
+                
             end
             
-             A_temp(1, (j-1)*(n+1)+k+1) = tfin^(maxPower - k)*derCoeff(1, k+1);
-             A_temp(1, j*(n+1)+k+1) = -tinit^(maxPower - k)*derCoeff(1, k+1);
-
-        end
-        
-        b_temp = 0;
-        
-        A_eq = [A_eq; A_temp];
-        b_eq = [b_eq; b_temp]; 
-        
-        
-        
-        
-        % velocity constraint 
-
-        
-        % add continuity constraint
-
-                        A_temp = zeros(1, (n+1)*m);
+            b_temp = 0;
+            
+            A_eq = [A_eq; A_temp];
+            b_eq = [b_eq; b_temp];
+            
+            
+            
+            
+            % velocity constraint
+            
+            
+            % add continuity constraint
+            
+            if posDes(2, j+1) ~= Inf,
+                disp(['changing velocity constraint at keyframe ' int2str(j)])
+            end
+            
+            A_temp = zeros(1, (n+1)*m);
             maxPower = nnz(derCoeff(2,:))-1;
             
             for k = 0:maxPower,
@@ -526,57 +532,22 @@ for j = 0:m, %for each keyframe
             end
             
             b_temp = 0;
-
-        
-        A_eq = [A_eq; A_temp];
-        b_eq = [b_eq; b_temp]; 
-        
-        
-        
-        
-        
-        
-        % constrain acceleration
-        if posDes(3, j+1) ~= Inf && posDes(3, j+1) ~= -g,
-            disp(['changing acceleration constraint for keyframe ' int2str(j)])
-        end
-        A_temp = zeros(1, (n+1)*m);
-        maxPower = nnz(derCoeff(3, :))-1;
-        
-        for k = 0:maxPower,
             
-            if nonDim,
-                tinit = t0;
-            else
-                tinit = tDes(j+1, 1);
+            
+            A_eq = [A_eq; A_temp];
+            b_eq = [b_eq; b_temp];
+            
+            
+            
+            
+            
+            
+            % constrain acceleration
+            if posDes(3, j+1) ~= Inf && posDes(3, j+1) ~= -g,
+                disp(['changing acceleration constraint for keyframe ' int2str(j)])
             end
-            
-            A_temp(1, j*(n+1)+k+1) = tinit^(maxPower - k)*derCoeff(3, k+1);
-            
-            
-            %scale by time for nondimensionalization if nondimensionalized
-            if nonDim,
-                A_temp(1, j*(n+1)+k+1) = 1/((tDes(j+2, 1)-tDes(j+1, 1))^2)*A_temp(1, j*(n+1)+k+1);
-            end
-        end
-        
-        b_temp = -g; % mL(aL+g) = 0, aL = -g
-        
-        A_eq = [A_eq; A_temp];
-        b_eq = [b_eq; b_temp];
-        
-        
-        
-        
-        % all higher derivatives must be 0 for continuity
-        for i = 3:r-1,
-            % constrain t
-            if posDes(i+1, j+1) ~= Inf && posDes(i+1, j+1) ~= 0,
-                disp(['changing derivative constraint for keyframe ' int2str(j)])
-            end
-            
             A_temp = zeros(1, (n+1)*m);
-            maxPower = nnz(derCoeff(i+1, :))-1;
+            maxPower = nnz(derCoeff(3, :))-1;
             
             for k = 0:maxPower,
                 
@@ -586,27 +557,62 @@ for j = 0:m, %for each keyframe
                     tinit = tDes(j+1, 1);
                 end
                 
-        
-                A_temp(1, j*(n+1)+k+1) = tinit^(maxPower - k)*derCoeff(i+1, k+1);
+                A_temp(1, j*(n+1)+k+1) = tinit^(maxPower - k)*derCoeff(3, k+1);
                 
                 
                 %scale by time for nondimensionalization if nondimensionalized
                 if nonDim,
-                    A_temp(1, j*(n+1)+k+1) = 1/((tDes(j+2, 1)-tDes(j+1, 1))^i)*A_temp(1, j*(n+1)+k+1);
+                    A_temp(1, j*(n+1)+k+1) = 1/((tDes(j+2, 1)-tDes(j+1, 1))^2)*A_temp(1, j*(n+1)+k+1);
                 end
             end
             
-            b_temp = 0;
+            b_temp = -g; % mL(aL+g) = 0, aL = -g
             
             A_eq = [A_eq; A_temp];
             b_eq = [b_eq; b_temp];
+            
+            
+            
+            
+            % all higher derivatives must be 0 for continuity
+            for i = 3:r-1,
+                % constrain t
+                if posDes(i+1, j+1) ~= Inf && posDes(i+1, j+1) ~= 0,
+                    disp(['changing derivative constraint for keyframe ' int2str(j)])
+                end
+                
+                A_temp = zeros(1, (n+1)*m);
+                maxPower = nnz(derCoeff(i+1, :))-1;
+                
+                for k = 0:maxPower,
+                    
+                    if nonDim,
+                        tinit = t0;
+                    else
+                        tinit = tDes(j+1, 1);
+                    end
+                    
+                    
+                    A_temp(1, j*(n+1)+k+1) = tinit^(maxPower - k)*derCoeff(i+1, k+1);
+                    
+                    
+                    %scale by time for nondimensionalization if nondimensionalized
+                    if nonDim,
+                        A_temp(1, j*(n+1)+k+1) = 1/((tDes(j+2, 1)-tDes(j+1, 1))^i)*A_temp(1, j*(n+1)+k+1);
+                    end
+                end
+                
+                b_temp = 0;
+                
+                A_eq = [A_eq; A_temp];
+                b_eq = [b_eq; b_temp];
+            end
         end
-        end
-        
- 
         
         
-    % otherwise, treat it as a normal point
+        
+        
+        % otherwise, treat it as a normal point
     else
         
         for i = 0:r-1, %for all derivatives from 0 to r-1
@@ -712,8 +718,8 @@ for j = 0:m, %for each keyframe
                 
                 
                 
-            % otherwise, add continuity constraint if at intermediate
-            %   keyframe
+                % otherwise, add continuity constraint if at intermediate
+                %   keyframe
             elseif (j > 0 && j < m) % if constraint is at an intermediate keyframe
                 A_temp = zeros(1, (n+1)*m);
                 maxPower = nnz(derCoeff(i+1,:))-1;
@@ -751,7 +757,7 @@ for j = 0:m, %for each keyframe
             
         end
     end
-   
+    
 end
 
 

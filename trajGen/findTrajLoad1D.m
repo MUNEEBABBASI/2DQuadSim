@@ -99,22 +99,26 @@ end
 [A_eq, b_eq, modes] = findQuadEqConstraints(r, n, m, d, posDes, TDes, t0, t1, tDes, 1, g, len, mL, mQ);
 
 
-size(A_eq)
+
+
 
 
 %%%
 % construct inequality constraints
 [A_ineq, b_ineq] = findQuadIneqConstraints(r, n, m, d, posDes, modes, TDes, t0, t1, tDes, 1, g, len, mL, mQ);
 
-%size(A_ineq)
 A_ineq = [];
 b_ineq = [];
 
+
+
 %%%
 % optimize trajectory
-xT_all = quadprog(Q_joint,[],A_ineq, b_ineq,A_eq, b_eq);
+[xT_all, fval, exitflag, output] = quadprog(Q_joint,[],A_ineq, b_ineq,A_eq, b_eq);
 
-
+if exitflag ~= 1,
+    error();
+end
 
 %%% 
 % break trajectory into parts

@@ -238,30 +238,15 @@ global s
 % set up problem
 r = 6; %derivative to minimize in cost function
 n = 11; %order of desired trajectory
-m = 1; %number of pieces in trajectory
+m = 3; %number of pieces in trajectory
 d = 1; %dimensions
-
-% % specify the m+1 keyframes
-% tDes = [0; 1;2;3; 4; 5];%[0;1.2; 3; 5]; % %specify desired arrival times at keyframes
-% TDes = [Inf; Inf; 0; Inf; Inf; Inf];
-% % specify desired positions and/or derivatives at keyframes, 
-% % Inf represents unconstrained values
-% % r x (m+1) x d, where each row i is the value the (i-1)th derivative of keyframe j for dimensions k 
-% posDes = zeros(r, m+1, d);
-% % posDes(:, :, 1) = [0 1 1 0; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0]; 
-% % posDes(:, :, 2) = [0 3 2 2; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0];
-% % posDes(:, :, 3) = [1 2 3 4; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0];
-% 
-% posDes(:, :, 2) = [0 1 3 Inf 3 0; 0 Inf Inf Inf Inf 0; 0 Inf -g -g Inf 0; 0 Inf 0 0 Inf 0; 0 Inf 0 0 Inf 0; 0 Inf 0 0 Inf 0];
-% [i, j, k] = size(posDes);
-% p = length(tDes);
 
 
 
 
 % specify the m+1 keyframes
-tDes = [0; 0.4];%[0;1.2; 3; 5]; % %specify desired arrival times at keyframes
-TDes = [Inf; Inf];
+tDes = [0; 0.5; 1; 2];%[0;1.2; 3; 5]; % %specify desired arrival times at keyframes
+TDes = [Inf; 0; Inf; Inf; Inf];
 % specify desired positions and/or derivatives at keyframes, 
 % Inf represents unconstrained values
 % r x (m+1) x d, where each row i is the value the (i-1)th derivative of keyframe j for dimensions k 
@@ -270,9 +255,27 @@ posDes = zeros(r, m+1, d);
 % posDes(:, :, 2) = [0 3 2 2; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0];
 % posDes(:, :, 3) = [1 2 3 4; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0];
 
-posDes(:, :, 1) = [0 -1; 0 0; 0 0; 0 0; 0 0; 0 0];
+posDes = [0 -1 Inf -1; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0];
 [i, j, k] = size(posDes);
 p = length(tDes);
+
+
+
+
+% % specify the m+1 keyframes
+% tDes = [0; 5];%[0;1.2; 3; 5]; % %specify desired arrival times at keyframes
+% TDes = [Inf; Inf];
+% % specify desired positions and/or derivatives at keyframes, 
+% % Inf represents unconstrained values
+% % r x (m+1) x d, where each row i is the value the (i-1)th derivative of keyframe j for dimensions k 
+% posDes = zeros(r, m+1, d);
+% % posDes(:, :, 1) = [0 1 1 0; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0]; 
+% % posDes(:, :, 2) = [0 3 2 2; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0];
+% % posDes(:, :, 3) = [1 2 3 4; 0 Inf Inf 0; 0 Inf Inf 0; 0 Inf Inf 0];
+% 
+% posDes(:, :, 1) = [0 1; 0 0; 0 0; 0 0; 0 0; 0 0];
+% [i, j, k] = size(posDes);
+% p = length(tDes);
 
 
 
@@ -330,7 +333,7 @@ if(isempty(traj))
         [dxTQ, ~] = evaluateTraj(ttemp(i), n, m, dtemp, traj.xTQ, tDes, 2, []);
         len(1, i) = dxTQ(1, 1) - dxTL(1, 1);
         
-        der2(1, i) = dxTL(2, 1);
+        der2(1, i) = dxTL(3, 1);
     end
     
     figure()
