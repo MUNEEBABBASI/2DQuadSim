@@ -358,8 +358,8 @@ for j = 0:m, %for each keyframe
             A_eq = [A_eq; A_temp];
             b_eq = [b_eq; b_temp];
             
-        end
-        % otherwise add continuity later
+        end % otherwise add continuity later
+        
         else
         
         % find desired quad velocity right before the switch
@@ -502,10 +502,7 @@ for j = 0:m, %for each keyframe
             
             
             % add continuity constraint
-            
-            if posDes(2, j+1) ~= Inf,
-                disp(['changing velocity constraint at keyframe ' int2str(j)])
-            end
+
             
             A_temp = zeros(1, (n+1)*m);
             maxPower = nnz(derCoeff(2,:))-1;

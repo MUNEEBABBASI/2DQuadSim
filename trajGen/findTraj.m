@@ -49,20 +49,19 @@ end
 
 %%%
 % construct equality constraints 
-[A_fixed, b_fixed] = findFixedConstraints(r, n, m, dim, posDes, t0, t1, tDes, 1);
-[A_cont, b_cont] = findContConstraints(r, n, m, dim, posDes, t0, t1, tDes, 1);
+[A_fixed, b_fixed] = findFixedConstraints(r, n, m, dim, posDes, t0, t1, tDes);
+[A_cont, b_cont] = findContConstraints(r, n, m, dim, posDes, t0, t1, tDes);
 
 % put each A_eq for each dimension into block diagonal matrix
 A_eq = [A_fixed; A_cont];
 b_eq = [b_fixed; b_cont];
 
-size(b_eq)
-
 %%%
 % find optimal trajectory through quadratic programming
+opts = optimoptions('quadprog','TolFun', 1e-30);
 [xT_all, fval] = quadprog(Q_joint,[],[],[],A_eq,b_eq);
-fval
 
+xT_all'*Q_joint*xT_all
 
 %%%
 % explicitly break tracjetory into its piecewise parts for output

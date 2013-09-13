@@ -36,7 +36,7 @@
 
 
 
-function [xTL, xTQ, modes, A_eq, b_eq] = findTrajLoad1D(r, n, m, d, tDes, posDes, TDes, g, len, mL, mQ)
+function [xTL, xTQ, modes, fval] = findTrajLoad1D(r, n, m, d, tDes, posDes, TDes, g, len, mL, mQ)
 
 
 % check that we are dealing with a 1D problem
@@ -107,18 +107,27 @@ end
 % construct inequality constraints
 [A_ineq, b_ineq] = findQuadIneqConstraints(r, n, m, d, posDes, modes, TDes, t0, t1, tDes, 1, g, len, mL, mQ);
 
-A_ineq = [];
-b_ineq = [];
+%A_ineq = [];
+%b_ineq = [];
 
 
 
 %%%
 % optimize trajectory
+try
 [xT_all, fval, exitflag, output] = quadprog(Q_joint,[],A_ineq, b_ineq,A_eq, b_eq);
 
-if exitflag ~= 1,
-    error();
+catch err
+    xTQ = [];
+    xTL = [];
+    modes = [];
+    fval = NaN;
+    return;
+    
 end
+% if exitflag ~= 1,
+%     error();
+% end
 
 %%% 
 % break trajectory into parts

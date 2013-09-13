@@ -19,15 +19,17 @@
 %   t1: real value, end time of the trajectory
 %   tDes: m+1 x 1 matrix, desired arrival times at each trajectory
 %   nonDim: 0 or 1, 1 uses nondimensionalized times t0 and t1
-%       and scales conditions specified by posDes by times in tDes when calculaing b_eq, 
-%       0 uses times in tDes times and doesn't scale endpoint conditions 
+%       and scales conditions specified by posDes by times in tDes when calculaing b_eq,
+%       0 uses times in tDes times and doesn't scale endpoint conditions
 % outputs:
 %   A_eq, b_eq: matrices for Ax=b formulation of constraints
-function [A_eq, b_eq] = findContConstraints(r, n, m, dim, posDes, t0, t1, tDes, nonDim)
+function [A_eq, b_eq] = findContConstraints(r, n, m, dim, posDes, t0, t1, tDes)
 
 A_eq = [];
 b_eq = [];
 
+tinit = t0;
+tfin = t1;
 
 derCoeff = findDerivativeCoeff(n, r);
 
@@ -36,7 +38,7 @@ for j = 0:m, %for each keyframe
         if posDes(i+1, j+1, dim) == Inf, %if unfixed
             % construct and add constraint
             A_temp = [];
-            b_temp = []; 
+            b_temp = [];
             
             if (j > 0 && j < m) % if constraint is at an intermediate keyframe
                 A_temp = zeros(1, (n+1)*m);
@@ -44,22 +46,12 @@ for j = 0:m, %for each keyframe
                 
                 for k = 0:maxPower,
                     
-                    if nonDim,
-                        tinit = t0;
-                        tfin = t1;
-                    else
-                        tinit = tDes(j+1, 1);
-                        tfin = tDes(j+1, 1);
-                    end
-                    
                     A_temp(1, (j-1)*(n+1)+k+1) = tfin^(maxPower - k)*derCoeff(i+1, k+1);
-                    A_temp(1, j*(n+1)+k+1) = -tinit^(maxPower - k)*derCoeff(i+1, k+1);
+                    A_temp(1, (j-1)*(n+1)+k+1) = 1/((tDes(j+1, 1)-tDes(j, 1))^i)*A_temp(1, (j-1)*(n+1)+k+1); %nondimensionalize
                     
-                    % if a derivative is nondimensionalized, scale the constraint
-                    if nonDim,
-                        A_temp(1, (j-1)*(n+1)+k+1) = 1/((tDes(j+1, 1)-tDes(j, 1))^i)*A_temp(1, (j-1)*(n+1)+k+1);
-                        A_temp(1, j*(n+1)+k+1) = 1/((tDes(j+2, 1)-tDes(j+1, 1))^i)*A_temp(1, j*(n+1)+k+1);
-                    end
+                    A_temp(1, j*(n+1)+k+1) = -tinit^(maxPower - k)*derCoeff(i+1, k+1);
+                    A_temp(1, j*(n+1)+k+1) = 1/((tDes(j+2, 1)-tDes(j+1, 1))^i)*A_temp(1, j*(n+1)+k+1); %nondimensionalize
+                    
                     
                 end
                 

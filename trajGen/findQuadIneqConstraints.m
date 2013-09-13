@@ -138,6 +138,41 @@ for j = 0:m-1,
         
         A_ineq = [A_ineq; A_temp];
         b_ineq = [b_ineq; b_temp];
+     
+
+    end
+    
+    
+    % if in trajector after free-fall ends 
+    if j > 0 && TDes(j, 1) == 0,
+        % constrain velocity the momement before free fall
+        % vQ >= vl, or vl-vQ <= 0
+        
+            
+            A_temp = zeros(1, (n+1)*m);
+            maxPower = nnz(derCoeff(2,:))-1; % choose velocity
+            
+            for k = 0:maxPower,
+                
+                if nonDim,
+                    tinit = t0;
+                    tfin = t1;
+                else
+                    tinit = tDes(j+1, 1);
+                    tfin = tDes(j+1, 1);
+                end
+                
+                A_temp(1, (j-1)*(n+1)+k+1) = -tfin^(maxPower - k)*derCoeff(2, k+1) + tinit^(maxPower - k)*derCoeff(2, k+1);
+                
+
+                
+            end
+            
+            b_temp = g*(tDes(j+1, 1)-tDes(j, 1))^2;
+            
+            
+            A_ineq = [A_ineq; A_temp];
+            b_ineq = [b_ineq; b_temp];
         
     end
     

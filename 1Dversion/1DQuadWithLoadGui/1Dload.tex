@@ -151,7 +151,7 @@ f
 %%%
 \subsection{When cable is taut}
 
-Assume that the quadrotor is moving in the $y-z$ plane, where its only degree of freedom is in the $z$ direction.  \\
+Assume that the quadrotor is moving in the $y-z$ plane, where its only degree of freedom is in the $z$ direction. $+z$ is pointing upwards. \\
 Constraint: ${x}_Q = {x}_L + l$ \\
 
 
@@ -184,7 +184,7 @@ Note that the system transitions to $\mathbf{x}_2$ when the tension is 0. The te
 T &= m_L (\dot{v}_L + g)
 \end{align*}
 
-Note that this force will always go from positive to negative at the transition. 
+Note that this force will always go from positive to negative at the transition. In order to exert a tension force on the load, there must be a net force upwards, as tension cannot act downwards on the load. Thus, when tension is non-zero, $\dot{v}_L > -g$ the load simply enters free fall at the point $\dot{v}_L=g$, and it's not feasible to have $\dot{v}_L < -g$. 
 
 
 
@@ -226,7 +226,7 @@ Note that the system transitions to $\mathbf{x}_2$ when the quad and load are at
 (x_Q - x_L) - l &= 0
 \end{align*}
 
-Note that this force will always go from negative to positive at the transition. 
+When the load is falling away from the quad, we go from $(x_Q - x_L) < l$ to $(x_Q - x_L) = l$, or when $(x_Q - x_L)-l$ is increasing. This means that $\frac{dL(t)}{dt} = \frac{d ((x_Q - x_L)-l) }{dt} = v_Q-v_L \ge 0$, or $v_Q \ge v_L$. 
 
 
 

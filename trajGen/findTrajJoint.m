@@ -195,47 +195,17 @@ for i = 1:r,
 end
 
 
-posDes_opt
 
 
+%%% 
+% construct new set of constraints
+[A_eq, b_eq] = findFixedConstraints(r, n, m, 1, posDes_opt, t0, t1, tDes);
 
-%%%
-% [2*Q A'; A 0]^(-1)*[0;b] to find [x;lambda], where lambda are lagrange
-%       multipler constraint constants 
-% to finds coefficients x = [c1,n c1,n-1 ... c1,1 c1,0 ... c2,n ... cm,n ... cm, 0]
-
-% non-dimensionalize the problem to avoid large numbers in computations
-
-t0 = 0;
-t1 = 1;
+% this is now a full set of constraints, so just invert Ax = b
+xT_all = A_eq\b_eq;
 
 
-Q_joint = [];
-for i = 1:m,
-    Q = findCostMatrix(n, r, t0, t1);
-    
-    % scale for time nondimensionalization
-    Q = 1./((tDes(i+1, 1)-tDes(i, 1))^(2*r)).*Q;
-    
-    Q_joint = blkdiag(Q_joint, Q);
-end
-
-
-% note that here, since posDes is only one dimensional in k, dim is always
-%   1 even though when the original posDes matrix is used, a dimension is
-%   specified
-[A_eq, b_eq] = findFixedConstraints(r, n, m, 1, posDes_opt, t0, t1, tDes, 1);
-
-
-% note A_eq should have dimensions 2*n*m x (n+1)*m, since all derivatives are
-%   constrained now 
-% Q_joint has dimensions (n+1)*m x (n+1)*m
-solution_temp = inv([2.*Q_joint A_eq'; A_eq zeros(2*r*m)]) * [zeros((n+1)*m, 1); b_eq];
-
-% x coefficients are the first (n+1)*m terms 
-xT_all = solution_temp(1:(n+1)*m, 1);
-
-
+xT_all'*Q_joint*xT_all
 
 %%%
 % explicitly break trajectory into its piecewise parts for output
@@ -243,7 +213,6 @@ xT = zeros((n+1), m);
 for j = 1:m,
     xT(:, j) = xT_all((j-1)*(n+1)+1:j*(n+1));
 end
-
 
 
 

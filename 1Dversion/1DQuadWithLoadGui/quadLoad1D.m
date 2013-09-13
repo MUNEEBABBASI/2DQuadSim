@@ -224,6 +224,10 @@ for i = 1:totalTimeSteps,
     distDiff(i, 1) = quadx(i, :) - xout(i, 1);
 end
 
+% construct T - tension over time
+accel = diff(xout(:, 2))./diff(tout); %estimte acceleration
+T = mL*(accel+g);
+
 % save quad output matricies
 putvar(quadx, quadv)
 
@@ -249,7 +253,7 @@ for t = 1:length(tout),
 end
 
 % save tajectory properties
-putvar(xTraj, dxTraj, d2xTraj)
+putvar(xTraj, dxTraj, d2xTraj, xTrajQ, dxTrajQ, d2xTrajQ, l, T)
 
 %call animation
 animateQuadLoad
@@ -351,11 +355,7 @@ title('force over time');
 
 % plot tension over time
 figure()
-T = zeros(length(d2xTraj(:, 1)), 1);
-for i = 1:length(d2xTraj(:, 1))
-    T(i, 1) = mL.* (d2xTraj(i, 1)+g);
-end
-plot(tout, T);
+plot(tout(1:length(tout)-1), T);
 xlabel('time (s)');
 ylabel('tension (N)');
 title('tension over time');

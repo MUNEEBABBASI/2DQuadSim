@@ -82,6 +82,11 @@ s.u = evalin('base', 'uout');
 s.xTraj = evalin('base', 'xTraj');
 s.dxTraj = evalin('base', 'dxTraj');
 s.d2xTraj = evalin('base', 'd2xTraj');
+s.xTrajQ = evalin('base', 'xTrajQ');
+s.dxTrajQ = evalin('base', 'dxTrajQ');
+s.d2xTrajQ = evalin('base', 'd2xTrajQ');
+s.T = evalin('base', 'T');
+
 
 % set slider properties
 sliderMin = 1;
@@ -95,6 +100,7 @@ set(handles.slider1, 'Value', 3);
 
 % plot outputs in gui
 axes(handles.axes2)
+cla
 hold on
 box on
 grid on
@@ -107,6 +113,7 @@ legend('actual x', 'desired x', 'Location', 'SouthEastOutside');
 ylabel('load pos (m)');
 
 axes(handles.axes3)
+cla
 hold on
 box on
 grid on
@@ -121,11 +128,12 @@ ylabel('load vel (m/s)');
 
 
 axes(handles.axes5)
+cla
 hold on
 box on
 grid on 
 plot(s.time,s.xQ(:, 1),'r');
-plot(s.time,s.xTraj(:, 1)+s.l,'r--');
+plot(s.time,s.xTrajQ(:, 1),'r--');
 %s.limits5 = get(handles.axes5, 'YLim');
 %s.line5 = line([s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)],[-100,100]);
 %ylim(s.limits5);
@@ -133,11 +141,12 @@ legend('actual x', 'desired x', 'Location', 'SouthEastOutside');
 ylabel('quad pos (m)');
 
 axes(handles.axes6)
+cla
 hold on
 box on
 grid on
 plot(s.time,s.vQ(:, 1),'r');
-plot(s.time,s.dxTraj(:, 1),'r--');
+plot(s.time,s.dxTrajQ(:, 1),'r--');
 %s.limits6 = get(handles.axes6, 'YLim');
 %s.line6 = line([s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)],[-100,100]);
 %ylim(s.limits6);
@@ -147,6 +156,7 @@ ylabel('quad vel (m/s)');
 
 % plot inputs
 axes(handles.axes8)
+cla
 hold on
 box on
 grid on
@@ -161,16 +171,12 @@ ylabel('f');
 
 % plot tension over time
 figure()
-T = zeros(length(s.d2xTraj(:, 1)), 1);
-for i = 1:length(s.d2xTraj(:, 1))
-    T(i, 1) = s.mL.* (s.d2xTraj(i, 1)+s.g);
-end
-
 axes(handles.axes10)
+cla
 hold on
 box on
 grid on
-plot(s.time,T,'r');
+plot(s.time(1:length(s.time)-1),s.T,'r');
 %s.limits10 = get(handles.axes9, 'YLim');
 %s.line10 = line([s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)],[-100,100]);
 %ylim(s.limits10);
@@ -363,7 +369,7 @@ switch get(handles.popupmenu4,'Value')
         hold on
         box on
         grid on
-        plot(s.time,s.xTraj(:, 1)+s.l,'r--');
+        plot(s.time,s.xTrajQ(:, 1),'r--');
         %limitsTemp = get(handles.axes5, 'YLim');
         %set(s.line5, 'XData', [s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)]);
         %ylim(limitsTemp);
@@ -373,7 +379,7 @@ switch get(handles.popupmenu4,'Value')
     case 2
         axes(handles.axes5)
         hold off
-        plot(s.time,s.xQ(:, 1) - (s.xTraj(:, 1)+s.l),'r');
+        plot(s.time,s.xQ(:, 1) - (s.xTrajQ(:, 1)),'r');
         hold on
         box on
         grid on
@@ -444,7 +450,7 @@ switch get(handles.popupmenu7,'Value')
         hold on
         box on
         grid on
-        plot(s.time,s.dxTraj(:, 1),'r--');
+        plot(s.time,s.dxTrajQ(:, 1),'r--');
         %limitsTemp = get(handles.axes6, 'YLim');
         %set(s.line6, 'XData', [s.time(s.currentTimeIndex),s.time(s.currentTimeIndex)]);
         %ylim(limitsTemp);
@@ -454,7 +460,7 @@ switch get(handles.popupmenu7,'Value')
     case 2
         axes(handles.axes6)
         hold off
-        plot(s.time,s.vQ(:, 1) - s.dxTraj(:, 1),'r');
+        plot(s.time,s.vQ(:, 1) - s.dxTrajQ(:, 1),'r');
         hold on
         box on
         grid on
@@ -536,7 +542,7 @@ while (get(hObject,'Value') && stop==0)
       ylabel('z (m)');
       xlabel('y (m)');
 
-      pause(1/(10^(s.simSpeed*5)));     
+      pause(1/(10^(s.simSpeed-1)));     
       
 
       
